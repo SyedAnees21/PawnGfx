@@ -1,5 +1,6 @@
 use crate::{
     camera::Camera,
+    input::InputState,
     math::{Matrix4, Vector3},
 };
 use std::sync::Arc;
@@ -31,6 +32,7 @@ fn main() {
 
     let mut camera = Camera::new(Vector3::new(0.0, 0.0, 5.0));
     let mut rotation = Vector3::new(0.0, 0.0, 0.0);
+    let mut ism = input::InputState::default();
 
     event_loop
         .run(move |e, h| match e {
@@ -40,9 +42,20 @@ fn main() {
                 &mut depth_buffer,
                 &mut rotation,
                 &mut camera,
+                &mut ism,
                 h,
             ),
-            winit::event::Event::AboutToWait => window.request_redraw(),
+            winit::event::Event::AboutToWait => {
+                ism.apply_inputs(&mut camera, &mut rotation);
+                window.request_redraw()
+            },
+            winit::event::Event::DeviceEvent { event, .. } => match event {
+                winit::event::DeviceEvent::MouseMotion { delta } => {
+                    ism.mouse_delta.0 += delta.0;
+                    ism.mouse_delta.1 += delta.1;
+                }
+                _ => {}
+            },
 
             _ => {}
         })
@@ -55,15 +68,18 @@ fn handle_window_event(
     depth_buffer: &mut Vec<f64>,
     rotation: &mut Vector3,
     camera: &mut Camera,
+    ism: &mut InputState,
     handler: &EventLoopWindowTarget<()>,
 ) {
     match event {
-        winit::event::WindowEvent::KeyboardInput { event, .. } => {
-            input::process_keyboard_input(event, camera, rotation);
+        winit::event::WindowEvent::KeyboardInput { .. }
+        | winit::event::WindowEvent::MouseInput { .. } => {
+            // input::process_keyboard_input(event, camera, rotation);
+            input::read_inputs(ism, event);
         }
-        winit::event::WindowEvent::MouseInput { .. } => {
-            input::process_mouse_input(event);
-        }
+        // winit::event::WindowEvent::MouseInput { .. } => {
+        //     input::process_mouse_input(event);
+        // }
         winit::event::WindowEvent::Resized(size) => {
             framebuffer.resize_surface(size.width, size.height).unwrap();
             framebuffer.resize_buffer(size.width, size.height).unwrap();
@@ -85,6 +101,7 @@ fn handle_window_event(
             draw::draw_cube(frame, mvp, s_width as f64, s_height as f64);
 
             framebuffer.render().unwrap();
+            ism.reset();
         }
         winit::event::WindowEvent::CloseRequested => handler.exit(),
         _ => {}
