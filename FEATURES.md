@@ -1,4 +1,4 @@
-# BareGFX Feature Checklist
+# PawnGFX Feature Checklist
 
 ## Core Rendering
 - [x] Framebuffer rendering

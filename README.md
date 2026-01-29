@@ -1,4 +1,4 @@
-# BareGFX
+# PawnGFX
 
 A minimal software renderer written in Rust for learning and experimentation with 3D graphics fundamentals.
 The aim is to develop a fast and optimized light weight CPU based software renderer to view .obj and gltf models.
