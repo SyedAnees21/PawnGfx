@@ -1,12 +1,14 @@
 use crate::math::{Matrix4, Vector3};
 
+const UP: usize = 0;
+const RIGHT: usize = 1;
+const FORWARD: usize = 2;
+
 pub struct Camera {
     pub position: Vector3,
     pub yaw: f64,
     pub pitch: f64,
-    pub up: Vector3,
-    pub right: Vector3,
-    pub forward: Vector3,
+    pub basis: [Vector3; 3],
 }
 
 impl Camera {
@@ -15,9 +17,7 @@ impl Camera {
             position,
             yaw: -90.0,
             pitch: 0.0,
-            up: Vector3::ZERO,
-            right: Vector3::ZERO,
-            forward: Vector3::ZERO,
+            basis: [Vector3::ZERO; 3],
         };
 
         cam.update_vectors();
@@ -25,11 +25,11 @@ impl Camera {
     }
 
     pub fn move_forward(&mut self, delta: f64) {
-        self.position += self.forward * delta;
+        self.position += self.basis[FORWARD] * delta;
     }
 
     pub fn move_right(&mut self, delta: f64) {
-        self.position += self.right * delta;
+        self.position += self.basis[RIGHT] * delta;
     }
 
     pub fn move_up(&mut self, delta: f64) {
@@ -48,7 +48,7 @@ impl Camera {
         let yaw_rad = self.yaw.to_radians();
         let pitch_rad = self.pitch.to_radians();
 
-        self.forward = Vector3 {
+        self.basis[FORWARD] = Vector3 {
             x: yaw_rad.cos() * pitch_rad.cos(),
             y: pitch_rad.sin(),
             z: yaw_rad.sin() * pitch_rad.cos(),
@@ -57,14 +57,14 @@ impl Camera {
 
         let world_up = Vector3::UNIT_Y;
 
-        self.right = self.forward.cross(&world_up).normalize();
-        self.up = self.right.cross(&self.forward).normalize();
+        self.basis[RIGHT] = self.basis[FORWARD].cross(&world_up).normalize();
+        self.basis[UP] = self.basis[RIGHT].cross(&self.basis[FORWARD]).normalize();
     }
 
     pub fn get_view_matrix(&self) -> crate::math::Matrix4 {
-        let r = self.right;
-        let u = self.up;
-        let f = self.forward;
+        let r = self.basis[RIGHT];
+        let u = self.basis[UP];
+        let f = self.basis[FORWARD];
         let p = self.position;
 
         Matrix4 {

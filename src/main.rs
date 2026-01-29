@@ -1,5 +1,8 @@
 use crate::{
-    animate::ProceduralAnimator, camera::Camera, input::InputState, math::{Matrix4, Vector3, lerp}
+    animate::ProceduralAnimator,
+    camera::Camera,
+    input::InputState,
+    math::{Matrix4, Vector3, lerp},
 };
 use std::sync::Arc;
 use winit::event_loop::EventLoopWindowTarget;
@@ -29,16 +32,19 @@ fn main() {
 
     let mut depth_buffer = vec![f64::INFINITY; 800 * 800];
 
+    // FPS camera
     let mut camera = Camera::new(Vector3::new(0.0, 0.0, 5.0));
-    let mut rotation = Vector3::new(0.0, 0.0, 0.0);
-    let mut ism = input::InputState::default();
     
+    // Object rotation
+    let mut rotation = Vector3::new(0.0, 0.0, 0.0);
+
+    // input state machine
+    let mut ism = input::InputState::default();
+
     // Just for a juicy intro to this wireframe demo. Its not a serious
     // animation system ;)
-    let mut animator = ProceduralAnimator::new(
-        Vector3::new(15.0, 0.0, 10.0),
-        Vector3::new(0.0, 0.0, 5.0),
-    );
+    let mut animator =
+        ProceduralAnimator::new(Vector3::new(15.0, 0.0, 10.0), Vector3::new(0.0, 0.0, 5.0));
 
     event_loop
         .run(move |e, h| match e {
@@ -54,11 +60,10 @@ fn main() {
             winit::event::Event::AboutToWait => {
                 if !animator.is_complete() {
                     camera.position = animator.step(0.003);
-                    
                 } else {
                     ism.apply_inputs(&mut camera, &mut rotation);
                 }
-                
+
                 window.request_redraw()
             }
             winit::event::Event::DeviceEvent { event, .. } => match event {
@@ -86,12 +91,8 @@ fn handle_window_event(
     match event {
         winit::event::WindowEvent::KeyboardInput { .. }
         | winit::event::WindowEvent::MouseInput { .. } => {
-            // input::process_keyboard_input(event, camera, rotation);
             input::read_inputs(ism, event);
         }
-        // winit::event::WindowEvent::MouseInput { .. } => {
-        //     input::process_mouse_input(event);
-        // }
         winit::event::WindowEvent::Resized(size) => {
             framebuffer.resize_surface(size.width, size.height).unwrap();
             framebuffer.resize_buffer(size.width, size.height).unwrap();
