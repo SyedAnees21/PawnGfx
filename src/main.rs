@@ -5,7 +5,7 @@ use crate::{
     math::{Matrix4, Vector3, lerp},
 };
 use std::sync::Arc;
-use winit::event_loop::EventLoopWindowTarget;
+use winit::{event_loop::EventLoopWindowTarget, window::Fullscreen};
 
 mod animate;
 mod camera;
@@ -15,26 +15,28 @@ mod math;
 
 fn main() {
     let event_loop = winit::event_loop::EventLoop::new().unwrap();
+
     let window = Arc::new(
         winit::window::WindowBuilder::new()
             .with_title("BareGFX")
-            .with_inner_size(winit::dpi::LogicalSize::new(800.0, 800.0))
+            .with_maximized(true)
             .build(&event_loop)
             .unwrap(),
     );
 
+    let size = window.inner_size();
+
     let mut framebuffer = pixels::Pixels::new(
-        800,
-        800,
-        pixels::SurfaceTexture::new(800, 800, window.clone()),
+        size.width,
+        size.height,
+        pixels::SurfaceTexture::new(size.width, size.height, window.clone()),
     )
     .unwrap();
 
-    let mut depth_buffer = vec![f64::INFINITY; 800 * 800];
-
+    let mut depth_buffer = vec![f64::INFINITY; (size.width * size.height) as usize];
     // FPS camera
     let mut camera = Camera::new(Vector3::new(0.0, 0.0, 5.0));
-    
+
     // Object rotation
     let mut rotation = Vector3::new(0.0, 0.0, 0.0);
 
@@ -59,7 +61,7 @@ fn main() {
             ),
             winit::event::Event::AboutToWait => {
                 if !animator.is_complete() {
-                    camera.position = animator.step(0.003);
+                    camera.position = animator.step(0.005);
                 } else {
                     ism.apply_inputs(&mut camera, &mut rotation);
                 }

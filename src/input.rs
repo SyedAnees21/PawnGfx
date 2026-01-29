@@ -1,5 +1,5 @@
-use std::collections::HashSet;
 use crate::{camera, math::Vector3};
+use std::collections::HashSet;
 use winit::{
     event::{ElementState, KeyEvent},
     keyboard::PhysicalKey,
@@ -107,7 +107,7 @@ impl InputState {
     }
 
     pub fn apply_inputs(&mut self, camera: &mut camera::Camera, rotation: &mut Vector3) {
-        let camera_speed = 0.1;
+        let camera_speed = 0.05;
         for key in &self.keys_pressed {
             match key {
                 Keys::W => camera.move_forward(camera_speed),

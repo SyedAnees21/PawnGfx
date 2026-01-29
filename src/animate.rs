@@ -26,7 +26,7 @@ impl ProceduralAnimator {
         if self.progress >= 1.0 {
             self.progress = 1.0;
         }
-        
+
         lerp(self.start, self.end, t)
     }
 }
