@@ -1,7 +1,17 @@
 use crate::math::{Matrix4, Vector3, Vector4};
 
-pub fn draw_line<T>(mut frame: T, w: i32, x0: i32, y0: i32, x1: i32, y1: i32)
-where
+pub fn draw_line<T>(
+    mut frame: T,
+    depth_buffer: &mut [f64],
+    w: i32,
+    h: i32,
+    x0: i32,
+    y0: i32,
+    z0: f64,
+    x1: i32,
+    y1: i32,
+    z1: f64,
+) where
     T: AsMut<[u8]>,
 {
     let frame = frame.as_mut();
@@ -13,13 +23,24 @@ where
     let mut x = x0;
     let mut y = y0;
 
+    let length = ((x1 - x0).abs().max((y1 - y0).abs())) as f64;
+    let mut step = 0.0;
+
     loop {
-        if x >= 0 && y >= 0 && x < w && y < w {
-            let idx = ((y * w + x) * 4) as usize;
-            frame[idx] = 255;
-            frame[idx + 1] = 255;
-            frame[idx + 2] = 255;
-            frame[idx + 3] = 255;
+        if x >= 0 && y >= 0 && x < w && y < h {
+            let t = if length > 0.0 { step / length } else { 0.0 };
+            let z = z0 * (1.0 - t) + z1 * t;
+            let depth_index = (y * w + x) as usize;
+
+            if z < depth_buffer[depth_index] {
+                depth_buffer[depth_index] = z;
+
+                let pixel_index = (depth_index * 4) as usize;
+                frame[pixel_index] = 255;
+                frame[pixel_index + 1] = 255;
+                frame[pixel_index + 2] = 255;
+                frame[pixel_index + 3] = 255;
+            }
         }
         if x == x1 && y == y1 {
             break;
@@ -33,6 +54,8 @@ where
             err += dx;
             y += sy;
         }
+
+        step += 1.0;
     }
 }
 
@@ -67,26 +90,60 @@ where
     T: AsMut<[u8]>,
 {
     let frame = frame.as_mut();
+    let mut depth_buffer = vec![f64::INFINITY; (width * height) as usize];
 
-    let projected: Vec<(i32, i32)> = CUBE_VERTS
-        .iter()
-        .map(|v| {
-            let v4: Vector4 = (*v, 1.0).into();
-            let v_clip = mvp * v4;
+    for edge in &EDGES {
+        let (start, end) = *edge;
 
-            let ndc_x = v_clip.x / v_clip.w;
-            let ndc_y = v_clip.y / v_clip.w;
+        let v0_clip = transform_to_clip_space(&CUBE_VERTS[start], &mvp);
+        let v1_clip = transform_to_clip_space(&CUBE_VERTS[end], &mvp);
 
-            let screen_x = ((ndc_x + 1.0) * 0.5 * width) as i32;
-            let screen_y = ((1.0 - (ndc_y + 1.0) * 0.5) * height) as i32;
+        if v0_clip.w <= 0.0
+            && v1_clip.w <= 0.0
+            && clip_volume_check(&v0_clip)
+            && clip_volume_check(&v1_clip)
+        {
+            continue;
+        }
 
-            (screen_x, screen_y)
-        })
-        .collect();
+        let v0_ndc = v0_clip / v0_clip.w;
+        let v1_ndc = v1_clip / v1_clip.w;
 
-    for &(start, end) in &EDGES {
-        let (x0, y0) = projected[start];
-        let (x1, y1) = projected[end];
-        draw_line(&mut *frame, width as i32, x0, y0, x1, y1);
+        let (x0, y0, z0) = clip_to_screen(&v0_ndc, width, height);
+        let (x1, y1, z1) = clip_to_screen(&v1_ndc, width, height);
+
+        draw_line(
+            &mut *frame,
+            &mut depth_buffer,
+            width as i32,
+            height as i32,
+            x0,
+            y0,
+            z0,
+            x1,
+            y1,
+            z1,
+        );
     }
+}
+
+pub fn transform_to_clip_space(v: &Vector3, mvp: &Matrix4) -> Vector4 {
+    let v4 = Vector4::from((*v, 1.0));
+    *mvp * v4
+}
+
+pub fn clip_to_screen(v_ndc: &Vector4, width: f64, height: f64) -> (i32, i32, f64) {
+    let screen_x = ((v_ndc.x + 1.0) * 0.5 * width) as i32;
+    let screen_y = ((1.0 - (v_ndc.y + 1.0) * 0.5) * height) as i32;
+
+    (screen_x, screen_y, v_ndc.z)
+}
+
+pub fn clip_volume_check(v_clip: &Vector4) -> bool {
+    v_clip.x < -v_clip.w
+        || v_clip.x > v_clip.w
+        || v_clip.y < -v_clip.w
+        || v_clip.y > v_clip.w
+        || v_clip.z < -v_clip.w
+        || v_clip.z > v_clip.w
 }

@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Mul};
+use std::ops::{Add, AddAssign, Div, Mul};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Vector3 {
@@ -91,11 +91,25 @@ impl AddAssign for Vector3 {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct Vector4 {
     pub x: f64,
     pub y: f64,
     pub z: f64,
     pub w: f64,
+}
+
+impl Div<f64> for Vector4 {
+    type Output = Vector4;
+
+    fn div(self, scalar: f64) -> Vector4 {
+        Vector4 {
+            x: self.x / scalar,
+            y: self.y / scalar,
+            z: self.z / scalar,
+            w: self.w / scalar,
+        }
+    }
 }
 
 impl Vector4 {
