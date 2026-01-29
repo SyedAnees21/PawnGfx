@@ -1,11 +1,10 @@
 use crate::{
-    camera::Camera,
-    input::InputState,
-    math::{Matrix4, Vector3},
+    animate::ProceduralAnimator, camera::Camera, input::InputState, math::{Matrix4, Vector3, lerp}
 };
 use std::sync::Arc;
 use winit::event_loop::EventLoopWindowTarget;
 
+mod animate;
 mod camera;
 mod draw;
 mod input;
@@ -33,6 +32,13 @@ fn main() {
     let mut camera = Camera::new(Vector3::new(0.0, 0.0, 5.0));
     let mut rotation = Vector3::new(0.0, 0.0, 0.0);
     let mut ism = input::InputState::default();
+    
+    // Just for a juicy intro to this wireframe demo. Its not a serious
+    // animation system ;)
+    let mut animator = ProceduralAnimator::new(
+        Vector3::new(15.0, 0.0, 10.0),
+        Vector3::new(0.0, 0.0, 5.0),
+    );
 
     event_loop
         .run(move |e, h| match e {
@@ -46,9 +52,15 @@ fn main() {
                 h,
             ),
             winit::event::Event::AboutToWait => {
-                ism.apply_inputs(&mut camera, &mut rotation);
+                if !animator.is_complete() {
+                    camera.position = animator.step(0.003);
+                    
+                } else {
+                    ism.apply_inputs(&mut camera, &mut rotation);
+                }
+                
                 window.request_redraw()
-            },
+            }
             winit::event::Event::DeviceEvent { event, .. } => match event {
                 winit::event::DeviceEvent::MouseMotion { delta } => {
                     ism.mouse_delta.0 += delta.0;
