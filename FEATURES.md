@@ -31,10 +31,11 @@
 - [ ] Orbital camera
 
 ## Input Handling
+- [x] Basic Input state machine
 - [x] Keyboard input (WASD + arrows)
 - [x] Mouse input detection
-- [ ] Mouse movement tracking
-- [ ] Mouse camera control
+- [x] Mouse movement tracking
+- [X] Mouse camera control
 - [ ] Relative mouse movement
 - [ ] Gamepad support
 
