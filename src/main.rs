@@ -1,17 +1,24 @@
 use crate::{
     animate::ProceduralAnimator,
     camera::Camera,
+    draw::{CUBE_TRIS, CUBE_VERTS},
+    geometry::Mesh,
     input::InputState,
     math::{Matrix4, Vector3, lerp},
 };
+use core::f64;
 use std::sync::Arc;
 use winit::{event_loop::EventLoopWindowTarget, window::Fullscreen};
 
 mod animate;
 mod camera;
 mod draw;
+mod geometry;
 mod input;
 mod math;
+
+#[cfg(test)]
+mod tests;
 
 fn main() {
     let event_loop = winit::event_loop::EventLoop::new().unwrap();
@@ -48,12 +55,15 @@ fn main() {
     let mut animator =
         ProceduralAnimator::new(Vector3::new(15.0, 0.0, 10.0), Vector3::new(0.0, 0.0, 5.0));
 
+    let cube = Mesh::new(CUBE_VERTS.into(), CUBE_TRIS.into());
+
     event_loop
         .run(move |e, h| match e {
             winit::event::Event::WindowEvent { event, .. } => handle_window_event(
                 &event,
                 &mut framebuffer,
                 &mut depth_buffer,
+                &cube,
                 &mut rotation,
                 &mut camera,
                 &mut ism,
@@ -85,6 +95,7 @@ fn handle_window_event(
     event: &winit::event::WindowEvent,
     framebuffer: &mut pixels::Pixels,
     depth_buffer: &mut Vec<f64>,
+    mesh: &Mesh,
     rotation: &mut Vector3,
     camera: &mut Camera,
     ism: &mut InputState,
@@ -107,13 +118,22 @@ fn handle_window_event(
 
             let frame = framebuffer.frame_mut();
             frame.fill(0);
+            depth_buffer.fill(f64::INFINITY);
 
             let model = Matrix4::rotation_matrix(*rotation);
             let view = camera.get_view_matrix();
             let projection = Matrix4::perspective_matrix(90.0_f64.to_radians(), aspect, 0.1, 100.0);
             let mvp = projection * view * model;
 
-            draw::draw_cube(frame, mvp, s_width as f64, s_height as f64);
+            // draw::draw_cube(frame, mvp, s_width as f64, s_height as f64);
+            draw::draw_call(
+                frame,
+                depth_buffer,
+                s_width as i32,
+                s_height as i32,
+                mvp,
+                mesh.triangles(),
+            );
 
             framebuffer.render().unwrap();
             ism.reset();

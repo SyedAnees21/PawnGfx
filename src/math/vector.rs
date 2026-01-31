@@ -1,6 +1,47 @@
 use std::ops::{Add, AddAssign, Div, Mul, Sub};
 
 #[derive(Debug, Clone, Copy)]
+pub struct Vector2 {
+    pub x: f64,
+    pub y: f64,
+}
+
+impl From<Vector3> for Vector2 {
+    fn from(v3: Vector3) -> Self {
+        Vector2 { x: v3.x, y: v3.y }
+    }
+}
+
+impl Vector2 {
+    pub const ZERO: Vector2 = Vector2 { x: 0.0, y: 0.0 };
+    pub const UNIT_X: Vector2 = Vector2 { x: 1.0, y: 0.0 };
+    pub const UNIT_Y: Vector2 = Vector2 { x: 0.0, y: 1.0 };
+
+    pub const fn new(x: f64, y: f64) -> Self {
+        Vector2 { x, y }
+    }
+
+    pub fn magnitude(&self) -> f64 {
+        (self.x * self.x + self.y * self.y).sqrt()
+    }
+
+    pub fn normalize(&self) -> Self {
+        let mag = self.magnitude();
+        Vector2 {
+            x: self.x / mag,
+            y: self.y / mag,
+        }
+    }
+
+    pub fn xy<T>(&self) -> (T, T)
+    where
+        T: From<f64>,
+    {
+        (T::from(self.x), T::from(self.y))
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
 pub struct Vector3 {
     pub x: f64,
     pub y: f64,
