@@ -10,7 +10,6 @@ pub struct Mesh {
 }
 
 impl Mesh {
-
     pub fn new(vertices: Vertices, indices: Indices) -> Self {
         Self { vertices, indices }
     }

@@ -4,7 +4,7 @@
 - [x] Framebuffer rendering
 - [x] Line rasterization (Bresenham's algorithm)
 - [x] Wireframe cube rendering
-- [ ] Triangle rasterization
+- [x] Triangle rasterization
 - [ ] Face filling / solid rendering
 - [ ] Texture mapping
 - [ ] Shading models (flat, Gouraud, Phong)

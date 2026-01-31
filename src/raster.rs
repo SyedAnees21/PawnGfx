@@ -1,4 +1,7 @@
-use crate::{geometry::{Triangles, bounding_rect, edge_function}, math::{Matrix4, Vector2, Vector3, Vector4}};
+use crate::{
+    geometry::{Triangles, bounding_rect, edge_function},
+    math::{Matrix4, Vector2, Vector3, Vector4},
+};
 
 pub fn draw_call<F, D>(
     frame_buffer: &mut F,
