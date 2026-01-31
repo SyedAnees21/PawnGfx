@@ -16,6 +16,7 @@ mod draw;
 mod geometry;
 mod input;
 mod math;
+mod raster;
 
 #[cfg(test)]
 mod tests;
@@ -126,7 +127,7 @@ fn handle_window_event(
             let mvp = projection * view * model;
 
             // draw::draw_cube(frame, mvp, s_width as f64, s_height as f64);
-            draw::draw_call(
+            raster::draw_call(
                 frame,
                 depth_buffer,
                 s_width as i32,

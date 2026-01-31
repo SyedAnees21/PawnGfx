@@ -1,7 +1,4 @@
-use crate::{
-    geometry::{Triangles, bounding_rect, edge_function, point_inside_triangle},
-    math::{Matrix4, Vector2, Vector3, Vector4},
-};
+use crate::math::{Matrix4, Vector3, Vector4};
 
 pub fn draw_line<T>(
     mut frame: T,
@@ -73,17 +70,6 @@ pub const CUBE_VERTS: [Vector3; 8] = [
     Vector3::new(-1.0, 1.0, 1.0),   // 7
 ];
 
-// pub const CUBE_VERTS: [Vector3; 8] = [
-//     Vector3::new(-1.0, -1.0, -1.0),
-//     Vector3::new(1.0, -1.0, -1.0),
-//     Vector3::new(1.0, 1.0, -1.0),
-//     Vector3::new(-1.0, 1.0, -1.0),
-//     Vector3::new(-1.0, -1.0, 1.0),
-//     Vector3::new(1.0, -1.0, 1.0),
-//     Vector3::new(1.0, 1.0, 1.0),
-//     Vector3::new(-1.0, 1.0, 1.0),
-// ];
-
 const EDGES: [(usize, usize); 12] = [
     (0, 1),
     (1, 2),
@@ -108,21 +94,6 @@ pub const CUBE_TRIS: [usize; 36] = [
     3, 7, 6, 3, 6, 2, // BOTTOM (-Y)
     0, 1, 5, 0, 5, 4,
 ];
-
-// pub const CUBE_TRIS: [usize; 36] = [
-//     0, 1, 2,
-//     2, 3, 0,
-//     4, 6, 5,
-//     6, 4, 7,
-//     0, 3, 7,
-//     7, 4, 0,
-//     1, 5, 6,
-//     6, 2, 1,
-//     3, 2, 6,
-//     6, 7, 3,
-//     0, 4, 5,
-//     5, 1, 0
-// ];
 
 pub fn draw_cube<T>(mut frame: T, mvp: Matrix4, width: f64, height: f64)
 where
@@ -163,94 +134,6 @@ where
             y1 as i32,
             z1,
         );
-    }
-}
-
-pub fn draw_call<F, D>(
-    frame_buffer: &mut F,
-    depth_buffer: &mut D,
-    w: i32,
-    h: i32,
-    mvp: Matrix4,
-    triangles: Triangles,
-) where
-    F: AsMut<[u8]> + ?Sized,
-    D: AsMut<[f64]>,
-{
-    let frame = frame_buffer.as_mut();
-    let depth = depth_buffer.as_mut();
-
-    for (v0, v1, v2) in triangles {
-        let v0_clip = transform_to_clip_space(&v0, &mvp);
-        let v1_clip = transform_to_clip_space(&v1, &mvp);
-        let v2_clip = transform_to_clip_space(&v2, &mvp);
-
-        if v0_clip.w <= 0.0 || v1_clip.w <= 0.0 || v2_clip.w <= 0.0 {
-            continue;
-        }
-
-        let v0_ndc = v0_clip / v0_clip.w;
-        let v1_ndc = v1_clip / v1_clip.w;
-        let v2_ndc = v2_clip / v2_clip.w;
-
-        let v0 = clip_to_screen(&v0_ndc, w as f64, h as f64);
-        let v1 = clip_to_screen(&v1_ndc, w as f64, h as f64);
-        let v2 = clip_to_screen(&v2_ndc, w as f64, h as f64);
-
-        draw_triangle(frame, depth, w, h, v0, v1, v2);
-    }
-}
-
-pub fn draw_triangle(
-    frame_buffer: &mut [u8],
-    depth_buffer: &mut [f64],
-    w: i32,
-    h: i32,
-    (x0, y0, z0): (f64, f64, f64),
-    (x1, y1, z1): (f64, f64, f64),
-    (x2, y2, z2): (f64, f64, f64),
-) {
-    let frame = frame_buffer.as_mut();
-
-    let v0 = Vector2::new(x0, y0);
-    let v1 = Vector2::new(x1, y1);
-    let v2 = Vector2::new(x2, y2);
-
-    let (min, max) = bounding_rect(v0, v1, v2);
-
-    let min_x = min.x.max(0.0) as i32;
-    let min_y = min.y.max(0.0) as i32;
-    let max_x = max.x.min((w - 1) as f64) as i32;
-    let max_y = max.y.min((h - 1) as f64) as i32;
-
-    for y in min_y..=max_y {
-        for x in min_x..max_x {
-            let p = Vector2::new(x as f64 + 0.5, y as f64 + 0.5);
-
-            {
-                let area = edge_function(v0, v1, v2);
-
-                let w0 = edge_function(v1, v2, p) / area;
-                let w1 = edge_function(v2, v0, p) / area;
-                let w2 = edge_function(v0, v1, p) / area;
-
-                if w0 < 0.0 || w1 < 0.0 || w2 < 0.0 {
-                    continue;
-                }
-
-                let z = w0 * z0 + w1 * z1 + w2 * z2;
-                let depth_index = (y * w + x) as usize;
-                let pixel_index = (depth_index * 4) as usize;
-
-                if z < depth_buffer[depth_index] {
-                    depth_buffer[depth_index] = z;
-                    frame[pixel_index] = 255;
-                    frame[pixel_index + 1] = 255;
-                    frame[pixel_index + 2] = 255;
-                    frame[pixel_index + 3] = 255;
-                }
-            }
-        }
     }
 }
 
