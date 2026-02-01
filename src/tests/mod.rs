@@ -26,3 +26,10 @@ pub fn point_inside_triangle() {
         "Point should be outside the triangle"
     );
 }
+
+
+#[test]
+pub fn colors() {
+    let red = hex::decode("ff0000").unwrap();
+    assert_eq!(red, vec![0xff, 0x00, 0x00]);
+}

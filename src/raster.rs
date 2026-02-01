@@ -1,6 +1,5 @@
 use crate::{
-    geometry::{Triangles, bounding_rect, edge_function},
-    math::{Matrix4, Vector2, Vector3, Vector4},
+    color::Color, draw::Face_NORMALS, geometry::{Triangles, bounding_rect, edge_function}, math::{Matrix4, Vector2, Vector3, Vector4}
 };
 
 pub fn draw_call<F, D>(
@@ -8,6 +7,7 @@ pub fn draw_call<F, D>(
     depth_buffer: &mut D,
     w: i32,
     h: i32,
+    light: Vector3,
     mvp: Matrix4,
     triangles: Triangles,
 ) where
@@ -17,7 +17,7 @@ pub fn draw_call<F, D>(
     let frame = frame_buffer.as_mut();
     let depth = depth_buffer.as_mut();
 
-    for (v0, v1, v2) in triangles {
+    for (idx, (v0, v1, v2)) in triangles.enumerate() {
         let v0_clip = transform_to_clip_space(&v0, &mvp);
         let v1_clip = transform_to_clip_space(&v1, &mvp);
         let v2_clip = transform_to_clip_space(&v2, &mvp);
@@ -34,7 +34,7 @@ pub fn draw_call<F, D>(
         let v1 = clip_to_screen(&v1_ndc, w as f64, h as f64);
         let v2 = clip_to_screen(&v2_ndc, w as f64, h as f64);
 
-        draw_triangle(frame, depth, w, h, v0, v1, v2);
+        draw_triangle(frame, depth, w, h, light, Face_NORMALS[idx / 2], v0, v1, v2);
     }
 }
 
@@ -43,6 +43,8 @@ pub fn draw_triangle(
     depth_buffer: &mut [f64],
     w: i32,
     h: i32,
+    light: Vector3,
+    face_normal: Vector3,
     (x0, y0, z0): (f64, f64, f64),
     (x1, y1, z1): (f64, f64, f64),
     (x2, y2, z2): (f64, f64, f64),
@@ -65,7 +67,7 @@ pub fn draw_triangle(
     let max_y = max.y.min((h - 1) as f64) as i32;
 
     for y in min_y..=max_y {
-        for x in min_x..max_x {
+        for x in min_x..=max_x {
             let p = Vector2::new(x as f64 + 0.5, y as f64 + 0.5);
 
             {
@@ -84,9 +86,12 @@ pub fn draw_triangle(
                 let pixel_index = (depth_index * 4) as usize;
 
                 if z < depth_buffer[depth_index] {
+                    let intensity = face_normal.normalize().dot(&light).max(0.0);
+                    let color = Color::from_hex("#c19a6b").unwrap() * intensity;
+
                     depth_buffer[depth_index] = z;
                     frame[pixel_index..pixel_index + 4]
-                        .copy_from_slice(u32::MAX.to_le_bytes().as_ref());
+                        .copy_from_slice(color.to_rgba8().as_slice());
                 }
             }
         }
