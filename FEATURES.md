@@ -5,7 +5,7 @@
 - [x] Line rasterization (Bresenham's algorithm)
 - [x] Wireframe cube rendering
 - [x] Triangle rasterization
-- [ ] Face filling / solid rendering
+- [x] Face filling / solid rendering
 - [ ] Texture mapping
 - [ ] Shading models (flat, Gouraud, Phong)
 - [ ] Shadow rendering
@@ -50,8 +50,8 @@
 
 ## Performance & Optimization
 - [x] Depth buffer
-- [ ] Z-buffer optimization
-- [ ] Back-face culling
+- [x] Z-buffer optimization
+- [x] Back-face culling
 - [ ] Frustum culling
 - [ ] Level-of-detail (LOD)
 - [ ] Multi-threading support
