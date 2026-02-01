@@ -57,7 +57,11 @@ fn main() {
     let mut animator =
         ProceduralAnimator::new(Vector3::new(15.0, 0.0, 10.0), Vector3::new(0.0, 0.0, 5.0));
 
+    // Cube mesh
     let cube = Mesh::new(CUBE_VERTS.into(), CUBE_TRIS.into());
+    
+    // Directional light
+    let light = Vector3::new(1.0, 1.0, 2.0).normalize();
 
     event_loop
         .run(move |e, h| match e {
@@ -66,6 +70,7 @@ fn main() {
                 &mut framebuffer,
                 &mut depth_buffer,
                 &cube,
+                light,
                 &mut rotation,
                 &mut camera,
                 &mut ism,
@@ -98,6 +103,7 @@ fn handle_window_event(
     framebuffer: &mut pixels::Pixels,
     depth_buffer: &mut Vec<f64>,
     mesh: &Mesh,
+    light: Vector3,
     rotation: &mut Vector3,
     camera: &mut Camera,
     ism: &mut InputState,
@@ -132,6 +138,7 @@ fn handle_window_event(
                 depth_buffer,
                 s_width as i32,
                 s_height as i32,
+                light,
                 mvp,
                 mesh.triangles(),
             );

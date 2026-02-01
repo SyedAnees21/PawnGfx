@@ -1,4 +1,4 @@
-use std::ops::Add;
+use std::ops::{Add, Mul};
 
 pub struct Color(f32, f32, f32, f32);
 
@@ -70,6 +70,19 @@ impl Add for Color {
             (self.1 + other.1).min(1.0),
             (self.2 + other.2).min(1.0),
             (self.3 + other.3).min(1.0),
+        )
+    }
+}
+
+impl Mul<f64> for Color {
+    type Output = Color;
+
+    fn mul(self, scalar: f64) -> Color {
+        Color(
+            self.0 * scalar as f32,
+            self.1 * scalar as f32,
+            self.2 * scalar as f32,
+            self.3,
         )
     }
 }

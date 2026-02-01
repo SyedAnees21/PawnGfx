@@ -98,6 +98,15 @@ pub const CUBE_TRIS: [usize; 36] = [
     0, 1, 5, 0, 5, 4,
 ];
 
+pub const Face_NORMALS: [Vector3; 6] = [
+    Vector3::new(0.0, 0.0, -1.0), // FRONT
+    Vector3::new(0.0, 0.0, 1.0),  // BACK
+    Vector3::new(-1.0, 0.0, 0.0), // LEFT
+    Vector3::new(1.0, 0.0, 0.0),  // RIGHT
+    Vector3::new(0.0, 1.0, 0.0),  // TOP
+    Vector3::new(0.0, -1.0, 0.0), // BOTTOM
+];
+
 pub fn draw_cube<T>(mut frame: T, mvp: Matrix4, width: f64, height: f64)
 where
     T: AsMut<[u8]>,
