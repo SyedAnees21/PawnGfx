@@ -53,11 +53,8 @@ impl<'a> Renderer<'a> {
         self.framebuffer.frame_mut().fill(DEFAULT_BG_COLOR as u8);
     }
 
-    pub fn get_buffers(&mut self) -> (&mut [u8], &mut [f64]){
-        (
-            self.framebuffer.frame_mut(),
-            &mut self.depth_buffer
-        )
+    pub fn get_buffers(&mut self) -> (&mut [u8], &mut [f64]) {
+        (self.framebuffer.frame_mut(), &mut self.depth_buffer)
     }
 
     pub fn resize_buffers(&mut self, width: u32, height: u32) {
@@ -73,10 +70,12 @@ impl<'a> Renderer<'a> {
 }
 
 impl<'a> Renderer<'a> {
+    #[allow(unused)]
     pub fn get_framebuffer(&mut self) -> &mut [u8] {
         self.framebuffer.frame_mut()
     }
 
+    #[allow(unused)]
     pub fn get_depth_buffer(&mut self) -> &mut Vec<f64> {
         &mut self.depth_buffer
     }

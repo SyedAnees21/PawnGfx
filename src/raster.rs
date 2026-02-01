@@ -1,5 +1,8 @@
 use crate::{
-    color::Color, draw::Face_NORMALS, geometry::{Triangles, bounding_rect, edge_function}, math::{Matrix4, Vector2, Vector3, Vector4}
+    color::Color,
+    draw::Face_NORMALS,
+    geometry::{Triangles, bounding_rect, edge_function},
+    math::{Matrix4, Vector2, Vector3, Vector4},
 };
 
 pub fn draw_call<F, D>(
@@ -114,10 +117,12 @@ pub fn is_backfacing(v0: Vector2, v1: Vector2, v2: Vector2) -> bool {
     edge_function(v0, v1, v2) < 0.0
 }
 
+#[allow(unused)]
 pub fn outside_ndc_check(v: &Vector4) -> bool {
     v.x < -1.0 || v.x > 1.0 || v.y < -1.0 || v.y > 1.0 || v.z < -1.0 || v.z > 1.0
 }
 
+#[allow(unused)]
 pub fn clip_volume_check(v_clip: &Vector4) -> bool {
     v_clip.x < -v_clip.w
         || v_clip.x > v_clip.w

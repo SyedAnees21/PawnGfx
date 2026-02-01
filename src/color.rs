@@ -2,6 +2,7 @@ use std::ops::{Add, Mul};
 
 pub struct Color(f32, f32, f32, f32);
 
+#[allow(unused)]
 impl Color {
     pub const RED: Color = Color(1.0, 0.0, 0.0, 1.0);
     pub const BLUE: Color = Color(0.0, 0.0, 1.0, 1.0);

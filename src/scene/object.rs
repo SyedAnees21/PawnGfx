@@ -9,7 +9,7 @@ impl Object {
     pub fn new(mesh: Mesh) -> Self {
         Self {
             mesh,
-            transform: Transform::default()
+            transform: Transform::default(),
         }
     }
 }

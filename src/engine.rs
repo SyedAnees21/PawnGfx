@@ -24,11 +24,7 @@ impl<'a> Engine<'a> {
         }
     }
 
-    pub fn start_internal_loop(
-        &mut self,
-        event: Event<()>,
-        handler: &EventLoopWindowTarget<()>,
-    ) {
+    pub fn start_internal_loop(&mut self, event: Event<()>, handler: &EventLoopWindowTarget<()>) {
         match event {
             Event::WindowEvent { event, .. } => handle_internal_events(
                 event,
@@ -49,7 +45,6 @@ impl<'a> Engine<'a> {
                         &mut self.scene.object.transform.rotation,
                     );
                 }
-                
 
                 self.renderer.get_window().request_redraw()
             }
