@@ -123,30 +123,6 @@ impl Matrix4 {
     pub fn perspective_matrix(fov_rad: f64, aspect: f64, near: f64, far: f64) -> Matrix4 {
         Self::projection_matrix(fov_rad, aspect, near, far)
     }
-
-    // pub fn view_matrix(eye: [f64; 3], center: [f64; 3], up: [f64; 3]) -> Matrix4 {
-    //     let f = normalize([
-    //         center[0] - eye[0],
-    //         center[1] - eye[1],
-    //         center[2] - eye[2],
-    //     ]);
-    //     let s = normalize(cross(f, up));
-    //     let u = cross(s, f);
-
-    //     Matrix4 {
-    //         data: [
-    //             [s[0], u[0], -f[0], 0.0],
-    //             [s[1], u[1], -f[1], 0.0],
-    //             [s[2], u[2], -f[2], 0.0],
-    //             [
-    //                 -dot(s, eye),
-    //                 -dot(u, eye),
-    //                 dot(f, eye),
-    //                 1.0,
-    //             ],
-    //         ],
-    //     }
-    // }
 }
 
 impl Mul for Matrix4 {

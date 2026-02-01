@@ -53,6 +53,10 @@ pub fn draw_triangle(
     let v1 = Vector2::new(x1, y1);
     let v2 = Vector2::new(x2, y2);
 
+    if is_backfacing(v0, v1, v2) {
+        return;
+    }
+
     let (min, max) = bounding_rect(v0, v1, v2);
 
     let min_x = min.x.max(0.0) as i32;
@@ -81,10 +85,8 @@ pub fn draw_triangle(
 
                 if z < depth_buffer[depth_index] {
                     depth_buffer[depth_index] = z;
-                    frame[pixel_index] = 255;
-                    frame[pixel_index + 1] = 255;
-                    frame[pixel_index + 2] = 255;
-                    frame[pixel_index + 3] = 255;
+                    frame[pixel_index..pixel_index + 4]
+                        .copy_from_slice(u32::MAX.to_le_bytes().as_ref());
                 }
             }
         }
@@ -97,10 +99,14 @@ pub fn transform_to_clip_space(v: &Vector3, mvp: &Matrix4) -> Vector4 {
 }
 
 pub fn clip_to_screen(v_ndc: &Vector4, width: f64, height: f64) -> (f64, f64, f64) {
-    let screen_x = ((v_ndc.x + 1.0) * 0.5 * width);
-    let screen_y = ((1.0 - (v_ndc.y + 1.0) * 0.5) * height);
+    let screen_x = (v_ndc.x + 1.0) * 0.5 * width;
+    let screen_y = (1.0 - (v_ndc.y + 1.0) * 0.5) * height;
 
     (screen_x, screen_y, v_ndc.z)
+}
+
+pub fn is_backfacing(v0: Vector2, v1: Vector2, v2: Vector2) -> bool {
+    edge_function(v0, v1, v2) < 0.0
 }
 
 pub fn outside_ndc_check(v: &Vector4) -> bool {

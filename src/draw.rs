@@ -1,4 +1,7 @@
-use crate::math::{Matrix4, Vector3, Vector4};
+use crate::{
+    math::{Matrix4, Vector3},
+    raster::{clip_to_screen, clip_volume_check, transform_to_clip_space},
+};
 
 pub fn draw_line<T>(
     mut frame: T,
@@ -135,29 +138,4 @@ where
             z1,
         );
     }
-}
-
-pub fn transform_to_clip_space(v: &Vector3, mvp: &Matrix4) -> Vector4 {
-    let v4 = Vector4::from((*v, 1.0));
-    *mvp * v4
-}
-
-pub fn clip_to_screen(v_ndc: &Vector4, width: f64, height: f64) -> (f64, f64, f64) {
-    let screen_x = ((v_ndc.x + 1.0) * 0.5 * width);
-    let screen_y = ((1.0 - (v_ndc.y + 1.0) * 0.5) * height);
-
-    (screen_x, screen_y, v_ndc.z)
-}
-
-pub fn outside_ndc_check(v: &Vector4) -> bool {
-    v.x < -1.0 || v.x > 1.0 || v.y < -1.0 || v.y > 1.0 || v.z < -1.0 || v.z > 1.0
-}
-
-pub fn clip_volume_check(v_clip: &Vector4) -> bool {
-    v_clip.x < -v_clip.w
-        || v_clip.x > v_clip.w
-        || v_clip.y < -v_clip.w
-        || v_clip.y > v_clip.w
-        || v_clip.z < -v_clip.w
-        || v_clip.z > v_clip.w
 }

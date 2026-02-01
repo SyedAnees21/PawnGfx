@@ -2,8 +2,6 @@ mod mesh;
 mod shapes;
 mod triangle;
 
-use std::ops::{Mul, Sub};
-
 pub use mesh::*;
 pub use shapes::*;
 pub use triangle::*;
