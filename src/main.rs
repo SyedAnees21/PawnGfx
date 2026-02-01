@@ -8,10 +8,11 @@ use crate::{
 };
 use core::f64;
 use std::sync::Arc;
-use winit::{event_loop::EventLoopWindowTarget, window::Fullscreen};
+use winit::event_loop::EventLoopWindowTarget;
 
 mod animate;
 mod camera;
+mod color;
 mod draw;
 mod geometry;
 mod input;
@@ -118,7 +119,7 @@ fn handle_window_event(
             let aspect = s_width as f64 / s_height as f64;
 
             let frame = framebuffer.frame_mut();
-            frame.fill(0);
+            frame.fill(77);
             depth_buffer.fill(f64::INFINITY);
 
             let model = Matrix4::rotation_matrix(*rotation);
@@ -126,7 +127,6 @@ fn handle_window_event(
             let projection = Matrix4::perspective_matrix(90.0_f64.to_radians(), aspect, 0.1, 100.0);
             let mvp = projection * view * model;
 
-            // draw::draw_cube(frame, mvp, s_width as f64, s_height as f64);
             raster::draw_call(
                 frame,
                 depth_buffer,

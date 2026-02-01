@@ -1,4 +1,5 @@
 use crate::{
+    color::Color,
     geometry::{Triangles, bounding_rect, edge_function},
     math::{Matrix4, Vector2, Vector3, Vector4},
 };
@@ -65,7 +66,7 @@ pub fn draw_triangle(
     let max_y = max.y.min((h - 1) as f64) as i32;
 
     for y in min_y..=max_y {
-        for x in min_x..max_x {
+        for x in min_x..=max_x {
             let p = Vector2::new(x as f64 + 0.5, y as f64 + 0.5);
 
             {
@@ -84,9 +85,11 @@ pub fn draw_triangle(
                 let pixel_index = (depth_index * 4) as usize;
 
                 if z < depth_buffer[depth_index] {
+                    let color = Color::from_hex("#c19a6b").unwrap();
+
                     depth_buffer[depth_index] = z;
                     frame[pixel_index..pixel_index + 4]
-                        .copy_from_slice(u32::MAX.to_le_bytes().as_ref());
+                        .copy_from_slice(color.to_rgba8().as_slice());
                 }
             }
         }
