@@ -1,4 +1,4 @@
-use crate::{camera, math::Vector3};
+use crate::{math::Vector3, scene::Camera};
 use std::collections::HashSet;
 use winit::{
     event::{ElementState, KeyEvent},
@@ -106,7 +106,7 @@ impl InputState {
         }
     }
 
-    pub fn apply_inputs(&mut self, camera: &mut camera::Camera, rotation: &mut Vector3) {
+    pub fn apply_inputs(&mut self, camera: &mut Camera, rotation: &mut Vector3) {
         let camera_speed = 0.05;
         for key in &self.keys_pressed {
             match key {

@@ -41,7 +41,7 @@ impl Vector2 {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Vector3 {
     pub x: f64,
     pub y: f64,

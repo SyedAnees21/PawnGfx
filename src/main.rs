@@ -1,23 +1,27 @@
 use crate::{
     animate::ProceduralAnimator,
-    camera::Camera,
     draw::{CUBE_TRIS, CUBE_VERTS},
+    engine::Engine,
     geometry::Mesh,
     input::InputState,
     math::{Matrix4, Vector3, lerp},
+    render::Renderer,
+    scene::{Camera, Scene},
 };
 use core::f64;
 use std::sync::Arc;
-use winit::event_loop::EventLoopWindowTarget;
+use winit::{event::Event, event_loop::EventLoopWindowTarget};
 
 mod animate;
-mod camera;
 mod color;
 mod draw;
+mod engine;
 mod geometry;
 mod input;
 mod math;
 mod raster;
+mod render;
+mod scene;
 
 #[cfg(test)]
 mod tests;
@@ -25,77 +29,90 @@ mod tests;
 fn main() {
     let event_loop = winit::event_loop::EventLoop::new().unwrap();
 
-    let window = Arc::new(
-        winit::window::WindowBuilder::new()
-            .with_title("BareGFX")
-            .with_maximized(true)
-            .build(&event_loop)
-            .unwrap(),
-    );
+    let scene = Scene::initialize_default();
+    let renderer = render::initialize_renderer("PawnGFX", 0, 0, true, &event_loop);
+    let input = InputState::default();
 
-    let size = window.inner_size();
-
-    let mut framebuffer = pixels::Pixels::new(
-        size.width,
-        size.height,
-        pixels::SurfaceTexture::new(size.width, size.height, window.clone()),
-    )
-    .unwrap();
-
-    let mut depth_buffer = vec![f64::INFINITY; (size.width * size.height) as usize];
-    // FPS camera
-    let mut camera = Camera::new(Vector3::new(0.0, 0.0, 5.0));
-
-    // Object rotation
-    let mut rotation = Vector3::new(0.0, 0.0, 0.0);
-
-    // input state machine
-    let mut ism = input::InputState::default();
-
-    // Just for a juicy intro to this wireframe demo. Its not a serious
-    // animation system ;)
-    let mut animator =
-        ProceduralAnimator::new(Vector3::new(15.0, 0.0, 10.0), Vector3::new(0.0, 0.0, 5.0));
-
-    // Cube mesh
-    let cube = Mesh::new(CUBE_VERTS.into(), CUBE_TRIS.into());
-    
-    // Directional light
-    let light = Vector3::new(1.0, 1.0, 2.0).normalize();
+    let mut engine = Engine::new(scene, renderer, input);
 
     event_loop
-        .run(move |e, h| match e {
-            winit::event::Event::WindowEvent { event, .. } => handle_window_event(
-                &event,
-                &mut framebuffer,
-                &mut depth_buffer,
-                &cube,
-                light,
-                &mut rotation,
-                &mut camera,
-                &mut ism,
-                h,
-            ),
-            winit::event::Event::AboutToWait => {
-                if !animator.is_complete() {
-                    camera.position = animator.step(0.005);
-                } else {
-                    ism.apply_inputs(&mut camera, &mut rotation);
-                }
-
-                window.request_redraw()
-            }
-            winit::event::Event::DeviceEvent { event, .. } => match event {
-                winit::event::DeviceEvent::MouseMotion { delta } => {
-                    ism.mouse_delta.0 += delta.0;
-                    ism.mouse_delta.1 += delta.1;
-                }
-                _ => {}
-            },
-
-            _ => {}
-        })
+        .run(move |event, handler| engine.start_internal_loop(event, handler))
         .unwrap();
+
+    // let window = Arc::new(
+    //     winit::window::WindowBuilder::new()
+    //         .with_title("BareGFX")
+    //         .with_maximized(true)
+    //         .build(&event_loop)
+    //         .unwrap(),
+    // );
+
+    // let size = window.inner_size();
+
+    // let mut framebuffer = pixels::Pixels::new(
+    //     size.width,
+    //     size.height,
+    //     pixels::SurfaceTexture::new(size.width, size.height, window.clone()),
+    // )
+    // .unwrap();
+
+    // let mut depth_buffer = vec![f64::INFINITY; (size.width * size.height) as usize];
+    // // FPS camera
+    // let mut camera = Camera::new(Vector3::new(0.0, 0.0, 5.0));
+
+    // // Object rotation
+    // let mut rotation = Vector3::new(0.0, 0.0, 0.0);
+
+    // // input state machine
+    // let mut ism = input::InputState::default();
+
+    // // Just for a juicy intro to this wireframe demo. Its not a serious
+    // // animation system ;)
+    // let mut animator =
+    //     ProceduralAnimator::new(Vector3::new(15.0, 0.0, 10.0), Vector3::new(0.0, 0.0, 5.0));
+
+    // // Cube mesh
+    // let cube = Mesh::new(CUBE_VERTS.into(), CUBE_TRIS.into());
+
+    // // Directional light
+    // let light = Vector3::new(1.0, 1.0, 2.0).normalize();
+
+    // event_loop
+    //     .run(move |e, h| {
+    //         let scene = Scene::initialize_default();
+    //         match e {
+    //             winit::event::Event::WindowEvent { event, .. } => handle_window_event(
+    //                 &event,
+    //                 &mut framebuffer,
+    //                 &mut depth_buffer,
+    //                 &cube,
+    //                 light,
+    //                 &mut rotation,
+    //                 &mut camera,
+    //                 &mut ism,
+    //                 h,
+    //             ),
+    //             winit::event::Event::AboutToWait => {
+    //                 if !animator.is_complete() {
+    //                     camera.position = animator.step(0.005);
+    //                 } else {
+    //                     ism.apply_inputs(&mut camera, &mut rotation);
+    //                 }
+
+    //                 window.request_redraw()
+    //             }
+    //             winit::event::Event::DeviceEvent { event, .. } => match event {
+    //                 winit::event::DeviceEvent::MouseMotion { delta } => {
+    //                     ism.mouse_delta.0 += delta.0;
+    //                     ism.mouse_delta.1 += delta.1;
+    //                 }
+    //                 _ => {}
+    //             },
+
+    //             _ => {}
+    //         }
+    //     })
+    //     .unwrap();
 }
 
 fn handle_window_event(
@@ -150,3 +167,5 @@ fn handle_window_event(
         _ => {}
     }
 }
+
+fn executor(event: Event<()>, handler: &EventLoopWindowTarget<()>, camera: Camera) {}

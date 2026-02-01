@@ -12,7 +12,7 @@ pub fn draw_call<F, D>(
     triangles: Triangles,
 ) where
     F: AsMut<[u8]> + ?Sized,
-    D: AsMut<[f64]>,
+    D: AsMut<[f64]> + ?Sized,
 {
     let frame = frame_buffer.as_mut();
     let depth = depth_buffer.as_mut();
