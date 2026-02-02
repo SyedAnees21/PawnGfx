@@ -165,6 +165,18 @@ impl Div<f64> for Vector4 {
     }
 }
 
+impl Mul<f64> for Vector4 {
+    type Output = Vector4;
+    fn mul(self, rhs: f64) -> Self::Output {
+        Vector4 {
+            x: self.x * rhs,
+            y: self.y * rhs,
+            z: self.z * rhs,
+            w: self.w * rhs,
+        }
+    }
+}
+
 impl Vector4 {
     pub fn new(x: f64, y: f64, z: f64, w: f64) -> Self {
         Vector4 { x, y, z, w }

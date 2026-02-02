@@ -29,9 +29,13 @@ pub fn draw_call<F, D>(
             continue;
         }
 
-        let v0_ndc = v0_clip / v0_clip.w;
-        let v1_ndc = v1_clip / v1_clip.w;
-        let v2_ndc = v2_clip / v2_clip.w;
+        let inv_w0 = 1.0 / v0_clip.w;
+        let inv_w1 = 1.0 / v1_clip.w;
+        let inv_w2 = 1.0 / v2_clip.w;
+
+        let v0_ndc = v0_clip * inv_w0;
+        let v1_ndc = v1_clip * inv_w1;
+        let v2_ndc = v2_clip * inv_w2;
 
         let v0 = clip_to_screen(&v0_ndc, w as f64, h as f64);
         let v1 = clip_to_screen(&v1_ndc, w as f64, h as f64);
@@ -75,10 +79,11 @@ pub fn draw_triangle(
 
             {
                 let area = edge_function(v0, v1, v2);
+                let inv_area = 1.0 / area;
 
-                let w0 = edge_function(v1, v2, p) / area;
-                let w1 = edge_function(v2, v0, p) / area;
-                let w2 = edge_function(v0, v1, p) / area;
+                let w0 = edge_function(v1, v2, p) * inv_area;
+                let w1 = edge_function(v2, v0, p) * inv_area;
+                let w2 = edge_function(v0, v1, p) * inv_area;
 
                 if w0 < 0.0 || w1 < 0.0 || w2 < 0.0 {
                     continue;
@@ -93,8 +98,7 @@ pub fn draw_triangle(
                     let color = Color::from_hex("#c19a6b").unwrap() * intensity;
 
                     depth_buffer[depth_index] = z;
-                    frame[pixel_index..pixel_index + 4]
-                        .copy_from_slice(color.to_rgba8().as_slice());
+                    frame[pixel_index..pixel_index + 4].copy_from_slice(&color.to_rgba8());
                 }
             }
         }
