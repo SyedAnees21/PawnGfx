@@ -4,6 +4,7 @@ use winit::{
 };
 
 use crate::{
+    error::PResult,
     input::{self, InputState},
     render::Renderer,
     scene::Scene,
@@ -24,7 +25,11 @@ impl<'a> Engine<'a> {
         }
     }
 
-    pub fn start_internal_loop(&mut self, event: Event<()>, handler: &EventLoopWindowTarget<()>) {
+    pub fn start_internal_loop(
+        &mut self,
+        event: Event<()>,
+        handler: &EventLoopWindowTarget<()>,
+    ) -> PResult<()> {
         match event {
             Event::WindowEvent { event, .. } => handle_internal_events(
                 event,
@@ -32,7 +37,7 @@ impl<'a> Engine<'a> {
                 &mut self.renderer,
                 &mut self.input,
                 handler,
-            ),
+            )?,
             Event::AboutToWait => {
                 let animator = &mut self.scene.animator;
                 let camera = &mut self.scene.camera;
@@ -58,6 +63,8 @@ impl<'a> Engine<'a> {
 
             _ => {}
         }
+
+        Ok(())
     }
 }
 
@@ -67,19 +74,21 @@ fn handle_internal_events<'a>(
     renderer: &mut Renderer<'a>,
     ism: &mut InputState,
     handler: &EventLoopWindowTarget<()>,
-) {
+) -> PResult<()> {
     match event {
         WindowEvent::KeyboardInput { .. } | WindowEvent::MouseInput { .. } => {
             input::read_inputs(ism, &event);
         }
         WindowEvent::Resized(size) => {
-            renderer.resize_buffers(size.width, size.height);
+            renderer.resize_buffers(size.width, size.height)?;
         }
         WindowEvent::RedrawRequested => {
-            renderer.render(scene);
+            renderer.render(scene)?;
             ism.reset();
         }
         WindowEvent::CloseRequested => handler.exit(),
         _ => {}
     }
+
+    Ok(())
 }

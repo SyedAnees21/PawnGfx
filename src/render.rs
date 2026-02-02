@@ -6,7 +6,7 @@ use winit::{
     window::{Window, WindowBuilder},
 };
 
-use crate::{math::Matrix4, raster, scene::Scene};
+use crate::{error::PResult, math::Matrix4, raster, scene::Scene};
 
 const DEFAULT_BG_COLOR: u32 = 77;
 const DEFAULT_DEPTH: f64 = f64::INFINITY;
@@ -18,7 +18,7 @@ pub struct Renderer<'a> {
 }
 
 impl<'a> Renderer<'a> {
-    pub fn render(&mut self, scene: &mut Scene) {
+    pub fn render(&mut self, scene: &mut Scene) -> PResult<()> {
         let win_size = self.get_window().inner_size();
         let aspect = win_size.width as f64 / win_size.height as f64;
 
@@ -43,9 +43,8 @@ impl<'a> Renderer<'a> {
             object.mesh.triangles(),
         );
 
-        self.framebuffer
-            .render()
-            .expect("Failed to render framebuffer");
+        self.framebuffer.render()?;
+        Ok(())
     }
 
     pub fn reset_buffers(&mut self) {
@@ -57,15 +56,13 @@ impl<'a> Renderer<'a> {
         (self.framebuffer.frame_mut(), &mut self.depth_buffer)
     }
 
-    pub fn resize_buffers(&mut self, width: u32, height: u32) {
+    pub fn resize_buffers(&mut self, width: u32, height: u32) -> PResult<()> {
         self.depth_buffer
             .resize((width * height) as usize, DEFAULT_DEPTH);
-        self.framebuffer
-            .resize_surface(width, height)
-            .expect("Failed to resize framebuffer surface");
-        self.framebuffer
-            .resize_buffer(width, height)
-            .expect("Failed to resize framebuffer buffer");
+        self.framebuffer.resize_surface(width, height)?;
+        self.framebuffer.resize_buffer(width, height)?;
+
+        Ok(())
     }
 }
 
@@ -91,7 +88,7 @@ pub fn initialize_renderer<'a, T>(
     window_height: usize,
     maximized: bool,
     target: &EventLoopWindowTarget<()>,
-) -> Renderer<'a>
+) -> PResult<Renderer<'a>>
 where
     T: Into<String>,
 {
@@ -101,8 +98,7 @@ where
         window_builder
             .with_maximized(true)
             .with_title(window_title)
-            .build(target)
-            .unwrap()
+            .build(target)?
     } else {
         window_builder
             .with_inner_size(winit::dpi::LogicalSize::new(
@@ -110,8 +106,7 @@ where
                 window_height as f64,
             ))
             .with_title(window_title)
-            .build(target)
-            .unwrap()
+            .build(target)?
     };
 
     let window = Arc::new(inner);
@@ -121,12 +116,11 @@ where
         size.width,
         size.height,
         SurfaceTexture::new(size.width, size.height, window.clone()),
-    )
-    .unwrap();
+    )?;
 
-    Renderer {
+    Ok(Renderer {
         window,
         framebuffer: frame_buffer,
         depth_buffer,
-    }
+    })
 }
