@@ -27,7 +27,6 @@ pub fn point_inside_triangle() {
     );
 }
 
-
 #[test]
 pub fn colors() {
     let red = hex::decode("ff0000").unwrap();

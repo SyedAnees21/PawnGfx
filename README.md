@@ -5,12 +5,14 @@ The aim is to develop a fast and optimized light weight CPU based software rende
 
 ## Overview
 
-BareGFX is a barebone graphics renderer that implements core 3D graphics concepts including:
+PawnGFX is a barebone graphics renderer that implements core 3D graphics concepts including:
 - Software-based rasterization
 - Camera system with perspective projection
 - 3D transformations (rotation, translation, scaling)
 - Wireframe rendering of 3D objects
 - User input handling for object and camera control
+
+For update features list refer to [features](./FEATURES.md)
 
 ## Features
 
@@ -21,9 +23,6 @@ BareGFX is a barebone graphics renderer that implements core 3D graphics concept
 - **Depth Management**: Depth buffer for proper rendering
 
 ## Building & Running
-
-### Prerequisites
-- Rust 1.70+
 
 ### Build
 ```bash
@@ -37,22 +36,7 @@ cargo run --release
 
 ## Controls
 
-- **W/A/S/D**: Move camera forward/left/backward/right
+- **W/A/S/D/Q/E**: Move camera (forward, back, left, right, up, down)
 - **Arrow Keys**: Rotate cube (↑/↓ for X-axis, ←/→ for Y-axis)
+- **Right client + Mouse drag**: Camera rotation
 
-## Project Structure
-
-- `src/main.rs` - Entry point and event loop
-- `src/camera.rs` - Camera implementation
-- `src/draw.rs` - Rendering functions
-- `src/input.rs` - Input handling
-- `src/math/` - Vector and matrix math utilities
-
-## Dependencies
-
-- `winit` - Window and event handling
-- `pixels` - Framebuffer management
-
-## Current State
-
-Currently renders a wireframe cube with interactive camera and object rotation. The foundation is laid for expanding to more complex geometries and rendering techniques.

@@ -1,7 +1,7 @@
-use crate::{camera, math::Vector3};
+use crate::{math::Vector3, scene::Camera};
 use std::collections::HashSet;
 use winit::{
-    event::{ElementState, KeyEvent},
+    event::{ElementState, KeyEvent, MouseButton, WindowEvent},
     keyboard::PhysicalKey,
 };
 
@@ -81,32 +81,28 @@ impl InputState {
         };
 
         match event.state {
-            winit::event::ElementState::Pressed => {
+            ElementState::Pressed => {
                 self.keys_pressed.insert(key);
             }
-            winit::event::ElementState::Released => {
+            ElementState::Released => {
                 self.keys_pressed.remove(&key);
             }
         }
     }
 
-    pub fn process_mouse_input(
-        &mut self,
-        state: &ElementState,
-        button: &winit::event::MouseButton,
-    ) {
+    pub fn process_mouse_input(&mut self, state: &ElementState, button: &MouseButton) {
         match button {
-            winit::event::MouseButton::Left => {
-                self.mouse_left = *state == winit::event::ElementState::Pressed;
+            MouseButton::Left => {
+                self.mouse_left = *state == ElementState::Pressed;
             }
-            winit::event::MouseButton::Right => {
-                self.mouse_right = *state == winit::event::ElementState::Pressed;
+            MouseButton::Right => {
+                self.mouse_right = *state == ElementState::Pressed;
             }
             _ => {}
         }
     }
 
-    pub fn apply_inputs(&mut self, camera: &mut camera::Camera, rotation: &mut Vector3) {
+    pub fn apply_inputs(&mut self, camera: &mut Camera, rotation: &mut Vector3) {
         let camera_speed = 0.05;
         for key in &self.keys_pressed {
             match key {
@@ -131,19 +127,17 @@ impl InputState {
     }
 }
 
-pub fn read_inputs(ism: &mut InputState, event: &winit::event::WindowEvent) {
+pub fn read_inputs(ism: &mut InputState, event: &WindowEvent) {
     match event {
-        winit::event::WindowEvent::KeyboardInput { event, .. } => {
+        WindowEvent::KeyboardInput { event, .. } => {
             ism.process_keyboard_input(event);
         }
-        winit::event::WindowEvent::CursorMoved { position, .. } => {
+        WindowEvent::CursorMoved { position, .. } => {
             ism.mouse_delta.0 += position.x - ism.mouse_position.0;
             ism.mouse_delta.1 += position.y - ism.mouse_position.1;
             ism.mouse_position = (position.x, position.y);
         }
-        winit::event::WindowEvent::MouseInput { state, button, .. } => {
-            ism.process_mouse_input(state, button)
-        }
+        WindowEvent::MouseInput { state, button, .. } => ism.process_mouse_input(state, button),
         _ => {}
     }
 }

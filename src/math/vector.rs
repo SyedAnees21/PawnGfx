@@ -41,7 +41,7 @@ impl Vector2 {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Vector3 {
     pub x: f64,
     pub y: f64,
@@ -161,6 +161,18 @@ impl Div<f64> for Vector4 {
             y: self.y / scalar,
             z: self.z / scalar,
             w: self.w / scalar,
+        }
+    }
+}
+
+impl Mul<f64> for Vector4 {
+    type Output = Vector4;
+    fn mul(self, rhs: f64) -> Self::Output {
+        Vector4 {
+            x: self.x * rhs,
+            y: self.y * rhs,
+            z: self.z * rhs,
+            w: self.w * rhs,
         }
     }
 }
