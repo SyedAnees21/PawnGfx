@@ -97,9 +97,13 @@ pub fn draw_call<F, D>(
         let inv_w1 = 1.0 / v1_clip.w;
         let inv_w2 = 1.0 / v2_clip.w;
 
-        let v0_ndc = v0_clip * inv_w0;
-        let v1_ndc = v1_clip * inv_w1;
-        let v2_ndc = v2_clip * inv_w2;
+        let mut v0_ndc = v0_clip * inv_w0;
+        let mut v1_ndc = v1_clip * inv_w1;
+        let mut v2_ndc = v2_clip * inv_w2;
+
+        v0_ndc.w = inv_w0;
+        v1_ndc.w = inv_w1;
+        v2_ndc.w = inv_w2;
 
         let v0 = clip_to_screen(&v0_ndc, w as f64, h as f64);
         let v1 = clip_to_screen(&v1_ndc, w as f64, h as f64);
@@ -116,9 +120,9 @@ pub fn draw_triangle(
     h: i32,
     light: Vector3,
     face_normal: Vector3,
-    (v0, z0): (Vector2, f64),
-    (v1, z1): (Vector2, f64),
-    (v2, z2): (Vector2, f64),
+    (v0, z0, inv_w0): (Vector2, f64, f64),
+    (v1, z1, inv_w1): (Vector2, f64, f64),
+    (v2, z2, inv_w2): (Vector2, f64, f64),
 ) {
     let frame = frame_buffer.as_mut();
 
@@ -149,17 +153,23 @@ pub fn draw_triangle(
                     continue;
                 }
 
-                let z = w0 * z0 + w1 * z1 + w2 * z2;
+                // Perspective correction interpolation
+                let z_prime = w0 * z0 + w1 * z1 + w2 * z2;
+                let inv_w = w0 * inv_w0 + w1 * inv_w1 + w2 * inv_w2;
+                let z = z_prime / inv_w;
+
                 let depth_index = (y * w + x) as usize;
-                let pixel_index = (depth_index * 4) as usize;
 
-                if z < depth_buffer[depth_index] {
-                    let intensity = face_normal.normalize().dot(&light).max(0.0);
-                    let color = Color::WHITE * intensity;
-
-                    depth_buffer[depth_index] = z;
-                    frame[pixel_index..pixel_index + 4].copy_from_slice(&color.to_rgba8());
+                if z >= depth_buffer[depth_index] {
+                    continue;
                 }
+
+                let pixel_index = (depth_index * 4) as usize;
+                let intensity = face_normal.normalize().dot(&light).max(0.0);
+                let color = Color::WHITE * intensity;
+
+                depth_buffer[depth_index] = z;
+                frame[pixel_index..pixel_index + 4].copy_from_slice(&color.to_rgba8());
             }
         }
     }
@@ -170,11 +180,11 @@ pub fn transform_to_clip_space(v: Vector3, mvp: Matrix4) -> Vector4 {
     mvp * v4
 }
 
-pub fn clip_to_screen(v_ndc: &Vector4, width: f64, height: f64) -> (Vector2, f64) {
+pub fn clip_to_screen(v_ndc: &Vector4, width: f64, height: f64) -> (Vector2, f64, f64) {
     let screen_x = (v_ndc.x + 1.0) * 0.5 * width;
     let screen_y = (1.0 - (v_ndc.y + 1.0) * 0.5) * height;
 
-    (Vector2::new(screen_x, screen_y), v_ndc.z)
+    (Vector2::new(screen_x, screen_y), v_ndc.z * v_ndc.w, v_ndc.w)
 }
 
 pub fn is_backfacing(v0: Vector2, v1: Vector2, v2: Vector2) -> bool {
