@@ -52,7 +52,7 @@ impl<'a> Renderer<'a> {
             depth_buffer,
             global_uniforms,
             scene.light,
-            scene.object.mesh.triangles(),
+            scene.object.mesh.iter_triangles(),
         );
 
         self.framebuffer.render()?;

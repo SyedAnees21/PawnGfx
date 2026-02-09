@@ -12,6 +12,7 @@ mod raster;
 mod render;
 mod scene;
 mod shaders;
+mod loaders;
 
 #[cfg(test)]
 mod tests;

@@ -9,27 +9,55 @@ pub struct Triangles<'a> {
 }
 
 impl Iterator for Triangles<'_> {
-    type Item = (Vector3, Vector3, Vector3);
+    type Item = ([Vector3; 3], Option<[Vector3; 3]>, Option<[Vector2; 3]>);
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.counter + 2 >= self.mesh.indices.len() {
             return None;
         }
 
-        let (idx0, idx1, idx2) = (
-            self.mesh.indices[self.counter],
-            self.mesh.indices[self.counter + 1],
-            self.mesh.indices[self.counter + 2],
+        let (v0, v1, v2) = (
+            self.mesh.indices.v[self.counter],
+            self.mesh.indices.v[self.counter + 1],
+            self.mesh.indices.v[self.counter + 2],
         );
 
-        let vtcs = (
-            self.mesh.vertices[idx0],
-            self.mesh.vertices[idx1],
-            self.mesh.vertices[idx2],
-        );
+        let v = [
+            self.mesh.vertices[v0],
+            self.mesh.vertices[v1],
+            self.mesh.vertices[v2],
+        ];
+
+        let n = if self.mesh.has_normals() {
+            let (n0, n1, n2) = (
+                self.mesh.indices.n[self.counter],
+                self.mesh.indices.n[self.counter + 1],
+                self.mesh.indices.n[self.counter + 2],
+            );
+
+            Some([
+                self.mesh.normals[n0],
+                self.mesh.normals[n1],
+                self.mesh.normals[n2],
+            ])
+        } else {
+            None
+        };
+
+        let uv = if self.mesh.has_uv() {
+            let (n0, n1, n2) = (
+                self.mesh.indices.t[self.counter],
+                self.mesh.indices.t[self.counter + 1],
+                self.mesh.indices.t[self.counter + 2],
+            );
+
+            Some([self.mesh.uv[n0], self.mesh.uv[n1], self.mesh.uv[n2]])
+        } else {
+            None
+        };
 
         self.counter += 3;
-        Some(vtcs)
+        Some((v, n, uv))
     }
 }
 

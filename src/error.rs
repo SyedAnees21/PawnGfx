@@ -1,3 +1,8 @@
+use std::{
+    io,
+    num::{ParseFloatError, ParseIntError},
+};
+
 use thiserror::Error;
 use winit::error::{EventLoopError, OsError};
 
@@ -13,6 +18,9 @@ pub enum PError {
 
     #[error("Event loop error: {0}")]
     EventLoop(#[from] EventLoopError),
+
+    #[error("Error occured while asset loading: {0}")]
+    Loader(#[from] FileError),
 }
 
 #[derive(Debug, Error)]
@@ -24,6 +32,24 @@ pub enum BufferError {
     Resize(#[from] pixels::TextureError),
 }
 
+#[derive(Debug, Error)]
+pub enum FileError {
+    #[error("Invalid file provided")]
+    Invalid,
+
+    #[error("Wrong file: {0}")]
+    WrongFile(String),
+
+    #[error("IO error occured: {0}")]
+    IOError(#[from] io::Error),
+
+    #[error("Error occured while parsing float value: {0}")]
+    Parse(#[from] ParseFloatError),
+
+    #[error("Error occured while parsing Int value: {0}")]
+    ParseInt(#[from] ParseIntError),
+}
+
 impl From<pixels::TextureError> for PError {
     fn from(value: pixels::TextureError) -> Self {
         value.into()
@@ -32,6 +58,24 @@ impl From<pixels::TextureError> for PError {
 
 impl From<pixels::Error> for PError {
     fn from(value: pixels::Error) -> Self {
+        value.into()
+    }
+}
+
+impl From<io::Error> for PError {
+    fn from(value: io::Error) -> Self {
+        value.into()
+    }
+}
+
+impl From<ParseFloatError> for PError {
+    fn from(value: ParseFloatError) -> Self {
+        value.into()
+    }
+}
+
+impl From<ParseIntError> for PError {
+    fn from(value: ParseIntError) -> Self {
         value.into()
     }
 }

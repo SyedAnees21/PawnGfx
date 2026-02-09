@@ -25,7 +25,7 @@ impl Default for Scene {
     fn default() -> Self {
         let camera = Camera::new(Vector3::new(0.0, 0.0, 5.0));
 
-        let cube_mesh = Mesh::new(CUBE_VERTS.into(), CUBE_TRIS.into(), Normals::default());
+        let cube_mesh = Mesh::from_vertices_faces(CUBE_VERTS.into(), CUBE_TRIS.into());
         let object = Object::new(cube_mesh);
 
         let light = Vector3::new(1.0, 1.0, 2.0).normalize();

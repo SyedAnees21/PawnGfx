@@ -44,8 +44,8 @@ pub struct Cube(pub Object);
 
 impl Cube {
     pub fn new(size: f64) -> Self {
-        let c_mesh = Mesh::new(CUBE_VERTS.into(), CUBE_TRIS.into(), Normals::default());
-        
+        let c_mesh = Mesh::from_vertices_faces(CUBE_VERTS.into(), CUBE_TRIS.into());
+
         let transform = Transform {
             scale: Vector3::splat(size),
             ..Default::default()
