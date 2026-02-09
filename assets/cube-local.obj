@@ -1,0 +1,58 @@
+# This cube object file is the same cube
+# that I locally created in code. Now that I 
+# have exported it to test the object parsing 
+# and later on texture mapping.
+#
+# Centered at (0,0,0), Size 2.0
+
+# Vertices (v) - Matching CUBE_VERTS exactly
+v -1.0 -1.0 -1.0
+v  1.0 -1.0 -1.0
+v  1.0  1.0 -1.0
+v -1.0  1.0 -1.0
+v -1.0 -1.0  1.0
+v  1.0 -1.0  1.0
+v  1.0  1.0  1.0
+v -1.0  1.0  1.0
+
+# Texture Coordinates (vt) 
+# Standard 0-1 range to cover a full face
+vt 0.0 0.0
+vt 1.0 0.0
+vt 1.0 1.0
+vt 0.0 1.0
+
+# Normals (vn)
+vn  0.0  0.0 -1.0  # Front
+vn  0.0  0.0  1.0  # Back
+vn -1.0  0.0  0.0  # Left
+vn  1.0  0.0  0.0  # Right
+vn  0.0  1.0  0.0  # Top
+vn  0.0 -1.0  0.0  # Bottom
+
+# Faces (f) - format is v/vt/vn
+# Matches CUBE_TRIS winding order
+
+# FRONT (-Z)
+f 1/1/1 3/3/1 2/2/1
+f 1/1/1 4/4/1 3/3/1
+
+# BACK (+Z)
+f 5/1/2 6/2/2 7/3/2
+f 5/1/2 7/3/2 8/4/2
+
+# LEFT (-X)
+f 1/1/3 8/3/3 4/2/3
+f 1/1/3 5/4/3 8/3/3
+
+# RIGHT (+X)
+f 2/1/4 3/2/4 7/3/4
+f 2/1/4 7/3/4 6/4/4
+
+# TOP (+Y)
+f 4/1/5 8/2/5 7/3/5
+f 4/1/5 7/3/5 3/4/5
+
+# BOTTOM (-Y)
+f 1/1/6 2/2/6 6/3/6
+f 1/1/6 6/3/6 5/4/6
