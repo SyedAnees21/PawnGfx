@@ -2,32 +2,52 @@ use crate::{
     color::Color,
     draw::Face_NORMALS,
     geometry::{Triangles, bounding_rect, edge_function},
-    math::{Matrix4, Vector2, Vector3, Vector4},
+    math::{AffineMatrices, Matrix4, Vector2, Vector3, Vector4},
+    shaders::{self, GlobalUniforms, HasUniforms},
 };
 
-pub fn draw_call<F, D>(
+pub fn draw_call_generic<F, D, VS, FS, U>(
     frame_buffer: &mut F,
     depth_buffer: &mut D,
+    v_shader: VS,
+    f_shader: FS,
+    uniforms: U,
     w: i32,
     h: i32,
     light: Vector3,
     mvp: Matrix4,
     triangles: Triangles,
+    normals: Vec<Vector3>,
 ) where
     F: AsMut<[u8]> + ?Sized,
     D: AsMut<[f64]> + ?Sized,
+    VS: shaders::Vertex<Uniforms = U>,
+    FS: shaders::Fragment<In = VS::Out>,
+    U: HasUniforms + Copy,
 {
     let frame = frame_buffer.as_mut();
     let depth = depth_buffer.as_mut();
 
     for (idx, (v0, v1, v2)) in triangles.enumerate() {
-        let v0_clip = transform_to_clip_space(&v0, &mvp);
-        let v1_clip = transform_to_clip_space(&v1, &mvp);
-        let v2_clip = transform_to_clip_space(&v2, &mvp);
+        let a = v_shader.process_vertices(v0, v1, v2, uniforms);
+        let v0_clip = transform_to_clip_space(v0, mvp);
+        let v1_clip = transform_to_clip_space(v1, mvp);
+        let v2_clip = transform_to_clip_space(v2, mvp);
 
         if v0_clip.w <= 0.0 || v1_clip.w <= 0.0 || v2_clip.w <= 0.0 {
             continue;
         }
+
+        let nf = normals[idx / 2];
+        let n0 = (v0.normalize() + nf).normalize();
+        let n1 = (v1.normalize() + nf).normalize();
+        let n2 = (v2.normalize() + nf).normalize();
+
+        let l0 = light.dot(&n0);
+        let l1 = light.dot(&n1);
+        let l2 = light.dot(&n2);
+
+        let lv = Vector3::new(l0, l1, l2);
 
         let inv_w0 = 1.0 / v0_clip.w;
         let inv_w1 = 1.0 / v1_clip.w;
@@ -41,7 +61,51 @@ pub fn draw_call<F, D>(
         let v1 = clip_to_screen(&v1_ndc, w as f64, h as f64);
         let v2 = clip_to_screen(&v2_ndc, w as f64, h as f64);
 
-        draw_triangle(frame, depth, w, h, light, Face_NORMALS[idx / 2], v0, v1, v2);
+        draw_triangle(frame, depth, w, h, light, normals[idx / 2], v0, v1, v2);
+    }
+}
+
+pub fn draw_call<F, D>(
+    frame_buffer: &mut F,
+    depth_buffer: &mut D,
+    global_uniforms: GlobalUniforms,
+    light: Vector3,
+    triangles: Triangles,
+) where
+    F: AsMut<[u8]> + ?Sized,
+    D: AsMut<[f64]> + ?Sized,
+{
+    let frame = frame_buffer.as_mut();
+    let depth = depth_buffer.as_mut();
+
+    let w = global_uniforms.screen_width as i32;
+    let h = global_uniforms.screen_height as i32;
+
+    for (idx, (v0, v1, v2)) in triangles.enumerate() {
+        let v0_clip = transform_to_clip_space(v0, global_uniforms.uniforms.mvp);
+        let v1_clip = transform_to_clip_space(v1, global_uniforms.uniforms.mvp);
+        let v2_clip = transform_to_clip_space(v2, global_uniforms.uniforms.mvp);
+
+        if v0_clip.w <= 0.0 || v1_clip.w <= 0.0 || v2_clip.w <= 0.0 {
+            continue;
+        }
+
+        let face_normal =
+            (global_uniforms.uniforms.normal * Vector4::from((Face_NORMALS[idx / 2], 0.0))).xyz();
+
+        let inv_w0 = 1.0 / v0_clip.w;
+        let inv_w1 = 1.0 / v1_clip.w;
+        let inv_w2 = 1.0 / v2_clip.w;
+
+        let v0_ndc = v0_clip * inv_w0;
+        let v1_ndc = v1_clip * inv_w1;
+        let v2_ndc = v2_clip * inv_w2;
+
+        let v0 = clip_to_screen(&v0_ndc, w as f64, h as f64);
+        let v1 = clip_to_screen(&v1_ndc, w as f64, h as f64);
+        let v2 = clip_to_screen(&v2_ndc, w as f64, h as f64);
+
+        draw_triangle(frame, depth, w, h, light, face_normal, v0, v1, v2);
     }
 }
 
@@ -52,15 +116,11 @@ pub fn draw_triangle(
     h: i32,
     light: Vector3,
     face_normal: Vector3,
-    (x0, y0, z0): (f64, f64, f64),
-    (x1, y1, z1): (f64, f64, f64),
-    (x2, y2, z2): (f64, f64, f64),
+    (v0, z0): (Vector2, f64),
+    (v1, z1): (Vector2, f64),
+    (v2, z2): (Vector2, f64),
 ) {
     let frame = frame_buffer.as_mut();
-
-    let v0 = Vector2::new(x0, y0);
-    let v1 = Vector2::new(x1, y1);
-    let v2 = Vector2::new(x2, y2);
 
     if is_backfacing(v0, v1, v2) {
         return;
@@ -95,7 +155,7 @@ pub fn draw_triangle(
 
                 if z < depth_buffer[depth_index] {
                     let intensity = face_normal.normalize().dot(&light).max(0.0);
-                    let color = Color::from_hex("#c19a6b").unwrap() * intensity;
+                    let color = Color::WHITE * intensity;
 
                     depth_buffer[depth_index] = z;
                     frame[pixel_index..pixel_index + 4].copy_from_slice(&color.to_rgba8());
@@ -105,16 +165,16 @@ pub fn draw_triangle(
     }
 }
 
-pub fn transform_to_clip_space(v: &Vector3, mvp: &Matrix4) -> Vector4 {
-    let v4 = Vector4::from((*v, 1.0));
-    *mvp * v4
+pub fn transform_to_clip_space(v: Vector3, mvp: Matrix4) -> Vector4 {
+    let v4 = Vector4::from((v, 1.0));
+    mvp * v4
 }
 
-pub fn clip_to_screen(v_ndc: &Vector4, width: f64, height: f64) -> (f64, f64, f64) {
+pub fn clip_to_screen(v_ndc: &Vector4, width: f64, height: f64) -> (Vector2, f64) {
     let screen_x = (v_ndc.x + 1.0) * 0.5 * width;
     let screen_y = (1.0 - (v_ndc.y + 1.0) * 0.5) * height;
 
-    (screen_x, screen_y, v_ndc.z)
+    (Vector2::new(screen_x, screen_y), v_ndc.z)
 }
 
 pub fn is_backfacing(v0: Vector2, v1: Vector2, v2: Vector2) -> bool {

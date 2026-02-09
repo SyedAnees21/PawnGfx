@@ -70,6 +70,10 @@ impl Vector3 {
         z: 1.0,
     };
 
+    pub const fn splat(n: f64) -> Self {
+        Self { x: n, y: n, z: n }
+    }
+
     pub const fn new(x: f64, y: f64, z: f64) -> Self {
         Vector3 { x, y, z }
     }
@@ -96,6 +100,13 @@ impl Vector3 {
             x: self.y * other.z - self.z * other.y,
             y: self.z * other.x - self.x * other.z,
             z: self.x * other.y - self.y * other.x,
+        }
+    }
+
+    pub fn xy(&self) -> Vector2 {
+        Vector2 {
+            x: self.x,
+            y: self.y,
         }
     }
 }
@@ -144,7 +155,7 @@ impl AddAssign for Vector3 {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Vector4 {
     pub x: f64,
     pub y: f64,
@@ -152,6 +163,11 @@ pub struct Vector4 {
     pub w: f64,
 }
 
+impl Vector4 {
+    pub fn xyz(&self) -> Vector3 {
+        Vector3 { x: self.x, y: self.y, z: self.z }
+    }
+}
 impl Div<f64> for Vector4 {
     type Output = Vector4;
 

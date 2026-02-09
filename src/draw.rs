@@ -107,44 +107,44 @@ pub const Face_NORMALS: [Vector3; 6] = [
     Vector3::new(0.0, -1.0, 0.0), // BOTTOM
 ];
 
-pub fn draw_cube<T>(mut frame: T, mvp: Matrix4, width: f64, height: f64)
-where
-    T: AsMut<[u8]>,
-{
-    let frame = frame.as_mut();
-    let mut depth_buffer = vec![f64::INFINITY; (width * height) as usize];
+// pub fn draw_cube<T>(mut frame: T, mvp: Matrix4, width: f64, height: f64)
+// where
+//     T: AsMut<[u8]>,
+// {
+//     let frame = frame.as_mut();
+//     let mut depth_buffer = vec![f64::INFINITY; (width * height) as usize];
 
-    for edge in &EDGES {
-        let (start, end) = *edge;
+//     for edge in &EDGES {
+//         let (start, end) = *edge;
 
-        let v0_clip = transform_to_clip_space(&CUBE_VERTS[start], &mvp);
-        let v1_clip = transform_to_clip_space(&CUBE_VERTS[end], &mvp);
+//         let v0_clip = transform_to_clip_space(&CUBE_VERTS[start], &mvp);
+//         let v1_clip = transform_to_clip_space(&CUBE_VERTS[end], &mvp);
 
-        if v0_clip.w <= 0.0
-            && v1_clip.w <= 0.0
-            && clip_volume_check(&v0_clip)
-            && clip_volume_check(&v1_clip)
-        {
-            continue;
-        }
+//         if v0_clip.w <= 0.0
+//             && v1_clip.w <= 0.0
+//             && clip_volume_check(&v0_clip)
+//             && clip_volume_check(&v1_clip)
+//         {
+//             continue;
+//         }
 
-        let v0_ndc = v0_clip / v0_clip.w;
-        let v1_ndc = v1_clip / v1_clip.w;
+//         let v0_ndc = v0_clip / v0_clip.w;
+//         let v1_ndc = v1_clip / v1_clip.w;
 
-        let (x0, y0, z0) = clip_to_screen(&v0_ndc, width, height);
-        let (x1, y1, z1) = clip_to_screen(&v1_ndc, width, height);
+//         let (x0, y0, z0) = clip_to_screen(&v0_ndc, width, height);
+//         let (x1, y1, z1) = clip_to_screen(&v1_ndc, width, height);
 
-        draw_line(
-            &mut *frame,
-            &mut depth_buffer,
-            width as i32,
-            height as i32,
-            x0 as i32,
-            y0 as i32,
-            z0,
-            x1 as i32,
-            y1 as i32,
-            z1,
-        );
-    }
-}
+//         draw_line(
+//             &mut *frame,
+//             &mut depth_buffer,
+//             width as i32,
+//             height as i32,
+//             x0 as i32,
+//             y0 as i32,
+//             z0,
+//             x1 as i32,
+//             y1 as i32,
+//             z1,
+//         );
+//     }
+// }
