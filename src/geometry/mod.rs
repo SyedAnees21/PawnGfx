@@ -6,7 +6,23 @@ pub use mesh::*;
 pub use shapes::*;
 pub use triangle::*;
 
-use crate::math::Vector2;
+use crate::math::{Vector2, Vector3};
+
+pub type Idx = usize;
+
+/// Vertex Index
+pub type VIdx = usize;
+/// Vertex Normal Index
+pub type NIdx = usize;
+/// Vertex Texture ( uv ) Index
+pub type TIdx = usize;
+
+pub type Vertices = Vec<Vector3>;
+pub type Normals = Vec<Vector3>;
+
+pub type UV = Vector2;
+pub type Vertex = Vector3;
+pub type Normal = Vector3;
 
 pub fn edge_function(v0: Vector2, v1: Vector2, p: Vector2) -> f64 {
     (p.x - v0.x) * (v1.y - v0.y) - (p.y - v0.y) * (v1.x - v0.x)

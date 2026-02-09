@@ -29,7 +29,7 @@ impl Default for Transform {
     fn default() -> Self {
         Self {
             scale: Vector3::splat(1.0),
-            position: Vector3::default(),
+            position: Vector3::splat(0.0),
             rotation: Vector3::default(),
         }
     }

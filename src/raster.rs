@@ -6,64 +6,64 @@ use crate::{
     shaders::{self, GlobalUniforms, HasUniforms},
 };
 
-pub fn draw_call_generic<F, D, VS, FS, U>(
-    frame_buffer: &mut F,
-    depth_buffer: &mut D,
-    v_shader: VS,
-    f_shader: FS,
-    uniforms: U,
-    w: i32,
-    h: i32,
-    light: Vector3,
-    mvp: Matrix4,
-    triangles: Triangles,
-    normals: Vec<Vector3>,
-) where
-    F: AsMut<[u8]> + ?Sized,
-    D: AsMut<[f64]> + ?Sized,
-    VS: shaders::Vertex<Uniforms = U>,
-    FS: shaders::Fragment<In = VS::Out>,
-    U: HasUniforms + Copy,
-{
-    let frame = frame_buffer.as_mut();
-    let depth = depth_buffer.as_mut();
+// pub fn draw_call_generic<F, D, VS, FS, U>(
+//     frame_buffer: &mut F,
+//     depth_buffer: &mut D,
+//     v_shader: VS,
+//     f_shader: FS,
+//     uniforms: U,
+//     w: i32,
+//     h: i32,
+//     light: Vector3,
+//     mvp: Matrix4,
+//     triangles: Triangles,
+//     normals: Vec<Vector3>,
+// ) where
+//     F: AsMut<[u8]> + ?Sized,
+//     D: AsMut<[f64]> + ?Sized,
+//     VS: shaders::Vertex<Uniforms = U>,
+//     FS: shaders::Fragment<In = VS::Out>,
+//     U: HasUniforms + Copy,
+// {
+//     let frame = frame_buffer.as_mut();
+//     let depth = depth_buffer.as_mut();
 
-    for (idx, (v0, v1, v2)) in triangles.enumerate() {
-        let a = v_shader.process_vertices(v0, v1, v2, uniforms);
-        let v0_clip = transform_to_clip_space(v0, mvp);
-        let v1_clip = transform_to_clip_space(v1, mvp);
-        let v2_clip = transform_to_clip_space(v2, mvp);
+//     for (idx, (v0, v1, v2)) in triangles.enumerate() {
+//         let a = v_shader.process_vertices(v0, v1, v2, uniforms);
+//         let v0_clip = transform_to_clip_space(v0, mvp);
+//         let v1_clip = transform_to_clip_space(v1, mvp);
+//         let v2_clip = transform_to_clip_space(v2, mvp);
 
-        if v0_clip.w <= 0.0 || v1_clip.w <= 0.0 || v2_clip.w <= 0.0 {
-            continue;
-        }
+//         if v0_clip.w <= 0.0 || v1_clip.w <= 0.0 || v2_clip.w <= 0.0 {
+//             continue;
+//         }
 
-        let nf = normals[idx / 2];
-        let n0 = (v0.normalize() + nf).normalize();
-        let n1 = (v1.normalize() + nf).normalize();
-        let n2 = (v2.normalize() + nf).normalize();
+//         let nf = normals[idx / 2];
+//         let n0 = (v0.normalize() + nf).normalize();
+//         let n1 = (v1.normalize() + nf).normalize();
+//         let n2 = (v2.normalize() + nf).normalize();
 
-        let l0 = light.dot(&n0);
-        let l1 = light.dot(&n1);
-        let l2 = light.dot(&n2);
+//         let l0 = light.dot(&n0);
+//         let l1 = light.dot(&n1);
+//         let l2 = light.dot(&n2);
 
-        let lv = Vector3::new(l0, l1, l2);
+//         let lv = Vector3::new(l0, l1, l2);
 
-        let inv_w0 = 1.0 / v0_clip.w;
-        let inv_w1 = 1.0 / v1_clip.w;
-        let inv_w2 = 1.0 / v2_clip.w;
+//         let inv_w0 = 1.0 / v0_clip.w;
+//         let inv_w1 = 1.0 / v1_clip.w;
+//         let inv_w2 = 1.0 / v2_clip.w;
 
-        let v0_ndc = v0_clip * inv_w0;
-        let v1_ndc = v1_clip * inv_w1;
-        let v2_ndc = v2_clip * inv_w2;
+//         let v0_ndc = v0_clip * inv_w0;
+//         let v1_ndc = v1_clip * inv_w1;
+//         let v2_ndc = v2_clip * inv_w2;
 
-        let v0 = clip_to_screen(&v0_ndc, w as f64, h as f64);
-        let v1 = clip_to_screen(&v1_ndc, w as f64, h as f64);
-        let v2 = clip_to_screen(&v2_ndc, w as f64, h as f64);
+//         let v0 = clip_to_screen(&v0_ndc, w as f64, h as f64);
+//         let v1 = clip_to_screen(&v1_ndc, w as f64, h as f64);
+//         let v2 = clip_to_screen(&v2_ndc, w as f64, h as f64);
 
-        draw_triangle(frame, depth, w, h, light, normals[idx / 2], v0, v1, v2);
-    }
-}
+//         draw_triangle(frame, depth, w, h, light, normals[idx / 2], v0, v1, v2);
+//     }
+// }
 
 pub fn draw_call<F, D>(
     frame_buffer: &mut F,
@@ -81,7 +81,9 @@ pub fn draw_call<F, D>(
     let w = global_uniforms.screen_width as i32;
     let h = global_uniforms.screen_height as i32;
 
-    for (idx, (v0, v1, v2)) in triangles.enumerate() {
+    for (idx, (v, n, _)) in triangles.enumerate() {
+        let [v0, v1, v2] = v;
+
         let v0_clip = transform_to_clip_space(v0, global_uniforms.uniforms.mvp);
         let v1_clip = transform_to_clip_space(v1, global_uniforms.uniforms.mvp);
         let v2_clip = transform_to_clip_space(v2, global_uniforms.uniforms.mvp);
@@ -90,8 +92,9 @@ pub fn draw_call<F, D>(
             continue;
         }
 
-        let face_normal =
-            (global_uniforms.uniforms.normal * Vector4::from((Face_NORMALS[idx / 2], 0.0))).xyz();
+        let [n1, _, _] = n.unwrap();
+
+        let face_normal = (global_uniforms.uniforms.normal * Vector4::from((n1, 0.0))).xyz();
 
         let inv_w0 = 1.0 / v0_clip.w;
         let inv_w1 = 1.0 / v1_clip.w;
