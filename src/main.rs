@@ -11,6 +11,7 @@ mod math;
 mod raster;
 mod render;
 mod scene;
+mod shaders;
 
 #[cfg(test)]
 mod tests;

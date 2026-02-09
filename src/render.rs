@@ -6,7 +6,14 @@ use winit::{
     window::{Window, WindowBuilder},
 };
 
-use crate::{error::PResult, math::Matrix4, raster, scene::Scene};
+use crate::{
+    draw::Face_NORMALS,
+    error::PResult,
+    math::{AffineMatrices, Matrix4, Vector4},
+    raster,
+    scene::Scene,
+    shaders::GlobalUniforms,
+};
 
 const DEFAULT_BG_COLOR: u32 = 77;
 const DEFAULT_DEPTH: f64 = f64::INFINITY;
@@ -26,21 +33,26 @@ impl<'a> Renderer<'a> {
 
         let (frame_buffer, depth_buffer) = self.get_buffers();
 
-        let object = &scene.object;
+        let (scale, position, rotation) = scene.object.get_transforms_props();
 
-        let model = Matrix4::rotation_matrix(object.transform.rotation);
+        let model = Matrix4::from_transforms(position, scale, rotation);
         let view = scene.camera.get_view_matrix();
         let projection = Matrix4::perspective_matrix(90.0_f64.to_radians(), aspect, 0.1, 100.0);
-        let mvp = projection * view * model;
+
+        let affine = AffineMatrices::from_mvp(model, view, projection);
+
+        let global_uniforms = GlobalUniforms {
+            uniforms: affine,
+            screen_width: win_size.width as f64,
+            screen_height: win_size.height as f64,
+        };
 
         raster::draw_call(
             frame_buffer,
             depth_buffer,
-            win_size.width as i32,
-            win_size.height as i32,
+            global_uniforms,
             scene.light,
-            mvp,
-            object.mesh.triangles(),
+            scene.object.mesh.triangles(),
         );
 
         self.framebuffer.render()?;

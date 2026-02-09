@@ -34,6 +34,69 @@ impl Matrix4 {
         transposed
     }
 
+    pub fn inverse(&self) -> Self {
+        let m = self.data;
+
+        // Sub-determinants for Row-Major indexing: m[row][col]
+        let s0 = m[0][0] * m[1][1] - m[0][1] * m[1][0];
+        let s1 = m[0][0] * m[1][2] - m[0][2] * m[1][0];
+        let s2 = m[0][0] * m[1][3] - m[0][3] * m[1][0];
+        let s3 = m[0][1] * m[1][2] - m[0][2] * m[1][1];
+        let s4 = m[0][1] * m[1][3] - m[0][3] * m[1][1];
+        let s5 = m[0][2] * m[1][3] - m[0][3] * m[1][2];
+
+        let c5 = m[2][2] * m[3][3] - m[2][3] * m[3][2];
+        let c4 = m[2][1] * m[3][3] - m[2][3] * m[3][1];
+        let c3 = m[2][1] * m[3][2] - m[2][2] * m[3][1];
+        let c2 = m[2][0] * m[3][3] - m[2][3] * m[3][0];
+        let c1 = m[2][0] * m[3][2] - m[2][2] * m[3][0];
+        let c0 = m[2][0] * m[3][1] - m[2][1] * m[3][0];
+
+        // Determinant calculation
+        let det = s0 * c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0;
+
+        if det.abs() < 1e-9 {
+            return Matrix4::IDENTITY;
+        }
+
+        let inv_det = 1.0 / det;
+        let mut inv = [[0.0; 4]; 4];
+
+        // Row 0
+        inv[0][0] = (m[1][1] * c5 - m[1][2] * c4 + m[1][3] * c3) * inv_det;
+        inv[0][1] = (-m[0][1] * c5 + m[0][2] * c4 - m[0][3] * c3) * inv_det;
+        inv[0][2] = (m[3][1] * s5 - m[3][2] * s4 + m[3][3] * s3) * inv_det;
+        inv[0][3] = (-m[2][1] * s5 + m[2][2] * s4 - m[2][3] * s3) * inv_det;
+
+        // Row 1
+        inv[1][0] = (-m[1][0] * c5 + m[1][2] * c2 - m[1][3] * c1) * inv_det;
+        inv[1][1] = (m[0][0] * c5 - m[0][2] * c2 + m[0][3] * c1) * inv_det;
+        inv[1][2] = (-m[3][0] * s5 + m[3][2] * s2 - m[3][3] * s1) * inv_det;
+        inv[1][3] = (m[2][0] * s5 - m[2][2] * s2 + m[2][3] * s1) * inv_det;
+
+        // Row 2
+        inv[2][0] = (m[1][0] * c4 - m[1][1] * c2 + m[1][3] * c0) * inv_det;
+        inv[2][1] = (-m[0][0] * c4 + m[0][1] * c2 - m[0][3] * c0) * inv_det;
+        inv[2][2] = (m[3][0] * s4 - m[3][1] * s2 + m[3][3] * s0) * inv_det;
+        inv[2][3] = (-m[2][0] * s4 + m[2][1] * s2 - m[2][3] * s0) * inv_det;
+
+        // Row 3
+        inv[3][0] = (-m[1][0] * c3 + m[1][1] * c1 - m[1][2] * c0) * inv_det;
+        inv[3][1] = (m[0][0] * c3 - m[0][1] * c1 + m[0][2] * c0) * inv_det;
+        inv[3][2] = (-m[3][0] * s3 + m[3][1] * s1 - m[3][2] * s0) * inv_det;
+        inv[3][3] = (m[2][0] * s3 - m[2][1] * s1 + m[2][2] * s0) * inv_det;
+
+        Self { data: inv }
+    }
+
+    pub fn from_transforms(position: Vector3, scale: Vector3, rotation: Vector3) -> Self {
+        let scale_m = Self::scale_matrix(scale.x, scale.y, scale.z);
+        let rotation_m = Self::rotation_matrix(rotation);
+        let translation_m = Self::translation_matrix(position.x, position.y, position.z);
+
+        translation_m * rotation_m * scale_m
+    }
+
     pub fn scale_matrix(sx: f64, sy: f64, sz: f64) -> Matrix4 {
         Matrix4 {
             data: [
@@ -167,5 +230,29 @@ impl Mul<Vector4> for Matrix4 {
             + self.data[3][3] * rhs.w;
 
         Vector4 { x, y, z, w }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct AffineMatrices {
+    pub model: Matrix4,
+    pub view: Matrix4,
+    pub projection: Matrix4,
+    pub mvp: Matrix4,
+    pub normal: Matrix4,
+}
+
+impl AffineMatrices {
+    pub fn from_mvp(model: Matrix4, view: Matrix4, projection: Matrix4) -> Self {
+        let mvp = projection * view * model;
+        let normal = model.inverse().transpose();
+
+        Self {
+            model,
+            view,
+            projection,
+            mvp,
+            normal,
+        }
     }
 }
