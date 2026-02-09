@@ -5,6 +5,7 @@ use crate::{
     math::{Vector2, Vector3},
 };
 
+#[derive(Debug)]
 pub struct Indices {
     pub v: Vec<Idx>,
     pub n: Vec<Idx>,
@@ -46,6 +47,7 @@ impl Indices {
     }
 }
 
+#[derive(Debug)]
 pub struct Mesh {
     pub vertices: Vertices,
     pub normals: Normals,

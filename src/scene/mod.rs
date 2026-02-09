@@ -6,11 +6,7 @@ pub use camera::*;
 pub use object::*;
 
 use crate::{
-    animate::ProceduralAnimator,
-    draw::{CUBE_TRIS, CUBE_VERTS},
-    geometry::{Mesh, Normals},
-    input::InputState,
-    math::Vector3,
+    animate::ProceduralAnimator, draw::{CUBE_TRIS, CUBE_VERTS}, geometry::{Mesh, Normals}, input::InputState, loaders::obj::load_obj, math::Vector3
 };
 
 pub struct Scene {
@@ -25,7 +21,8 @@ impl Default for Scene {
     fn default() -> Self {
         let camera = Camera::new(Vector3::new(0.0, 0.0, 5.0));
 
-        let cube_mesh = Mesh::from_vertices_faces(CUBE_VERTS.into(), CUBE_TRIS.into());
+        let cube_mesh = load_obj("./assets/cube.obj").unwrap();
+        // let cube_mesh = Mesh::from_vertices_faces(CUBE_VERTS.into(), CUBE_TRIS.into());
         let object = Object::new(cube_mesh);
 
         let light = Vector3::new(1.0, 1.0, 2.0).normalize();

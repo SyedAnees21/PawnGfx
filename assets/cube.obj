@@ -1,5 +1,8 @@
 # cube-tex.obj
 # Import into Blender with Y-forward, Z-up
+# 
+# This Object file is copied from Gary Kacmarcik 3d-cubes
+# repo: https://github.com/garykac/3d-cubes/blob/master/cube-tex.obj
 #
 # Vertices:                        Faces:
 #      f-------g                          +-------+ 

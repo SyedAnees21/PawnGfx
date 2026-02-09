@@ -81,7 +81,7 @@ pub fn draw_call<F, D>(
     let w = global_uniforms.screen_width as i32;
     let h = global_uniforms.screen_height as i32;
 
-    for (idx, (v, _, _)) in triangles.enumerate() {
+    for (idx, (v, n, _)) in triangles.enumerate() {
         let [v0, v1, v2] = v;
 
         let v0_clip = transform_to_clip_space(v0, global_uniforms.uniforms.mvp);
@@ -92,8 +92,9 @@ pub fn draw_call<F, D>(
             continue;
         }
 
-        let face_normal =
-            (global_uniforms.uniforms.normal * Vector4::from((Face_NORMALS[idx / 2], 0.0))).xyz();
+        let [n1, _, _] = n.unwrap();
+
+        let face_normal = (global_uniforms.uniforms.normal * Vector4::from((n1, 0.0))).xyz();
 
         let inv_w0 = 1.0 / v0_clip.w;
         let inv_w1 = 1.0 / v1_clip.w;

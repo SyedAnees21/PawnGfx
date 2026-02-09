@@ -14,14 +14,6 @@ pub fn load_obj<F>(path: F) -> PResult<Mesh>
 where
     F: AsRef<Path>,
 {
-    let Some(ext) = path.as_ref().extension() else {
-        return Err(FileError::Invalid.into());
-    };
-
-    if ext != "obj" {
-        return Err(FileError::WrongFile("Wrong extension, expected .obj".to_string()).into());
-    }
-
     let file = File::open(path)?;
     let reader = BufReader::new(file);
 
@@ -75,25 +67,27 @@ pub fn parse_vector2(parts: &[&str], vertices: &mut Vec<Vector2>) -> PResult<()>
 }
 
 pub fn parse_indices(parts: &[&str], indices: &mut Indices) -> PResult<()> {
-    let segment = parts[0];
-    let seg_parts = segment.split('/').collect::<Vec<_>>();
+    for segment in parts.iter() {
+        let seg_parts = segment.split('/').collect::<Vec<_>>();
+    
+        let parse_index = |part: &str| -> PResult<usize> {
+            let index = part.parse::<usize>()?;
+            Ok(index - 1)
+        };
+    
+        let v = parse_index(seg_parts[0])?;
+        indices.push_v_index(v);
+    
+        if seg_parts.len() > 1 && !seg_parts[1].is_empty() {
+            let uv = parse_index(seg_parts[1])?;
+            indices.push_uv_index(uv);
+        }
+    
+        if seg_parts.len() > 2 && !seg_parts[2].is_empty() {
+            let n = parse_index(seg_parts[2])?;
+            indices.push_n_index(n);
+        }
 
-    let parse_index = |part: &str| -> PResult<usize> {
-        let index = part.parse::<usize>()?;
-        Ok(index - 1)
-    };
-
-    let v = parse_index(seg_parts[0])?;
-    indices.push_v_index(v);
-
-    if seg_parts.len() > 1 && !seg_parts[1].is_empty() {
-        let uv = parse_index(seg_parts[1])?;
-        indices.push_uv_index(uv);
-    }
-
-    if seg_parts.len() > 2 && !seg_parts[2].is_empty() {
-        let n = parse_index(seg_parts[2])?;
-        indices.push_n_index(n);
     }
 
     Ok(())
