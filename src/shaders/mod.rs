@@ -1,12 +1,11 @@
-mod effects;
-mod vertex;
+﻿mod effects;
 
 pub use effects::*;
-pub use vertex::*;
 
 use crate::{
-    geometry::Mesh,
-    math::{Matrix4, AffineMatrices, Vector3},
+    color::Color,
+    math::{AffineMatrices, Vector2, Vector3, Vector4},
+    scene::Texture,
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -14,43 +13,52 @@ pub struct GlobalUniforms {
     pub uniforms: AffineMatrices,
     pub screen_width: f64,
     pub screen_height: f64,
+    pub light_dir: Vector3,
+    pub camera_pos: Vector3,
+    pub ambient: f64,
+    pub specular_strength: f64,
+    pub shininess: f64,
 }
 
-impl HasUniforms for GlobalUniforms {
-    fn model_matrix(&self) -> Matrix4 {
-        self.uniforms.model
-    }
-
-    fn projection_matrix(&self) -> Matrix4 {
-        self.uniforms.projection
-    }
-
-    fn view_matrix(&self) -> Matrix4 {
-        self.uniforms.view
-    }
+pub struct LightUniforms {
+    pub position: Vector3,
+    pub direction: Vector3,
+    pub ambient: f64,
+    pub specular: f64,
+    pub shininess: f64,
 }
 
-pub trait HasUniforms {
-    fn model_matrix(&self) -> Matrix4;
-    fn view_matrix(&self) -> Matrix4;
-    fn projection_matrix(&self) -> Matrix4;
+pub struct ScreenUniforms {
+    pub width: f64,
+    pub height: f64,
 }
 
-pub trait Vertex {
-    type Uniforms: HasUniforms + Copy;
-    type Out;
-
-    fn process_vertices(
-        &self,
-        v0: Vector3,
-        v1: Vector3,
-        v2: Vector3,
-        uniforms: Self::Uniforms,
-    ) -> Self::Out;
+#[derive(Debug, Clone, Copy)]
+pub struct VertexIn {
+    pub position: Vector3,
+    pub normal: Vector3,
+    pub uv: Vector2,
+    pub face_normal: Vector3,
 }
 
-pub trait Fragment {
-    type In;
-    type Out;
-    fn process_fragment(&self, input: Self::In) -> Self::Out;
+#[derive(Debug, Clone, Copy)]
+pub struct Varyings {
+    pub uv: Vector2,
+    pub normal: Vector3,
+    pub world_pos: Vector3,
+    pub intensity: f64,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct VertexOut {
+    pub clip: Vector4,
+    pub vary: Varyings,
+}
+
+pub trait VertexShader {
+    fn shade(&self, input: VertexIn, u: &GlobalUniforms) -> VertexOut;
+}
+
+pub trait FragmentShader {
+    fn shade(&self, input: Varyings, u: &GlobalUniforms, texture: &Texture) -> Color;
 }

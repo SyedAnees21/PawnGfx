@@ -61,6 +61,16 @@ impl Mul<f64> for Vector2 {
     }
 }
 
+impl Add for Vector2 {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Vector3 {
     pub x: f64,

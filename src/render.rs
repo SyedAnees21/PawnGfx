@@ -7,12 +7,11 @@ use winit::{
 };
 
 use crate::{
-    draw::Face_NORMALS,
     error::PResult,
-    math::{AffineMatrices, Matrix4, Vector4},
+    math::{AffineMatrices, Matrix4},
     raster,
     scene::Scene,
-    shaders::GlobalUniforms,
+    shaders::{GlobalUniforms, Gouraud, Phong},
 };
 
 const DEFAULT_BG_COLOR: u32 = 77;
@@ -45,15 +44,24 @@ impl<'a> Renderer<'a> {
             uniforms: affine,
             screen_width: win_size.width as f64,
             screen_height: win_size.height as f64,
+            light_dir: scene.light,
+            camera_pos: scene.camera.position,
+            ambient: 0.1,
+            specular_strength: 0.4,
+            shininess: 32.0,
         };
 
-        raster::draw_call(
+        let v_shader = Gouraud;
+        let f_shader = Gouraud;
+
+        raster::draw_call_generic(
             frame_buffer,
             depth_buffer,
-            global_uniforms,
-            scene.light,
+            &global_uniforms,
             &scene.object.texture,
             scene.object.mesh.iter_triangles(),
+            &v_shader,
+            &f_shader,
         );
 
         self.framebuffer.render()?;

@@ -1,78 +1,106 @@
-// use crate::{
-//     color::Color,
-//     math::{Matrix4, AffineMatrices, Vector2, Vector3, Vector4},
-//     raster,
-//     shaders::GlobalUniforms,
-// };
+﻿use crate::{
+    color::Color,
+    math::{Vector4},
+    shaders::{FragmentShader, GlobalUniforms, VertexIn, VertexOut, VertexShader, Varyings},
+};
 
-// pub type ScreenVertices = [Vector2; 3];
-// pub type DepthVertices = [f64; 3];
-// pub type Intensity = f64;
+pub struct Flat;
 
-// pub struct Flat {
-//     light_dir: Vector3,
-//     normal_m: Matrix4,
-// }
+impl VertexShader for Flat {
+    fn shade(&self, input: VertexIn, u: &GlobalUniforms) -> VertexOut {
+        let world_pos = (u.uniforms.model * Vector4::from((input.position, 1.0))).xyz();
+        let normal = (u.uniforms.normal * Vector4::from((input.face_normal, 0.0))).xyz();
 
-// impl crate::shaders::Vertex for Flat {
-//     type Uniforms = GlobalUniforms;
-//     type Out = Option<(ScreenVertices, DepthVertices, Intensity)>;
+        VertexOut {
+            clip: u.uniforms.mvp * Vector4::from((input.position, 1.0)),
+            vary: Varyings {
+                uv: input.uv,
+                normal,
+                world_pos,
+                intensity: 0.0,
+            },
+        }
+    }
+}
 
-//     fn process_vertices(
-//         &self,
-//         v0: Vector3,
-//         v1: Vector3,
-//         v2: Vector3,
-//         uniforms: Self::Uniforms,
-//     ) -> Self::Out {
-//         let model_m = uniforms.uniforms.model;
-//         let view_m = uniforms.uniforms.view;
-//         let projection_m = uniforms.uniforms.projection;
-//         let normal_m = self.normal_m;
+impl FragmentShader for Flat {
+    fn shade(&self, input: Varyings, u: &GlobalUniforms, texture: &crate::scene::Texture) -> Color {
+        let n = input.normal.normalize();
+        let l = u.light_dir.normalize();
+        let diff = n.dot(&l).max(0.0);
+        let intensity = (u.ambient + diff).min(1.0);
 
-//         let mvp = projection_m * view_m * model_m;
+        texture.bi_sample(input.uv.x, input.uv.y) * intensity
+    }
+}
 
-//         let v0_clip = mvp * Vector4::from((v0, 1.0));
-//         let v1_clip = mvp * Vector4::from((v1, 1.0));
-//         let v2_clip = mvp * Vector4::from((v2, 1.0));
+pub struct Gouraud;
 
-//         if v0_clip.w <= 0.0 || v1_clip.w <= 0.0 || v2_clip.w <= 0.0 {
-//             return None;
-//         }
+impl VertexShader for Gouraud {
+    fn shade(&self, input: VertexIn, u: &GlobalUniforms) -> VertexOut {
+        let world_pos = (u.uniforms.model * Vector4::from((input.position, 1.0))).xyz();
+        let normal = (u.uniforms.normal * Vector4::from((input.normal, 0.0))).xyz();
+        let n = normal.normalize();
+        let l = u.light_dir.normalize();
+        let diff = n.dot(&l).max(0.0);
+        let intensity = (u.ambient + diff).min(1.0);
 
-//         let inv_w0 = 1.0 / v0_clip.w;
-//         let inv_w1 = 1.0 / v1_clip.w;
-//         let inv_w2 = 1.0 / v2_clip.w;
+        VertexOut {
+            clip: u.uniforms.mvp * Vector4::from((input.position, 1.0)),
+            vary: Varyings {
+                uv: input.uv,
+                normal: n,
+                world_pos,
+                intensity,
+            },
+        }
+    }
+}
 
-//         let v0_ndc = v0_clip * inv_w0;
-//         let v1_ndc = v1_clip * inv_w1;
-//         let v2_ndc = v2_clip * inv_w2;
+impl FragmentShader for Gouraud {
+    fn shade(&self, input: Varyings, _u: &GlobalUniforms, texture: &crate::scene::Texture) -> Color {
+        texture.bi_sample(input.uv.x, input.uv.y) * input.intensity
+    }
+}
 
-//         let (s_v0, z0) =
-//             raster::clip_to_screen(&v0_ndc, uniforms.screen_width, uniforms.screen_height);
-//         let (s_v1, z1) =
-//             raster::clip_to_screen(&v1_ndc, uniforms.screen_width, uniforms.screen_height);
-//         let (s_v2, z2) =
-//             raster::clip_to_screen(&v2_ndc, uniforms.screen_width, uniforms.screen_height);
+pub struct Phong;
 
-//         if raster::is_backfacing(s_v0, s_v1, s_v2) {
-//             return None;
-//         }
+impl VertexShader for Phong {
+    fn shade(&self, input: VertexIn, u: &GlobalUniforms) -> VertexOut {
+        let world_pos = (u.uniforms.model * Vector4::from((input.position, 1.0))).xyz();
+        let normal = (u.uniforms.normal * Vector4::from((input.normal, 0.0))).xyz();
 
-//         let face_normal = ((v1 - v0).cross(&(v2 - v0))).normalize();
-//         let rotated_normal = normal_m * Vector4::from((face_normal, 0.0));
-//         let intensity = rotated_normal.xyz().dot(&self.light_dir).max(0.0);
+        VertexOut {
+            clip: u.uniforms.mvp * Vector4::from((input.position, 1.0)),
+            vary: Varyings {
+                uv: input.uv,
+                normal,
+                world_pos,
+                intensity: 0.0,
+            },
+        }
+    }
+}
 
-//         Some(([s_v0, s_v1, s_v2], [z0, z1, z2], intensity))
-//     }
-// }
+impl FragmentShader for Phong {
+    fn shade(&self, input: Varyings, u: &GlobalUniforms, texture: &crate::scene::Texture) -> Color {
+        let n = input.normal.normalize();
+        let l = u.light_dir.normalize();
+        let v = (u.camera_pos - input.world_pos).normalize();
+        let h = (l + v).normalize();
 
-// impl crate::shaders::Fragment for Flat {
-//     type In = (Color, Intensity);
-//     type Out = Color;
+        let diff = n.dot(&l).max(0.0);
+        let spec = n
+            .dot(&h)
+            .max(0.0)
+            .powf(u.shininess)
+            * u.specular_strength;
 
-//     fn process_fragment(&self, input: Self::In) -> Self::Out {
-//         let (color, intensity) = input;
-//         color * intensity
-//     }
-// }
+        let mut color = texture.bi_sample(input.uv.x, input.uv.y) * (u.ambient + diff).min(1.0);
+        if spec > 0.0 {
+            color = color + Color::new_rgb(1.0, 1.0, 1.0) * spec;
+        }
+
+        color
+    }
+}
