@@ -1,9 +1,11 @@
 mod camera;
 mod object;
+mod texture;
 mod transform;
 
 pub use camera::*;
 pub use object::*;
+pub use texture::*;
 
 use crate::{animate::ProceduralAnimator, input::InputState, math::Vector3};
 
@@ -19,8 +21,10 @@ impl Default for Scene {
     fn default() -> Self {
         let camera = Camera::new(Vector3::new(0.0, 0.0, 5.0));
 
-        let cube_mesh = crate::loaders::load_mesh_file("./assets/cube-local.obj").unwrap();
-        let object = Object::new(cube_mesh);
+        let cube_mesh = crate::loaders::load_mesh_file("./assets/meshes/cube-local.obj").unwrap();
+        let texture =
+            Texture::from_file("./assets/texture/Checker-Texture.png", Wrap::Mirror).unwrap();
+        let object = Object::from_mesh_texture(cube_mesh, texture);
 
         let light = Vector3::new(1.0, 1.0, 2.0).normalize();
         let input = InputState::default();

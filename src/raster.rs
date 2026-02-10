@@ -3,6 +3,7 @@ use crate::{
     draw::Face_NORMALS,
     geometry::{Triangles, bounding_rect, edge_function},
     math::{AffineMatrices, Matrix4, Vector2, Vector3, Vector4},
+    scene::Texture,
     shaders::{self, GlobalUniforms, HasUniforms},
 };
 
@@ -70,6 +71,7 @@ pub fn draw_call<F, D>(
     depth_buffer: &mut D,
     global_uniforms: GlobalUniforms,
     light: Vector3,
+    texture: &Texture,
     triangles: Triangles,
 ) where
     F: AsMut<[u8]> + ?Sized,
@@ -81,7 +83,7 @@ pub fn draw_call<F, D>(
     let w = global_uniforms.screen_width as i32;
     let h = global_uniforms.screen_height as i32;
 
-    for (idx, (v, n, _)) in triangles.enumerate() {
+    for (idx, (v, n, uv)) in triangles.enumerate() {
         let [v0, v1, v2] = v;
 
         let v0_clip = transform_to_clip_space(v0, global_uniforms.uniforms.mvp);
@@ -100,15 +102,31 @@ pub fn draw_call<F, D>(
         let inv_w1 = 1.0 / v1_clip.w;
         let inv_w2 = 1.0 / v2_clip.w;
 
-        let v0_ndc = v0_clip * inv_w0;
-        let v1_ndc = v1_clip * inv_w1;
-        let v2_ndc = v2_clip * inv_w2;
+        let mut v0_ndc = v0_clip * inv_w0;
+        let mut v1_ndc = v1_clip * inv_w1;
+        let mut v2_ndc = v2_clip * inv_w2;
+
+        v0_ndc.w = inv_w0;
+        v1_ndc.w = inv_w1;
+        v2_ndc.w = inv_w2;
 
         let v0 = clip_to_screen(&v0_ndc, w as f64, h as f64);
         let v1 = clip_to_screen(&v1_ndc, w as f64, h as f64);
         let v2 = clip_to_screen(&v2_ndc, w as f64, h as f64);
 
-        draw_triangle(frame, depth, w, h, light, face_normal, v0, v1, v2);
+        draw_triangle(
+            frame,
+            depth,
+            w,
+            h,
+            light,
+            face_normal,
+            &texture,
+            uv,
+            v0,
+            v1,
+            v2,
+        );
     }
 }
 
@@ -119,9 +137,11 @@ pub fn draw_triangle(
     h: i32,
     light: Vector3,
     face_normal: Vector3,
-    (v0, z0): (Vector2, f64),
-    (v1, z1): (Vector2, f64),
-    (v2, z2): (Vector2, f64),
+    texture: &Texture,
+    uv: Option<[Vector2; 3]>,
+    (v0, z0, inv_w0): (Vector2, f64, f64),
+    (v1, z1, inv_w1): (Vector2, f64, f64),
+    (v2, z2, inv_w2): (Vector2, f64, f64),
 ) {
     let frame = frame_buffer.as_mut();
 
@@ -152,13 +172,33 @@ pub fn draw_triangle(
                     continue;
                 }
 
-                let z = w0 * z0 + w1 * z1 + w2 * z2;
+                let bary_cords = (w0, w1, w2);
+                let inv_depth_cords = (inv_w0, inv_w1, inv_w2);
+
+                let z = persp_correct_interpolate(bary_cords, inv_depth_cords, (z0, z1, z2));
+
                 let depth_index = (y * w + x) as usize;
                 let pixel_index = (depth_index * 4) as usize;
 
                 if z < depth_buffer[depth_index] {
+                    let [uv0, uv1, uv2] = uv.unwrap();
+                    let (uv0, uv1, uv2) = (uv0 * inv_w0, uv1 * inv_w1, uv2 * inv_w2);
+
+                    let u = persp_correct_interpolate(
+                        bary_cords,
+                        inv_depth_cords,
+                        (uv0.x, uv1.x, uv2.x),
+                    );
+                    let v = persp_correct_interpolate(
+                        bary_cords,
+                        inv_depth_cords,
+                        (uv0.y, uv1.y, uv2.y),
+                    );
+
+                    let s_color = texture.bi_sample(u, v);
+
                     let intensity = face_normal.normalize().dot(&light).max(0.0);
-                    let color = Color::WHITE * intensity;
+                    let color = s_color * intensity;
 
                     depth_buffer[depth_index] = z;
                     frame[pixel_index..pixel_index + 4].copy_from_slice(&color.to_rgba8());
@@ -173,15 +213,34 @@ pub fn transform_to_clip_space(v: Vector3, mvp: Matrix4) -> Vector4 {
     mvp * v4
 }
 
-pub fn clip_to_screen(v_ndc: &Vector4, width: f64, height: f64) -> (Vector2, f64) {
+pub fn clip_to_screen(v_ndc: &Vector4, width: f64, height: f64) -> (Vector2, f64, f64) {
     let screen_x = (v_ndc.x + 1.0) * 0.5 * width;
     let screen_y = (1.0 - (v_ndc.y + 1.0) * 0.5) * height;
 
-    (Vector2::new(screen_x, screen_y), v_ndc.z)
+    (Vector2::new(screen_x, screen_y), v_ndc.z, v_ndc.w)
 }
 
 pub fn is_backfacing(v0: Vector2, v1: Vector2, v2: Vector2) -> bool {
     edge_function(v0, v1, v2) < 0.0
+}
+
+pub fn interpolate(w0: f64, w1: f64, w2: f64, v0: f64, v1: f64, v2: f64) -> f64 {
+    w0 * v0 + w1 * v1 + w2 * v2
+}
+
+pub fn persp_correct_interpolate(
+    bary: (f64, f64, f64),
+    inv_depth: (f64, f64, f64),
+    elements: (f64, f64, f64),
+) -> f64 {
+    let (w0, w1, w2) = bary;
+    let (inv_w0, inv_w1, inv_w2) = inv_depth;
+    let (v0, v1, v2) = elements;
+
+    let v_prime = interpolate(w0, w1, w2, v0, v1, v2);
+    let inv_d_lerped = interpolate(w0, w1, w2, inv_w0, inv_w1, inv_w2);
+
+    v_prime / inv_d_lerped
 }
 
 #[allow(unused)]
