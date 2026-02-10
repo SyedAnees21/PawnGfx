@@ -5,9 +5,17 @@
 - [x] Line rasterization (Bresenham's algorithm)
 - [x] Wireframe cube rendering
 - [x] Triangle rasterization
+        - [x] Bounding box (naive)
+        - [ ] Scan line (advance)
 - [x] Face filling / solid rendering
-- [ ] Texture mapping
+- [x] Texture mapping
+        - [x] Linear sampling
+        - [x] Bi-Linear sampling
+        - [x] Wrapping
 - [ ] Shading models (flat, Gouraud, Phong)
+        - [x] Flat-Lambart
+        - [ ] Gouraud
+        - [ ] Blinn-Phong
 - [ ] Shadow rendering
 - [ ] Anti-aliasing
 
@@ -18,7 +26,7 @@
 - [x] Transformation matrices (translation, rotation, scaling)
 - [x] Perspective projection matrix
 - [ ] View frustum culling
-- [ ] Matrix inverse
+- [x] Matrix inverse
 - [ ] Quaternion support
 
 ## Camera System
@@ -44,8 +52,10 @@
 - [ ] Sphere rendering
 - [ ] Plane rendering
 - [ ] Pyramid rendering
-- [ ] Custom mesh loading
+- [x] Custom mesh loading
 - [ ] Model file support (OBJ, glTF, etc.)
+        - [x] OBJ
+        - [ ] glTF
 - [ ] Mesh instancing
 
 ## Performance & Optimization
@@ -58,7 +68,7 @@
 
 ## Lighting & Effects
 - [ ] Ambient lighting
-- [ ] Directional lights
+- [x] Directional lights
 - [ ] Point lights
 - [ ] Spot lights
 - [ ] Normal mapping

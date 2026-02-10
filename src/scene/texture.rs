@@ -85,7 +85,6 @@ impl Texture {
     }
 
     pub fn sample(&self, mut u: f64, mut v: f64) -> Color {
-        // clamp UV to [0,1] for now
         u = self.wrap_uv(u);
         v = self.wrap_uv(v);
 
@@ -101,12 +100,6 @@ impl Texture {
     }
 
     pub fn bi_sample(&self, mut u: f64, mut v: f64) -> Color {
-        // let u = wrap_coord(uv.x, self.wrap_u);
-        // let v = wrap_coord(uv.y, self.wrap_v);
-
-        // clamp UV to [0,1] for now
-        // u = u.clamp(0.0, 1.0);
-        // v = v.clamp(0.0, 1.0);
         u = self.wrap_uv(u);
         v = self.wrap_uv(v);
 

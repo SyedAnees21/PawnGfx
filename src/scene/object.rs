@@ -16,7 +16,11 @@ impl Object {
     }
 
     pub fn from_mesh_texture(mesh: Mesh, texture: Texture) -> Self {
-        Self { mesh, texture, transform: Transform::default() }
+        Self {
+            mesh,
+            texture,
+            transform: Transform::default(),
+        }
     }
 
     #[inline(always)]
