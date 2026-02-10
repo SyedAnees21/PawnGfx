@@ -5,17 +5,17 @@
 - [x] Line rasterization (Bresenham's algorithm)
 - [x] Wireframe cube rendering
 - [x] Triangle rasterization
-        - [x] Bounding box (naive)
-        - [ ] Scan line (advance)
+    - [x] Bounding box (naive)
+    - [ ] Scan line (advance)
 - [x] Face filling / solid rendering
 - [x] Texture mapping
-        - [x] Linear sampling
-        - [x] Bi-Linear sampling
-        - [x] Wrapping
+    - [x] Linear sampling
+    - [x] Bi-Linear sampling
+    - [x] Wrapping
 - [ ] Shading models (flat, Gouraud, Phong)
-        - [x] Flat-Lambart
-        - [ ] Gouraud
-        - [ ] Blinn-Phong
+    - [x] Flat-Lambart
+    - [ ] Gouraud
+    - [ ] Blinn-Phong
 - [ ] Shadow rendering
 - [ ] Anti-aliasing
 
@@ -54,8 +54,8 @@
 - [ ] Pyramid rendering
 - [x] Custom mesh loading
 - [ ] Model file support (OBJ, glTF, etc.)
-        - [x] OBJ
-        - [ ] glTF
+    - [x] OBJ
+    - [ ] glTF
 - [ ] Mesh instancing
 
 ## Performance & Optimization
