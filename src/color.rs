@@ -1,5 +1,6 @@
 use std::ops::{Add, Mul};
 
+#[derive(Clone, Copy)]
 pub struct Color(f32, f32, f32, f32);
 
 #[allow(unused)]

@@ -10,7 +10,11 @@ pub struct Texture {
 
 impl Default for Texture {
     fn default() -> Self {
-        Self { width: 0, height: 0, data: vec![] }
+        Self {
+            width: 0,
+            height: 0,
+            data: vec![],
+        }
     }
 }
 
@@ -46,8 +50,19 @@ impl Texture {
             data,
         })
     }
-}
 
+    pub fn sample(&self, mut u: f64, mut v: f64) -> Color {
+        // clamp UV to [0,1] for now
+        u = u.clamp(0.0, 1.0);
+        v = v.clamp(0.0, 1.0);
+
+        // convert to pixel space
+        let x = (u * (self.width as f64 - 1.0)) as usize;
+        let y = (v * (self.height as f64 - 1.0)) as usize;
+
+        self.data[y * self.width + x]
+    }
+}
 
 #[cfg(test)]
 mod tests {
