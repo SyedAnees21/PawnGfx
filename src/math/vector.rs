@@ -41,6 +41,26 @@ impl Vector2 {
     }
 }
 
+impl Div<f64> for Vector2 {
+    type Output = Self;
+    fn div(self, rhs: f64) -> Self::Output {
+        Self {
+            x: self.x / rhs,
+            y: self.y / rhs,
+        }
+    }
+}
+
+impl Mul<f64> for Vector2 {
+    type Output = Self;
+    fn mul(self, rhs: f64) -> Self::Output {
+        Self {
+            x: self.x * rhs,
+            y: self.y * rhs,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Vector3 {
     pub x: f64,
@@ -165,7 +185,11 @@ pub struct Vector4 {
 
 impl Vector4 {
     pub fn xyz(&self) -> Vector3 {
-        Vector3 { x: self.x, y: self.y, z: self.z }
+        Vector3 {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+        }
     }
 }
 impl Div<f64> for Vector4 {
