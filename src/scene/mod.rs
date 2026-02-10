@@ -22,7 +22,8 @@ impl Default for Scene {
         let camera = Camera::new(Vector3::new(0.0, 0.0, 5.0));
 
         let cube_mesh = crate::loaders::load_mesh_file("./assets/cube-local.obj").unwrap();
-        let object = Object::new(cube_mesh);
+        let texture = Texture::from_file("./assets/texture/Checker-Texture.png").unwrap();
+        let object = Object::from_mesh_texture(cube_mesh, texture);
 
         let light = Vector3::new(1.0, 1.0, 2.0).normalize();
         let input = InputState::default();

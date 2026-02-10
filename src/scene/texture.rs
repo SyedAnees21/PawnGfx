@@ -56,6 +56,9 @@ impl Texture {
         u = u.clamp(0.0, 1.0);
         v = v.clamp(0.0, 1.0);
 
+        // Flipping image space
+        v = 1.0 - v;
+
         // convert to pixel space
         let x = (u * (self.width as f64 - 1.0)) as usize;
         let y = (v * (self.height as f64 - 1.0)) as usize;

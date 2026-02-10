@@ -1,9 +1,5 @@
 use crate::{
-    color::Color,
-    draw::Face_NORMALS,
-    geometry::{Triangles, bounding_rect, edge_function},
-    math::{AffineMatrices, Matrix4, Vector2, Vector3, Vector4},
-    shaders::{self, GlobalUniforms, HasUniforms},
+    color::Color, draw::Face_NORMALS, geometry::{Triangles, bounding_rect, edge_function}, math::{AffineMatrices, Matrix4, Vector2, Vector3, Vector4}, scene::Texture, shaders::{self, GlobalUniforms, HasUniforms}
 };
 
 // pub fn draw_call_generic<F, D, VS, FS, U>(
@@ -70,6 +66,7 @@ pub fn draw_call<F, D>(
     depth_buffer: &mut D,
     global_uniforms: GlobalUniforms,
     light: Vector3,
+    texture: &Texture,
     triangles: Triangles,
 ) where
     F: AsMut<[u8]> + ?Sized,
@@ -81,7 +78,7 @@ pub fn draw_call<F, D>(
     let w = global_uniforms.screen_width as i32;
     let h = global_uniforms.screen_height as i32;
 
-    for (idx, (v, n, _)) in triangles.enumerate() {
+    for (idx, (v, n, uv)) in triangles.enumerate() {
         let [v0, v1, v2] = v;
 
         let v0_clip = transform_to_clip_space(v0, global_uniforms.uniforms.mvp);
@@ -108,7 +105,7 @@ pub fn draw_call<F, D>(
         let v1 = clip_to_screen(&v1_ndc, w as f64, h as f64);
         let v2 = clip_to_screen(&v2_ndc, w as f64, h as f64);
 
-        draw_triangle(frame, depth, w, h, light, face_normal, v0, v1, v2);
+        draw_triangle(frame, depth, w, h, light, face_normal, &texture, uv, v0, v1, v2);
     }
 }
 
@@ -119,6 +116,8 @@ pub fn draw_triangle(
     h: i32,
     light: Vector3,
     face_normal: Vector3,
+    texture: &Texture,
+    uv: Option<[Vector2;3]>,
     (v0, z0): (Vector2, f64),
     (v1, z1): (Vector2, f64),
     (v2, z2): (Vector2, f64),
@@ -157,8 +156,14 @@ pub fn draw_triangle(
                 let pixel_index = (depth_index * 4) as usize;
 
                 if z < depth_buffer[depth_index] {
+
+                    let [uv0, uv1, uv2] = uv.unwrap();
+                    let u = interpolate(w0, w1, w2, uv0.x, uv1.x, uv2.x);
+                    let v = interpolate(w0, w1, w2, uv0.y, uv1.y, uv2.y);
+                    let s_color = texture.sample(u, v);
+
                     let intensity = face_normal.normalize().dot(&light).max(0.0);
-                    let color = Color::WHITE * intensity;
+                    let color = s_color * intensity;
 
                     depth_buffer[depth_index] = z;
                     frame[pixel_index..pixel_index + 4].copy_from_slice(&color.to_rgba8());
@@ -182,6 +187,10 @@ pub fn clip_to_screen(v_ndc: &Vector4, width: f64, height: f64) -> (Vector2, f64
 
 pub fn is_backfacing(v0: Vector2, v1: Vector2, v2: Vector2) -> bool {
     edge_function(v0, v1, v2) < 0.0
+}
+
+pub fn interpolate(w0: f64, w1: f64, w2: f64, v0: f64, v1: f64, v2: f64) -> f64 {
+    w0 * v0 + w1 * v1 + w2 * v2
 }
 
 #[allow(unused)]
