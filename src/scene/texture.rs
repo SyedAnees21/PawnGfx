@@ -2,9 +2,16 @@ use std::path::Path;
 
 use crate::{color::Color, error::PResult, math};
 
+pub enum Wrap {
+    clamp,
+    Repeat,
+    Mirror,
+}
+
 pub struct Texture {
     width: usize,
     height: usize,
+    wrap: Wrap,
     data: Vec<Color>,
 }
 
@@ -13,6 +20,7 @@ impl Default for Texture {
         Self {
             width: 0,
             height: 0,
+            wrap: Wrap::clamp,
             data: vec![],
         }
     }
@@ -23,11 +31,12 @@ impl Texture {
         Self {
             width: w,
             height: h,
+            wrap: Wrap::clamp,
             data,
         }
     }
 
-    pub fn from_file<P>(path: P) -> PResult<Self>
+    pub fn from_file<P>(path: P, wrap_mode: Wrap) -> PResult<Self>
     where
         P: AsRef<Path>,
     {
@@ -47,6 +56,7 @@ impl Texture {
         Ok(Self {
             width: w as usize,
             height: h as usize,
+            wrap: wrap_mode,
             data,
         })
     }
@@ -55,10 +65,29 @@ impl Texture {
         self.data[v * self.width + u]
     }
 
+    pub fn wrap_uv(&self, mut p: f64) -> f64 {
+        match self.wrap {
+            Wrap::clamp => p.clamp(0.0, 1.0),
+            Wrap::Repeat => {
+                if p.fract() < 0.0 {
+                    p += 1.0;
+                }
+                p
+            }
+            Wrap::Mirror => {
+                let mut p = p % 2.0;
+                if p < 0.0 {
+                    p += 2.0;
+                }
+                if p > 1.0 { 2.0 - p } else { p }
+            }
+        }
+    }
+
     pub fn sample(&self, mut u: f64, mut v: f64) -> Color {
         // clamp UV to [0,1] for now
-        u = u.clamp(0.0, 1.0);
-        v = v.clamp(0.0, 1.0);
+        u = self.wrap_uv(u);
+        v = self.wrap_uv(v);
 
         // Flipping image space
         v = 1.0 - v;
@@ -68,7 +97,7 @@ impl Texture {
         let y = (v * (self.height as f64 - 1.0)) as usize;
 
         // self.data[y * self.width + x]
-        self.texel(x,y)
+        self.texel(x, y)
     }
 
     pub fn bi_sample(&self, mut u: f64, mut v: f64) -> Color {
@@ -76,12 +105,14 @@ impl Texture {
         // let v = wrap_coord(uv.y, self.wrap_v);
 
         // clamp UV to [0,1] for now
-        u = u.clamp(0.0, 1.0);
-        v = v.clamp(0.0, 1.0);
+        // u = u.clamp(0.0, 1.0);
+        // v = v.clamp(0.0, 1.0);
+        u = self.wrap_uv(u);
+        v = self.wrap_uv(v);
 
         // Flipping image space
         v = 1.0 - v;
-        
+
         let x = u * (self.width as f64 - 1.0);
         let y = v * (self.height as f64 - 1.0);
 
@@ -100,8 +131,6 @@ impl Texture {
 
         let a = math::lerp(c00, c10, tx);
         let b = math::lerp(c01, c11, tx);
-        // let a = c00.lerp(c10, tx);
-        // let b = c01.lerp(c11, tx);
 
         math::lerp(a, b, ty)
     }
@@ -109,12 +138,12 @@ impl Texture {
 
 #[cfg(test)]
 mod tests {
-    use crate::scene::Texture;
+    use crate::scene::{Texture, Wrap};
 
     #[test]
     fn load_checker_texture() {
         let path = "./assets/texture/Checker-Texture.png";
-        let texture = Texture::from_file(path).unwrap();
+        let texture = Texture::from_file(path, Wrap::clamp).unwrap();
 
         assert_eq!(texture.width, 1024);
         assert_eq!(texture.height, 1024);
