@@ -1,4 +1,4 @@
-use std::ops::{Add, Mul};
+use std::ops::{Add, Mul, Sub};
 
 #[derive(Clone, Copy)]
 pub struct Color(f32, f32, f32, f32);
@@ -72,6 +72,19 @@ impl Add for Color {
             (self.1 + other.1).min(1.0),
             (self.2 + other.2).min(1.0),
             (self.3 + other.3).min(1.0),
+        )
+    }
+}
+
+impl Sub for Color {
+    type Output = Color;
+
+    fn sub(self, other: Color) -> Color {
+        Color(
+            (self.0 - other.0).max(0.0),
+            (self.1 - other.1).max(0.0),
+            (self.2 - other.2).max(0.0),
+            (self.3 - other.3).max(0.0),
         )
     }
 }

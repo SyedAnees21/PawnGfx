@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use crate::{color::Color, error::PResult};
+use crate::{color::Color, error::PResult, math};
 
 pub struct Texture {
     width: usize,
@@ -51,6 +51,10 @@ impl Texture {
         })
     }
 
+    pub fn texel(&self, u: usize, v: usize) -> Color {
+        self.data[v * self.width + u]
+    }
+
     pub fn sample(&self, mut u: f64, mut v: f64) -> Color {
         // clamp UV to [0,1] for now
         u = u.clamp(0.0, 1.0);
@@ -63,7 +67,43 @@ impl Texture {
         let x = (u * (self.width as f64 - 1.0)) as usize;
         let y = (v * (self.height as f64 - 1.0)) as usize;
 
-        self.data[y * self.width + x]
+        // self.data[y * self.width + x]
+        self.texel(x,y)
+    }
+
+    pub fn bi_sample(&self, mut u: f64, mut v: f64) -> Color {
+        // let u = wrap_coord(uv.x, self.wrap_u);
+        // let v = wrap_coord(uv.y, self.wrap_v);
+
+        // clamp UV to [0,1] for now
+        u = u.clamp(0.0, 1.0);
+        v = v.clamp(0.0, 1.0);
+
+        // Flipping image space
+        v = 1.0 - v;
+        
+        let x = u * (self.width as f64 - 1.0);
+        let y = v * (self.height as f64 - 1.0);
+
+        let x0 = x.floor() as usize;
+        let y0 = y.floor() as usize;
+        let x1 = (x0 + 1).min(self.width - 1);
+        let y1 = (y0 + 1).min(self.height - 1);
+
+        let tx = x - x.floor();
+        let ty = y - y.floor();
+
+        let c00 = self.texel(x0, y0);
+        let c10 = self.texel(x1, y0);
+        let c01 = self.texel(x0, y1);
+        let c11 = self.texel(x1, y1);
+
+        let a = math::lerp(c00, c10, tx);
+        let b = math::lerp(c01, c11, tx);
+        // let a = c00.lerp(c10, tx);
+        // let b = c01.lerp(c11, tx);
+
+        math::lerp(a, b, ty)
     }
 }
 

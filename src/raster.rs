@@ -194,8 +194,8 @@ pub fn draw_triangle(
                         inv_depth_cords,
                         (uv0.y, uv1.y, uv2.y),
                     );
-                    
-                    let s_color = texture.sample(u, v);
+
+                    let s_color = texture.bi_sample(u, v);
 
                     let intensity = face_normal.normalize().dot(&light).max(0.0);
                     let color = s_color * intensity;
