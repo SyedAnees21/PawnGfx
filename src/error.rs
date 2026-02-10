@@ -3,6 +3,7 @@ use std::{
     num::{ParseFloatError, ParseIntError},
 };
 
+use image::ImageError;
 use thiserror::Error;
 use winit::error::{EventLoopError, OsError};
 
@@ -21,6 +22,9 @@ pub enum PError {
 
     #[error("Error occured while asset loading: {0}")]
     Loader(#[from] FileError),
+
+    #[error("Error occured while texture loading: {0}")]
+    TextureLoading(#[from] ImageError)
 }
 
 #[derive(Debug, Error)]

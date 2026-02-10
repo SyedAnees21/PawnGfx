@@ -1,7 +1,7 @@
 use crate::{
     geometry::{Mesh, Normals},
     math::Vector3,
-    scene::{Object, Transform},
+    scene::{Object, Texture, Transform},
 };
 
 pub const CUBE_VERTS: [Vector3; 8] = [
@@ -53,6 +53,7 @@ impl Cube {
 
         Self(Object {
             mesh: c_mesh,
+            texture: Texture::default(),
             transform,
         })
     }

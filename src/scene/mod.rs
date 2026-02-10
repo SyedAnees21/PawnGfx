@@ -1,9 +1,11 @@
 mod camera;
 mod object;
 mod transform;
+mod texture;
 
 pub use camera::*;
 pub use object::*;
+pub use texture::*;
 
 use crate::{animate::ProceduralAnimator, input::InputState, math::Vector3};
 

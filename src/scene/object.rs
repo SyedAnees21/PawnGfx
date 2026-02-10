@@ -1,7 +1,8 @@
-use crate::{geometry::Mesh, math::Vector3};
+use crate::{geometry::Mesh, math::Vector3, scene::Texture};
 
 pub struct Object {
     pub mesh: Mesh,
+    pub texture: Texture,
     pub transform: Transform,
 }
 
@@ -9,13 +10,18 @@ impl Object {
     pub fn new(mesh: Mesh) -> Self {
         Self {
             mesh,
+            texture: Texture::default(),
             transform: Transform::default(),
         }
     }
 
     #[inline(always)]
     pub fn get_transforms_props(&self) -> (Vector3, Vector3, Vector3) {
-        (self.transform.scale, self.transform.position, self.transform.rotation)
+        (
+            self.transform.scale,
+            self.transform.position,
+            self.transform.rotation,
+        )
     }
 }
 
