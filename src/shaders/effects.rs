@@ -8,11 +8,11 @@ pub struct Flat;
 
 impl VertexShader for Flat {
     fn shade(&self, input: VertexIn, u: &GlobalUniforms) -> VertexOut {
-        let world_pos = (u.uniforms.model * Vector4::from((input.position, 1.0))).xyz();
-        let normal = (u.uniforms.normal * Vector4::from((input.face_normal, 0.0))).xyz();
+        let world_pos = (u.affine.model * Vector4::from((input.position, 1.0))).xyz();
+        let normal = (u.affine.normal * Vector4::from((input.face_normal, 0.0))).xyz();
 
         VertexOut {
-            clip: u.uniforms.mvp * Vector4::from((input.position, 1.0)),
+            clip: u.affine.mvp * Vector4::from((input.position, 1.0)),
             vary: Varyings {
                 uv: input.uv,
                 normal,
@@ -26,9 +26,9 @@ impl VertexShader for Flat {
 impl FragmentShader for Flat {
     fn shade(&self, input: Varyings, u: &GlobalUniforms, texture: &crate::scene::Texture) -> Color {
         let n = input.normal.normalize();
-        let l = u.light_dir.normalize();
+        let l = u.light.direction;
         let diff = n.dot(&l).max(0.0);
-        let intensity = (u.ambient + diff).min(1.0);
+        let intensity = (u.light.ambient + diff).min(1.0);
 
         texture.bi_sample(input.uv.x, input.uv.y) * intensity
     }

@@ -19,15 +19,15 @@ pub fn draw_call<F, D>(
     let frame = frame_buffer.as_mut();
     let depth = depth_buffer.as_mut();
 
-    let w = global_uniforms.screen_width as i32;
-    let h = global_uniforms.screen_height as i32;
+    let w = global_uniforms.screen.width as i32;
+    let h = global_uniforms.screen.height as i32;
 
     for (_idx, (v, n, uv)) in triangles.enumerate() {
         let [v0, v1, v2] = v;
 
-        let v0_clip = transform_to_clip_space(v0, global_uniforms.uniforms.mvp);
-        let v1_clip = transform_to_clip_space(v1, global_uniforms.uniforms.mvp);
-        let v2_clip = transform_to_clip_space(v2, global_uniforms.uniforms.mvp);
+        let v0_clip = transform_to_clip_space(v0, global_uniforms.affine.mvp);
+        let v1_clip = transform_to_clip_space(v1, global_uniforms.affine.mvp);
+        let v2_clip = transform_to_clip_space(v2, global_uniforms.affine.mvp);
 
         if v0_clip.w <= 0.0 || v1_clip.w <= 0.0 || v2_clip.w <= 0.0 {
             continue;
@@ -35,7 +35,7 @@ pub fn draw_call<F, D>(
 
         let [n1, _, _] = n.unwrap();
 
-        let face_normal = (global_uniforms.uniforms.normal * Vector4::from((n1, 0.0))).xyz();
+        let face_normal = (global_uniforms.affine.normal * Vector4::from((n1, 0.0))).xyz();
 
         let inv_w0 = 1.0 / v0_clip.w;
         let inv_w1 = 1.0 / v1_clip.w;
@@ -81,8 +81,8 @@ pub fn draw_call_generic<VS, FS>(
     VS: VertexShader,
     FS: FragmentShader,
 {
-    let w = global_uniforms.screen_width as i32;
-    let h = global_uniforms.screen_height as i32;
+    let w = global_uniforms.screen.width as i32;
+    let h = global_uniforms.screen.height as i32;
 
     for (v, n, uv) in triangles {
         let [v0, v1, v2] = v;
@@ -95,7 +95,7 @@ pub fn draw_call_generic<VS, FS>(
         // v.into_iter().enumerate().map(|(ix, vert)| {
         //     v_shader.shade(VertexIn { position: vert, normal: n.unwrap_or(face_normal(v0, v1, v2))[ix], uv: (), face_normal: () }, u)
         // })
-        
+
         let out0 = v_shader.shade(
             VertexIn {
                 position: v0,

@@ -11,7 +11,7 @@ use crate::{
     math::{AffineMatrices, Matrix4},
     raster,
     scene::Scene,
-    shaders::{self, GlobalUniforms},
+    shaders::{self, GlobalUniforms, ScreenUniforms},
 };
 
 const DEFAULT_BG_COLOR: u32 = 77;
@@ -25,8 +25,8 @@ pub struct Renderer<'a> {
 
 impl<'a> Renderer<'a> {
     pub fn render(&mut self, scene: &mut Scene) -> PResult<()> {
-        let win_size = self.get_window().inner_size();
-        let aspect = win_size.width as f64 / win_size.height as f64;
+        let screen = self.uniforms();
+        let aspect = screen.width as f64 / screen.height as f64;
 
         self.reset_buffers();
 
@@ -41,12 +41,10 @@ impl<'a> Renderer<'a> {
         let affine = AffineMatrices::from_mvp(model, view, projection);
 
         let global_uniforms = GlobalUniforms {
-            uniforms: affine,
-            screen_width: win_size.width as f64,
-            screen_height: win_size.height as f64,
-            light_dir: scene.light.direction(),
+            affine,
+            screen,
+            light: scene.light.uniforms(),
             camera_pos: scene.camera.position,
-            ambient: 0.1,
             specular_strength: 0.4,
             shininess: 32.0,
         };
@@ -66,6 +64,14 @@ impl<'a> Renderer<'a> {
 
         self.framebuffer.render()?;
         Ok(())
+    }
+
+    pub fn uniforms(&self) -> ScreenUniforms {
+        let size = self.get_window().inner_size();
+        ScreenUniforms {
+            width: size.width as f64,
+            height: size.height as f64,
+        }
     }
 
     pub fn reset_buffers(&mut self) {

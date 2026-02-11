@@ -10,22 +10,22 @@ use crate::{
 
 #[derive(Debug, Clone, Copy)]
 pub struct GlobalUniforms {
-    pub uniforms: AffineMatrices,
-    pub screen_width: f64,
-    pub screen_height: f64,
-    pub light_dir: Vector3,
+    pub affine: AffineMatrices,
+    pub screen: ScreenUniforms,
+    pub light: LightUniforms,
     pub camera_pos: Vector3,
-    pub ambient: f64,
     pub specular_strength: f64,
     pub shininess: f64,
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct LightUniforms {
     pub position: Vector3,
     pub direction: Vector3,
     pub ambient: f64,
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct ScreenUniforms {
     pub width: f64,
     pub height: f64,
