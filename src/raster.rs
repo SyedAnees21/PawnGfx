@@ -87,10 +87,15 @@ pub fn draw_call_generic<VS, FS>(
     for (v, n, uv) in triangles {
         let [v0, v1, v2] = v;
 
+        
         let face_normal = (v1 - v0).cross(&(v2 - v0)).normalize();
         let [n0, n1, n2] = n.unwrap_or([face_normal; 3]);
         let [uv0, uv1, uv2] = uv.unwrap_or([Vector2::ZERO; 3]);
 
+        // v.into_iter().enumerate().map(|(ix, vert)| {
+        //     v_shader.shade(VertexIn { position: vert, normal: n.unwrap_or(face_normal(v0, v1, v2))[ix], uv: (), face_normal: () }, u)
+        // })
+        
         let out0 = v_shader.shade(
             VertexIn {
                 position: v0,
@@ -143,6 +148,10 @@ pub fn draw_call_generic<VS, FS>(
         let v1_screen = clip_to_screen(&v1_ndc, w as f64, h as f64);
         let v2_screen = clip_to_screen(&v2_ndc, w as f64, h as f64);
 
+        if is_backfacing(v0_screen.0, v1_screen.0, v2_screen.0) {
+            continue;
+        }
+
         draw_triangle_shaded(
             frame_buffer,
             depth_buffer,
@@ -178,9 +187,8 @@ fn draw_triangle_shaded<FS>(
 ) where
     FS: FragmentShader,
 {
-    if is_backfacing(s0, s1, s2) {
-        return;
-    }
+    let area = edge_function(s0, s1, s2);
+    let inv_area = 1.0 / area;
 
     let (min, max) = bounding_rect(s0, s1, s2);
 
@@ -193,9 +201,6 @@ fn draw_triangle_shaded<FS>(
         for x in min_x..=max_x {
             let p = Vector2::new(x as f64 + 0.5, y as f64 + 0.5);
 
-            let area = edge_function(s0, s1, s2);
-            let inv_area = 1.0 / area;
-
             let w0 = edge_function(s1, s2, p) * inv_area;
             let w1 = edge_function(s2, s0, p) * inv_area;
             let w2 = edge_function(s0, s1, p) * inv_area;
@@ -205,8 +210,8 @@ fn draw_triangle_shaded<FS>(
             }
 
             let bary = (w0, w1, w2);
-            let inv_depth = (inv_w0, inv_w1, inv_w2);
 
+            let inv_depth = math::barycentric_interpolate(w0, w1, w2, inv_w0, inv_w1, inv_w2);
             let z = math::perspective_interpolate(bary, inv_depth, (z0, z1, z2));
 
             let depth_index = (y * w + x) as usize;

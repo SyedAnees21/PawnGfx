@@ -11,7 +11,7 @@ use crate::{
     math::{AffineMatrices, Matrix4},
     raster,
     scene::Scene,
-    shaders::{Flat, GlobalUniforms, Gouraud, Phong},
+    shaders::{self, GlobalUniforms},
 };
 
 const DEFAULT_BG_COLOR: u32 = 77;
@@ -51,8 +51,8 @@ impl<'a> Renderer<'a> {
             shininess: 32.0,
         };
 
-        let v_shader = Flat;
-        let f_shader = Flat;
+        let v_shader = shaders::Flat;
+        let f_shader = shaders::Flat;
 
         raster::draw_call_generic(
             frame_buffer,
