@@ -2,17 +2,19 @@ mod camera;
 mod object;
 mod texture;
 mod transform;
+mod light;
 
 pub use camera::*;
 pub use object::*;
 pub use texture::*;
+pub use light::*;
 
 use crate::{animate::ProceduralAnimator, input::InputState, math::Vector3};
 
 pub struct Scene {
     pub camera: Camera,
     pub object: Object,
-    pub light: Vector3,
+    pub light: Light,
     pub input: InputState,
     pub animator: ProceduralAnimator,
 }
@@ -26,7 +28,7 @@ impl Default for Scene {
             Texture::from_file("./assets/texture/Checker-Texture.png", Wrap::Mirror).unwrap();
         let object = Object::from_mesh_texture(cube_mesh, texture);
 
-        let light = Vector3::new(1.0, 1.0, 2.0).normalize();
+        let light = Light::default();
         let input = InputState::default();
 
         let animator =

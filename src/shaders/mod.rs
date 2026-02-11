@@ -24,8 +24,6 @@ pub struct LightUniforms {
     pub position: Vector3,
     pub direction: Vector3,
     pub ambient: f64,
-    pub specular: f64,
-    pub shininess: f64,
 }
 
 pub struct ScreenUniforms {

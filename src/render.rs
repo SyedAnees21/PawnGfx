@@ -44,7 +44,7 @@ impl<'a> Renderer<'a> {
             uniforms: affine,
             screen_width: win_size.width as f64,
             screen_height: win_size.height as f64,
-            light_dir: scene.light,
+            light_dir: scene.light.direction(),
             camera_pos: scene.camera.position,
             ambient: 0.1,
             specular_strength: 0.4,
