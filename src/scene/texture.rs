@@ -121,11 +121,8 @@ impl Texture {
         let c10 = self.texel(x1, y0);
         let c01 = self.texel(x0, y1);
         let c11 = self.texel(x1, y1);
-
-        let a = math::lerp(c00, c10, tx);
-        let b = math::lerp(c01, c11, tx);
-
-        math::lerp(a, b, ty)
+        
+        math::bi_lerp(c00, c01, c10, c11, tx, ty)
     }
 }
 
