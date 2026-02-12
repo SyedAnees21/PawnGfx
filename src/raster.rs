@@ -72,19 +72,23 @@ pub fn draw_call<F, D, VS, FS>(
         let mut r_vertices = [RasterIn::default(); 3];
         let mut varyings = [Varyings::default(); 3];
 
-        v_out.iter().enumerate().for_each(|(i, out)| {
-            let v_clip = out.clip;
+        for i in 0..3 {
+            let v_clip = v_out[i].clip;
             let inv_w = 1.0 / v_clip.w;
 
             let mut v_ndc = v_clip * inv_w;
             v_ndc.w = inv_w;
 
             r_vertices[i] = clip_to_screen(&v_ndc, w as f64, h as f64);
-            varyings[i] = out.vary;
-        });
+            varyings[i] = v_out[i].vary;
+        }
 
         if is_backfacing(r_vertices[0].s, r_vertices[1].s, r_vertices[2].s) {
             continue;
+        }
+
+        for i in 0..3 {
+            varyings[i] = varyings[i] * r_vertices[i].inv_w;
         }
 
         draw_triangle_shaded(
@@ -154,7 +158,9 @@ fn draw_triangle_shaded<F, D, FS>(
             let w1 = edge_function(s2, s0, p) * inv_area;
             let w2 = edge_function(s0, s1, p) * inv_area;
 
-            if w0 < 0.0 || w1 < 0.0 || w2 < 0.0 {
+            let is_outside = w0 < 0.0 || w1 < 0.0 || w2 < 0.0;
+
+            if is_outside {
                 continue;
             }
 
@@ -167,13 +173,7 @@ fn draw_triangle_shaded<F, D, FS>(
             let pixel_index = depth_index * 4;
 
             if z < depth_buffer[depth_index] {
-                let mut vary = varyings.clone();
-
-                for i in 0..3 {
-                    vary[i] = vary[i] * raster_in[i].inv_w;
-                }
-
-                let [v0, v1, v2] = vary;
+                let [v0, v1, v2] = varyings;
 
                 let varying = math::perspective_interpolate(bary, inv_depth, (v0, v1, v2));
                 let color = fs.shade(varying, global_uniforms, texture);
