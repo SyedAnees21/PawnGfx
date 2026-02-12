@@ -4,14 +4,12 @@ use winit::{
 };
 
 use crate::{
-    error::PResult,
-    input::{self, InputState},
-    render::Renderer,
-    scene::Scene,
+    error::PResult, fps::FPSCounter, input::{self, InputState}, render::Renderer, scene::Scene
 };
 
 pub struct Engine<'a> {
     scene: Scene,
+    fps: FPSCounter,
     renderer: Renderer<'a>,
     input: InputState,
 }
@@ -19,6 +17,7 @@ pub struct Engine<'a> {
 impl<'a> Engine<'a> {
     pub fn new(scene: Scene, renderer: Renderer<'a>, input: InputState) -> Self {
         Self {
+            fps: FPSCounter::default(),
             scene,
             renderer,
             input,
@@ -51,6 +50,7 @@ impl<'a> Engine<'a> {
                     );
                 }
 
+                self.fps.update();
                 self.renderer.get_window().request_redraw()
             }
             Event::DeviceEvent { event, .. } => match event {
