@@ -5,14 +5,15 @@ mod color;
 mod draw;
 mod engine;
 mod error;
+mod fps;
 mod geometry;
 mod input;
+mod loaders;
 mod math;
 mod raster;
 mod render;
 mod scene;
 mod shaders;
-mod loaders;
 
 #[cfg(test)]
 mod tests;
