@@ -3,6 +3,8 @@
 A minimal software renderer written in Rust for learning and experimentation with 3D graphics fundamentals.
 The aim is to develop a fast and optimized light weight CPU based software renderer to view .obj and gltf models.
 
+To view the currently implemented flow and architecture of the application and rendering pipeline [Architecture](./docs/ARCHITECTURE.md)
+
 ## Overview
 
 PawnGFX is a barebone graphics renderer that implements core 3D graphics concepts including:
