@@ -12,7 +12,7 @@ PawnGFX is a barebone graphics renderer that implements core 3D graphics concept
 - Wireframe rendering of 3D objects
 - User input handling for object and camera control
 
-For update features list refer to [features](./FEATURES.md)
+For update features list refer to [features](./docs/FEATURES.md)
 
 ## Features
 
