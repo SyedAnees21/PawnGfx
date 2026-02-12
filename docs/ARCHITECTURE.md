@@ -26,11 +26,11 @@ The rendering pipeline is fully CPU-based and uses a shader-like interface.
 
 ```mermaid
 flowchart TD
-    M[Mesh -> Triangles Iterator] --> VS[Vertex Shader<br/>Flat | Gouraud | Phong]
+    M[Mesh -> Triangles Iterator] --> VS[Vertex Shader<br/>Flat / Gouraud / Phong]
     VS --> CS[Clip -> NDC -> Screen]
     CS --> BF[Back-Face Culling]
     BF --> RT[Triangle Rasterization<br/>Bounding box + Barycentric + Depth + Persp-correct]
-    RT --> FS[Fragment Shader<br/>Flat | Gouraud | Phong]
+    RT --> FS[Fragment Shader<br/>Flat / Gouraud / Phong]
     FS --> FB[Framebuffer + DepthBuffer]
     FB --> PR[pixels::Pixels::render]
 ```
