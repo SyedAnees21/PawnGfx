@@ -8,31 +8,37 @@ pub enum Wrap {
     Mirror,
 }
 
-pub struct Texture {
+pub struct Mip {
     width: usize,
     height: usize,
-    wrap: Wrap,
     data: Vec<Color>,
+}
+
+impl Mip {
+    pub fn new(width: usize, height: usize, data: Vec<Color>) -> Self {
+        Self { width, height, data }
+    }
+}
+
+pub struct Texture {
+    mipmap: Vec<Mip>,
+    wrap: Wrap,
 }
 
 impl Default for Texture {
     fn default() -> Self {
         Self {
-            width: 0,
-            height: 0,
+            mipmap: vec![],
             wrap: Wrap::clamp,
-            data: vec![],
         }
     }
 }
 
 impl Texture {
-    pub fn new(w: usize, h: usize, data: Vec<Color>) -> Self {
+    pub fn new(w: usize, h: usize, data: Vec<Color>, wrap_mode: Wrap) -> Self {
         Self {
-            width: w,
-            height: h,
+            mipmap: vec![Mip::new(w, h, data)],
             wrap: Wrap::clamp,
-            data,
         }
     }
 
@@ -53,13 +59,12 @@ impl Texture {
             ));
         }
 
-        Ok(Self {
-            width: w as usize,
-            height: h as usize,
-            wrap: wrap_mode,
-            data,
-        })
+        Ok(Self::new(w as usize, h as usize,  data, wrap_mode))
     }
+
+    // pub fn bake(&mut self) {
+
+    // }
 
     pub fn texel(&self, u: usize, v: usize) -> Color {
         self.data[v * self.width + u]
@@ -121,10 +126,12 @@ impl Texture {
         let c10 = self.texel(x1, y0);
         let c01 = self.texel(x0, y1);
         let c11 = self.texel(x1, y1);
-        
+
         math::bi_lerp(c00, c01, c10, c11, tx, ty)
     }
 }
+
+
 
 #[cfg(test)]
 mod tests {
