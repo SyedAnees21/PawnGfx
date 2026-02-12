@@ -12,6 +12,9 @@
     - [x] Linear sampling
     - [x] Bi-Linear sampling
     - [x] Wrapping
+- [x] Shaders
+    - [x] Vertex
+    - [x] Fragment
 - [ ] Shading models (flat, Gouraud, Phong)
     - [x] Flat-Lambart
     - [ ] Gouraud
@@ -67,7 +70,7 @@
 - [ ] Multi-threading support
 
 ## Lighting & Effects
-- [ ] Ambient lighting
+- [x] Ambient lighting
 - [x] Directional lights
 - [ ] Point lights
 - [ ] Spot lights
