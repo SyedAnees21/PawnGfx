@@ -1,56 +1,98 @@
-mod effects;
-mod vertex;
+﻿mod effects;
+
+use std::ops::{Add, Mul};
 
 pub use effects::*;
-pub use vertex::*;
 
 use crate::{
-    geometry::Mesh,
-    math::{Matrix4, AffineMatrices, Vector3},
+    color::Color,
+    geometry::{Normal, UV},
+    math::{AffineMatrices, Vector2, Vector3, Vector4},
+    scene::Texture,
 };
 
 #[derive(Debug, Clone, Copy)]
 pub struct GlobalUniforms {
-    pub uniforms: AffineMatrices,
-    pub screen_width: f64,
-    pub screen_height: f64,
+    pub affine: AffineMatrices,
+    pub screen: ScreenUniforms,
+    pub light: LightUniforms,
+    pub camera_pos: Vector3,
+    pub specular_strength: f64,
+    pub shininess: f64,
 }
 
-impl HasUniforms for GlobalUniforms {
-    fn model_matrix(&self) -> Matrix4 {
-        self.uniforms.model
+#[derive(Debug, Clone, Copy)]
+pub struct LightUniforms {
+    pub position: Vector3,
+    pub direction: Vector3,
+    pub ambient: f64,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct ScreenUniforms {
+    pub width: f64,
+    pub height: f64,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct VertexIn {
+    pub attributes: VertexAttributes,
+    pub face_normal: Vector3,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct VertexAttributes {
+    pub position: Vector3,
+    pub normal: Normal,
+    pub uv: UV,
+}
+
+#[derive(Default, Debug, Clone, Copy)]
+pub struct Varyings {
+    pub uv: UV,
+    pub normal: Normal,
+    pub world_pos: Vector3,
+    pub intensity: f64,
+}
+
+impl Mul<f64> for Varyings {
+    type Output = Self;
+
+    #[inline(always)]
+    fn mul(self, rhs: f64) -> Self::Output {
+        Self {
+            uv: self.uv * rhs,
+            normal: self.normal * rhs,
+            world_pos: self.world_pos * rhs,
+            intensity: self.intensity * rhs,
+        }
     }
+}
 
-    fn projection_matrix(&self) -> Matrix4 {
-        self.uniforms.projection
+impl Add for Varyings {
+    type Output = Self;
+
+    #[inline(always)]
+    fn add(self, rhs: Self) -> Self::Output {
+        Self {
+            uv: self.uv + rhs.uv,
+            normal: self.normal + rhs.normal,
+            world_pos: self.world_pos + rhs.world_pos,
+            intensity: self.intensity + rhs.intensity,
+        }
     }
-
-    fn view_matrix(&self) -> Matrix4 {
-        self.uniforms.view
-    }
 }
 
-pub trait HasUniforms {
-    fn model_matrix(&self) -> Matrix4;
-    fn view_matrix(&self) -> Matrix4;
-    fn projection_matrix(&self) -> Matrix4;
+#[derive(Default, Debug, Clone, Copy)]
+pub struct VertexOut {
+    pub clip: Vector4,
+    pub vary: Varyings,
 }
 
-pub trait Vertex {
-    type Uniforms: HasUniforms + Copy;
-    type Out;
-
-    fn process_vertices(
-        &self,
-        v0: Vector3,
-        v1: Vector3,
-        v2: Vector3,
-        uniforms: Self::Uniforms,
-    ) -> Self::Out;
+pub trait VertexShader {
+    fn shade(&self, input: VertexIn, u: &GlobalUniforms) -> VertexOut;
 }
 
-pub trait Fragment {
-    type In;
-    type Out;
-    fn process_fragment(&self, input: Self::In) -> Self::Out;
+pub trait FragmentShader {
+    fn shade(&self, input: Varyings, u: &GlobalUniforms, texture: &Texture) -> Color;
 }

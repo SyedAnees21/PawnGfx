@@ -1,5 +1,5 @@
 use crate::{
-    geometry::{edge_function, mesh::Mesh},
+    geometry::{Normal, UV, edge_function, mesh::Mesh},
     math::{Vector2, Vector3},
 };
 
@@ -9,7 +9,7 @@ pub struct Triangles<'a> {
 }
 
 impl Iterator for Triangles<'_> {
-    type Item = ([Vector3; 3], Option<[Vector3; 3]>, Option<[Vector2; 3]>);
+    type Item = ([Vector3; 3], [Normal; 3], [UV; 3]);
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.counter + 2 >= self.mesh.indices.len() {
@@ -35,13 +35,13 @@ impl Iterator for Triangles<'_> {
                 self.mesh.indices.n[self.counter + 2],
             );
 
-            Some([
+            [
                 self.mesh.normals[n0],
                 self.mesh.normals[n1],
                 self.mesh.normals[n2],
-            ])
+            ]
         } else {
-            None
+            [Normal::default(); 3]
         };
 
         let uv = if self.mesh.has_uv() {
@@ -51,9 +51,9 @@ impl Iterator for Triangles<'_> {
                 self.mesh.indices.t[self.counter + 2],
             );
 
-            Some([self.mesh.uv[n0], self.mesh.uv[n1], self.mesh.uv[n2]])
+            [self.mesh.uv[n0], self.mesh.uv[n1], self.mesh.uv[n2]]
         } else {
-            None
+            [UV::default(); 3]
         };
 
         self.counter += 3;

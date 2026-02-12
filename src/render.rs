@@ -7,12 +7,11 @@ use winit::{
 };
 
 use crate::{
-    draw::Face_NORMALS,
     error::PResult,
-    math::{AffineMatrices, Matrix4, Vector4},
+    math::{AffineMatrices, Matrix4},
     raster,
     scene::Scene,
-    shaders::GlobalUniforms,
+    shaders::{self, GlobalUniforms, ScreenUniforms},
 };
 
 const DEFAULT_BG_COLOR: u32 = 77;
@@ -26,8 +25,8 @@ pub struct Renderer<'a> {
 
 impl<'a> Renderer<'a> {
     pub fn render(&mut self, scene: &mut Scene) -> PResult<()> {
-        let win_size = self.get_window().inner_size();
-        let aspect = win_size.width as f64 / win_size.height as f64;
+        let screen = self.uniforms();
+        let aspect = screen.width as f64 / screen.height as f64;
 
         self.reset_buffers();
 
@@ -42,22 +41,37 @@ impl<'a> Renderer<'a> {
         let affine = AffineMatrices::from_mvp(model, view, projection);
 
         let global_uniforms = GlobalUniforms {
-            uniforms: affine,
-            screen_width: win_size.width as f64,
-            screen_height: win_size.height as f64,
+            affine,
+            screen,
+            light: scene.light.uniforms(),
+            camera_pos: scene.camera.position,
+            specular_strength: 0.4,
+            shininess: 32.0,
         };
+
+        let v_shader = shaders::Flat;
+        let f_shader = shaders::Flat;
 
         raster::draw_call(
             frame_buffer,
             depth_buffer,
-            global_uniforms,
-            scene.light,
+            &global_uniforms,
             &scene.object.texture,
             scene.object.mesh.iter_triangles(),
+            &v_shader,
+            &f_shader,
         );
 
         self.framebuffer.render()?;
         Ok(())
+    }
+
+    pub fn uniforms(&self) -> ScreenUniforms {
+        let size = self.get_window().inner_size();
+        ScreenUniforms {
+            width: size.width as f64,
+            height: size.height as f64,
+        }
     }
 
     pub fn reset_buffers(&mut self) {

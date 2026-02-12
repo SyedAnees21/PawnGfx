@@ -67,7 +67,14 @@ impl Default for Mesh {
 }
 
 impl Mesh {
-    pub fn new(vertices: Vertices, uv: Vec<Vector2>, indices: Indices, vnormals: Normals) -> Self {
+    pub fn new(
+        vertices: Vertices,
+        mut uv: Vec<UV>,
+        mut indices: Indices,
+        mut vnormals: Normals,
+    ) -> Self {
+        Self::bake_mesh(&vertices, &mut indices, &mut uv, &mut vnormals);
+
         Self {
             vertices,
             indices,
@@ -109,6 +116,44 @@ impl Mesh {
 
     pub fn has_uv(&self) -> bool {
         !self.uv.is_empty()
+    }
+
+    fn bake_mesh(
+        vertices: &Vertices,
+        indices: &mut Indices,
+        uv: &mut Vec<UV>,
+        normals: &mut Normals,
+    ) {
+        if normals.is_empty() {
+            Self::bake_normals(vertices, indices, normals);
+        }
+    }
+
+    fn bake_normals(vertices: &Vertices, indices: &mut Indices, normals: &mut Normals) {
+        normals.resize(vertices.len(), Normal::default());
+        let count = indices.v.len() / 3;
+
+        for i in 0..count {
+            let id0 = indices.v[i * 3];
+            let id1 = indices.v[i * 3 + 1];
+            let id2 = indices.v[i * 3 + 2];
+
+            let v0 = vertices[id0];
+            let v1 = vertices[id1];
+            let v2 = vertices[id2];
+
+            let f_normal = (v1 - v0).cross(&(v2 - v0));
+
+            indices.n[i * 3] = id0;
+            indices.n[i * 3 + 1] = id1;
+            indices.n[i * 3 + 2] = id2;
+
+            normals[id0] = normals[id0] + f_normal;
+            normals[id1] = normals[id1] + f_normal;
+            normals[id2] = normals[id2] + f_normal;
+        }
+
+        normals.iter_mut().for_each(|n| *n = n.normalize());
     }
 }
 

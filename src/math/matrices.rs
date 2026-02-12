@@ -16,10 +16,12 @@ impl Matrix4 {
         ],
     };
 
+    #[inline(always)]
     pub fn identity() -> Matrix4 {
         Matrix4::IDENTITY
     }
 
+    #[inline(always)]
     pub fn transpose(&self) -> Matrix4 {
         let mut transposed = Matrix4 {
             data: [[0.0; 4]; 4],
@@ -34,6 +36,7 @@ impl Matrix4 {
         transposed
     }
 
+    #[inline(always)]
     pub fn inverse(&self) -> Self {
         let m = self.data;
 
@@ -89,6 +92,7 @@ impl Matrix4 {
         Self { data: inv }
     }
 
+    #[inline(always)]
     pub fn from_transforms(position: Vector3, scale: Vector3, rotation: Vector3) -> Self {
         let scale_m = Self::scale_matrix(scale.x, scale.y, scale.z);
         let rotation_m = Self::rotation_matrix(rotation);
@@ -97,6 +101,7 @@ impl Matrix4 {
         translation_m * rotation_m * scale_m
     }
 
+    #[inline(always)]
     pub fn scale_matrix(sx: f64, sy: f64, sz: f64) -> Matrix4 {
         Matrix4 {
             data: [
@@ -108,6 +113,7 @@ impl Matrix4 {
         }
     }
 
+    #[inline(always)]
     pub fn translation_matrix(tx: f64, ty: f64, tz: f64) -> Matrix4 {
         Matrix4 {
             data: [
@@ -119,6 +125,7 @@ impl Matrix4 {
         }
     }
 
+    #[inline(always)]
     pub fn rotation_y(angle_rad: f64) -> Matrix4 {
         let c = angle_rad.cos();
         let s = angle_rad.sin();
@@ -133,6 +140,7 @@ impl Matrix4 {
         }
     }
 
+    #[inline(always)]
     pub fn rotation_x(angle_rad: f64) -> Matrix4 {
         let c = angle_rad.cos();
         let s = angle_rad.sin();
@@ -147,6 +155,7 @@ impl Matrix4 {
         }
     }
 
+    #[inline(always)]
     pub fn rotation_z(angle_rad: f64) -> Matrix4 {
         let c = angle_rad.cos();
         let s = angle_rad.sin();
@@ -161,6 +170,7 @@ impl Matrix4 {
         }
     }
 
+    #[inline(always)]
     pub fn rotation_matrix(euler: Vector3) -> Matrix4 {
         let rx = Matrix4::rotation_x(euler.x.to_radians());
         let ry = Matrix4::rotation_y(euler.y.to_radians());
@@ -169,6 +179,7 @@ impl Matrix4 {
         rz * ry * rx
     }
 
+    #[inline(always)]
     pub fn projection_matrix(fov_rad: f64, aspect: f64, near: f64, far: f64) -> Matrix4 {
         let f = 1.0 / (fov_rad / 2.0).tan();
         let nf = 1.0 / (near - far);
@@ -183,6 +194,7 @@ impl Matrix4 {
         }
     }
 
+    #[inline(always)]
     pub fn perspective_matrix(fov_rad: f64, aspect: f64, near: f64, far: f64) -> Matrix4 {
         Self::projection_matrix(fov_rad, aspect, near, far)
     }
@@ -191,6 +203,7 @@ impl Matrix4 {
 impl Mul for Matrix4 {
     type Output = Matrix4;
 
+    #[inline(always)]
     fn mul(self, rhs: Matrix4) -> Matrix4 {
         let mut result = Matrix4 {
             data: [[0.0; 4]; 4],
@@ -211,6 +224,7 @@ impl Mul for Matrix4 {
 impl Mul<Vector4> for Matrix4 {
     type Output = Vector4;
 
+    #[inline(always)]
     fn mul(self, rhs: Vector4) -> Vector4 {
         let x = self.data[0][0] * rhs.x
             + self.data[0][1] * rhs.y
@@ -243,6 +257,7 @@ pub struct AffineMatrices {
 }
 
 impl AffineMatrices {
+    #[inline(always)]
     pub fn from_mvp(model: Matrix4, view: Matrix4, projection: Matrix4) -> Self {
         let mvp = projection * view * model;
         let normal = model.inverse().transpose();
