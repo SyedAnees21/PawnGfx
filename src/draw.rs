@@ -1,7 +1,6 @@
-use crate::{
-    math::{Matrix4, Vector3},
-    raster::{clip_to_screen, clip_volume_check, transform_to_clip_space},
-};
+#![allow(unused)]
+
+use crate::math::{Matrix4, Vector3};
 
 pub fn draw_line<T>(
     mut frame: T,
@@ -98,7 +97,7 @@ pub const CUBE_TRIS: [usize; 36] = [
     0, 1, 5, 0, 5, 4,
 ];
 
-pub const Face_NORMALS: [Vector3; 6] = [
+pub const FACE_NORMALS: [Vector3; 6] = [
     Vector3::new(0.0, 0.0, -1.0), // FRONT
     Vector3::new(0.0, 0.0, 1.0),  // BACK
     Vector3::new(-1.0, 0.0, 0.0), // LEFT
@@ -146,5 +145,147 @@ pub const Face_NORMALS: [Vector3; 6] = [
 //             y1 as i32,
 //             z1,
 //         );
+//     }
+// }
+
+// pub fn draw_call<F, D>(
+//     frame_buffer: &mut F,
+//     depth_buffer: &mut D,
+//     global_uniforms: GlobalUniforms,
+//     light: Vector3,
+//     texture: &Texture,
+//     triangles: Triangles,
+// ) where
+//     F: AsMut<[u8]> + ?Sized,
+//     D: AsMut<[f64]> + ?Sized,
+// {
+//     let frame = frame_buffer.as_mut();
+//     let depth = depth_buffer.as_mut();
+
+//     let w = global_uniforms.screen.width as i32;
+//     let h = global_uniforms.screen.height as i32;
+
+//     for (_idx, (v, n, uv)) in triangles.enumerate() {
+//         let [v0, v1, v2] = v;
+
+//         let v0_clip = transform_to_clip_space(v0, global_uniforms.affine.mvp);
+//         let v1_clip = transform_to_clip_space(v1, global_uniforms.affine.mvp);
+//         let v2_clip = transform_to_clip_space(v2, global_uniforms.affine.mvp);
+
+//         if v0_clip.w <= 0.0 || v1_clip.w <= 0.0 || v2_clip.w <= 0.0 {
+//             continue;
+//         }
+
+//         let [n1, _, _] = n;
+
+//         let face_normal = (global_uniforms.affine.normal * Vector4::from((n1, 0.0))).xyz();
+
+//         let inv_w0 = 1.0 / v0_clip.w;
+//         let inv_w1 = 1.0 / v1_clip.w;
+//         let inv_w2 = 1.0 / v2_clip.w;
+
+//         let mut v0_ndc = v0_clip * inv_w0;
+//         let mut v1_ndc = v1_clip * inv_w1;
+//         let mut v2_ndc = v2_clip * inv_w2;
+
+//         v0_ndc.w = inv_w0;
+//         v1_ndc.w = inv_w1;
+//         v2_ndc.w = inv_w2;
+
+//         let v0 = clip_to_screen(&v0_ndc, w as f64, h as f64);
+//         let v1 = clip_to_screen(&v1_ndc, w as f64, h as f64);
+//         let v2 = clip_to_screen(&v2_ndc, w as f64, h as f64);
+
+//         draw_triangle(
+//             frame,
+//             depth,
+//             w,
+//             h,
+//             light,
+//             face_normal,
+//             &texture,
+//             uv,
+//             v0,
+//             v1,
+//             v2,
+//         );
+//     }
+// }
+
+// pub fn draw_triangle(
+//     frame_buffer: &mut [u8],
+//     depth_buffer: &mut [f64],
+//     w: i32,
+//     h: i32,
+//     light: Vector3,
+//     face_normal: Vector3,
+//     texture: &Texture,
+//     uv: [UV; 3],
+//     (v0, z0, inv_w0): (Vector2, f64, f64),
+//     (v1, z1, inv_w1): (Vector2, f64, f64),
+//     (v2, z2, inv_w2): (Vector2, f64, f64),
+// ) {
+//     let frame = frame_buffer.as_mut();
+
+//     if is_backfacing(v0, v1, v2) {
+//         return;
+//     }
+
+//     let (min, max) = bounding_rect(v0, v1, v2);
+
+//     let min_x = min.x.max(0.0) as i32;
+//     let min_y = min.y.max(0.0) as i32;
+//     let max_x = max.x.min((w - 1) as f64) as i32;
+//     let max_y = max.y.min((h - 1) as f64) as i32;
+
+//     for y in min_y..=max_y {
+//         for x in min_x..=max_x {
+//             let p = Vector2::new(x as f64 + 0.5, y as f64 + 0.5);
+
+//             {
+//                 let area = edge_function(v0, v1, v2);
+//                 let inv_area = 1.0 / area;
+
+//                 let w0 = edge_function(v1, v2, p) * inv_area;
+//                 let w1 = edge_function(v2, v0, p) * inv_area;
+//                 let w2 = edge_function(v0, v1, p) * inv_area;
+
+//                 if w0 < 0.0 || w1 < 0.0 || w2 < 0.0 {
+//                     continue;
+//                 }
+
+//                 let bary_cords = (w0, w1, w2);
+//                 let inv_depth_cords = (inv_w0, inv_w1, inv_w2);
+
+//                 let z = persp_correct_interpolate(bary_cords, inv_depth_cords, (z0, z1, z2));
+
+//                 let depth_index = (y * w + x) as usize;
+//                 let pixel_index = (depth_index * 4) as usize;
+
+//                 if z < depth_buffer[depth_index] {
+//                     let [uv0, uv1, uv2] = uv;
+//                     let (uv0, uv1, uv2) = (uv0 * inv_w0, uv1 * inv_w1, uv2 * inv_w2);
+
+//                     let u = persp_correct_interpolate(
+//                         bary_cords,
+//                         inv_depth_cords,
+//                         (uv0.x, uv1.x, uv2.x),
+//                     );
+//                     let v = persp_correct_interpolate(
+//                         bary_cords,
+//                         inv_depth_cords,
+//                         (uv0.y, uv1.y, uv2.y),
+//                     );
+
+//                     let s_color = texture.bi_sample(u, v);
+
+//                     let intensity = face_normal.normalize().dot(&light).max(0.0);
+//                     let color = s_color * intensity;
+
+//                     depth_buffer[depth_index] = z;
+//                     frame[pixel_index..pixel_index + 4].copy_from_slice(&color.to_rgba8());
+//                 }
+//             }
+//         }
 //     }
 // }

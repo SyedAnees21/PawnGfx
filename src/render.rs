@@ -52,7 +52,7 @@ impl<'a> Renderer<'a> {
         let v_shader = shaders::Flat;
         let f_shader = shaders::Flat;
 
-        raster::draw_call_generic(
+        raster::draw_call(
             frame_buffer,
             depth_buffer,
             &global_uniforms,

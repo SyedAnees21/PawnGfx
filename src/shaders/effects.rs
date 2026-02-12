@@ -1,20 +1,20 @@
 ﻿use crate::{
     color::Color,
-    math::{Vector4},
-    shaders::{FragmentShader, GlobalUniforms, VertexIn, VertexOut, VertexShader, Varyings},
+    math::Vector4,
+    shaders::{FragmentShader, GlobalUniforms, Varyings, VertexIn, VertexOut, VertexShader},
 };
 
 pub struct Flat;
 
 impl VertexShader for Flat {
     fn shade(&self, input: VertexIn, u: &GlobalUniforms) -> VertexOut {
-        let world_pos = (u.affine.model * Vector4::from((input.position, 1.0))).xyz();
+        let world_pos = (u.affine.model * Vector4::from((input.attributes.position, 1.0))).xyz();
         let normal = (u.affine.normal * Vector4::from((input.face_normal, 0.0))).xyz();
 
         VertexOut {
-            clip: u.affine.mvp * Vector4::from((input.position, 1.0)),
+            clip: u.affine.mvp * Vector4::from((input.attributes.position, 1.0)),
             vary: Varyings {
-                uv: input.uv,
+                uv: input.attributes.uv,
                 normal,
                 world_pos,
                 intensity: 0.0,
