@@ -53,6 +53,15 @@ impl Color {
 }
 
 impl Color {
+    pub fn add_raw(self, other: Color) -> Color {
+        Color(
+            self.0 + other.0,
+            self.1 + other.1,
+            self.2 + other.2,
+            self.3 + other.3,
+        )
+    }
+
     pub fn to_rgba8(&self) -> [u8; 4] {
         [
             (self.0 * 255.0) as u8,
