@@ -1,0 +1,9 @@
+﻿[book]
+title = "PawnGFX Pseudocode"
+authors = ["Syed Anees"]
+language = "en"
+multilingual = false
+src = "src"
+
+[output.html]
+# Allow GitHub-friendly rendering.
