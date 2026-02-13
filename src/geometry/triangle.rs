@@ -1,5 +1,5 @@
 use crate::{
-    geometry::{Normal, UV, edge_function, mesh::Mesh},
+    geometry::{Normal, UV, mesh::Mesh},
     math::{Vector2, Vector3},
 };
 
@@ -67,6 +67,26 @@ impl<'a> Triangles<'a> {
     }
 }
 
+#[inline(always)]
+pub fn edge_function(v0: Vector2, v1: Vector2, p: Vector2) -> f64 {
+    (p.x - v0.x) * (v1.y - v0.y) - (p.y - v0.y) * (v1.x - v0.x)
+}
+
+#[inline(always)]
+pub fn level_of_detail(screen_area: f64, uv: [UV; 3], size: f64) -> f64 {
+    let area_uv = edge_function(uv[0], uv[1], uv[2]).abs();
+
+    if screen_area < 1e-5 {
+        return 0.0;
+    }
+
+    let rho = ((area_uv * size * size) / screen_area);
+    let lod = 0.5 * rho.log2();
+
+    lod
+}
+
+#[inline(always)]
 pub fn point_inside_triangle(v0: Vector2, v1: Vector2, v2: Vector2, p: Vector2) -> bool {
     let ef0 = edge_function(v0, v1, p);
     let ef1 = edge_function(v1, v2, p);

@@ -24,10 +24,6 @@ pub type UV = Vector2;
 pub type Vertex = Vector3;
 pub type Normal = Vector3;
 
-pub fn edge_function(v0: Vector2, v1: Vector2, p: Vector2) -> f64 {
-    (p.x - v0.x) * (v1.y - v0.y) - (p.y - v0.y) * (v1.x - v0.x)
-}
-
 pub fn bounding_rect(v0: Vector2, v1: Vector2, v2: Vector2) -> (Vector2, Vector2) {
     let min_x = v0.x.min(v1.x.min(v2.x)).floor();
     let min_y = v0.y.min(v1.y.min(v2.y)).floor();

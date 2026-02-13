@@ -1,5 +1,6 @@
 ﻿use crate::{
     color::Color,
+    geometry::{self, UV},
     math::Vector4,
     shaders::{FragmentShader, GlobalUniforms, Varyings, VertexIn, VertexOut, VertexShader},
 };
@@ -24,13 +25,19 @@ impl VertexShader for Flat {
 }
 
 impl FragmentShader for Flat {
-    fn shade(&self, input: Varyings, u: &GlobalUniforms, texture: &crate::scene::Texture) -> Color {
+    fn shade(
+        &self,
+        input: Varyings,
+        u: &GlobalUniforms,
+        texture: &crate::scene::Texture,
+        lod: f64,
+    ) -> Color {
         let n = input.normal.normalize();
         let l = u.light.direction;
         let diff = n.dot(&l).max(0.0);
         let intensity = (u.light.ambient + diff).min(1.0);
 
-        texture.bi_sample(input.uv.x, input.uv.y) * intensity
+        texture.tri_sample(input.uv.x, input.uv.y, lod) * intensity
     }
 }
 
