@@ -221,13 +221,13 @@ impl Mesh {
             let tangent = (v_e1 * uv_e2.y - v_e2 * uv_e1.y) * f;
             let bi_tangent = (v_e1 * -uv_e2.x + v_e2 * uv_e1.x) * f;
 
-            tangents[v_id0] += tangent;
-            tangents[v_id1] += tangent;
-            tangents[v_id2] += tangent;
+            tangents[v_id0] += tangent.normalize();
+            tangents[v_id1] += tangent.normalize();
+            tangents[v_id2] += tangent.normalize();
 
-            bi_tangents[v_id0] += bi_tangent;
-            bi_tangents[v_id1] += bi_tangent;
-            bi_tangents[v_id2] += bi_tangent;
+            bi_tangents[v_id0] += bi_tangent.normalize();
+            bi_tangents[v_id1] += bi_tangent.normalize();
+            bi_tangents[v_id2] += bi_tangent.normalize();
         }
 
         (tangents, bi_tangents)

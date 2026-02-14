@@ -7,7 +7,7 @@ pub use effects::*;
 use crate::{
     color::Color,
     geometry::{Normal, UV, VertexAttributes},
-    math::{AffineMatrices, Vector2, Vector3, Vector4},
+    math::{AffineMatrices, Vector3, Vector4},
     scene::Texture,
 };
 
