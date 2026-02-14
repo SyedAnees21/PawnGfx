@@ -1,8 +1,9 @@
 use crate::{
-    color::Color, geometry::{Triangles, bounding_rect, edge_function}, math::{self, Vector2, Vector4}, scene::Texture, shaders::{
-        FragmentShader, GlobalUniforms, Varyings, VertexAttributes, VertexIn, VertexOut,
-        VertexShader,
-    }
+    color::Color,
+    geometry::{Triangles, bounding_rect, edge_function},
+    math::{self, Vector2, Vector4},
+    scene::Texture,
+    shaders::{FragmentShader, GlobalUniforms, Varyings, VertexIn, VertexOut, VertexShader},
 };
 
 #[derive(Default, Clone, Copy)]
@@ -40,20 +41,18 @@ pub fn draw_call<F, D, VS, FS>(
     let w = global_uniforms.screen.width as i32;
     let h = global_uniforms.screen.height as i32;
 
-    for (v, n, uv) in triangles {
+    for v in triangles {
         let [v0, v1, v2] = v;
 
-        let face_normal = (v1 - v0).cross(&(v2 - v0)).normalize();
+        let face_normal = (v1.position - v0.position)
+            .cross(&(v2.position - v0.position))
+            .normalize();
 
         let mut v_out = [VertexOut::default(); 3];
 
         for i in 0..3 {
             let v_in = VertexIn {
-                attributes: VertexAttributes {
-                    position: v[i],
-                    normal: n[i],
-                    uv: uv[i],
-                },
+                attributes: v[i],
                 face_normal,
             };
 

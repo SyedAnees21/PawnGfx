@@ -6,7 +6,7 @@ pub use effects::*;
 
 use crate::{
     color::Color,
-    geometry::{Normal, UV},
+    geometry::{Normal, UV, VertexAttributes},
     math::{AffineMatrices, Vector2, Vector3, Vector4},
     scene::Texture,
 };
@@ -38,13 +38,6 @@ pub struct ScreenUniforms {
 pub struct VertexIn {
     pub attributes: VertexAttributes,
     pub face_normal: Vector3,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub struct VertexAttributes {
-    pub position: Vector3,
-    pub normal: Normal,
-    pub uv: UV,
 }
 
 #[derive(Default, Debug, Clone, Copy)]

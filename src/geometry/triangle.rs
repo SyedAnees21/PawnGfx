@@ -1,5 +1,5 @@
 use crate::{
-    geometry::{Normal, UV, edge_function, mesh::Mesh},
+    geometry::{Normal, UV, VertexAttributes, edge_function, mesh::Mesh},
     math::{Vector2, Vector3},
 };
 
@@ -9,55 +9,38 @@ pub struct Triangles<'a> {
 }
 
 impl Iterator for Triangles<'_> {
-    type Item = ([Vector3; 3], [Normal; 3], [UV; 3]);
+    type Item = [VertexAttributes; 3];
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.counter + 2 >= self.mesh.indices.len() {
             return None;
         }
 
-        let (v0, v1, v2) = (
-            self.mesh.indices.v[self.counter],
-            self.mesh.indices.v[self.counter + 1],
-            self.mesh.indices.v[self.counter + 2],
-        );
+        let mut v_attributes = [VertexAttributes::default(); 3];
 
-        let v = [
-            self.mesh.vertices[v0],
-            self.mesh.vertices[v1],
-            self.mesh.vertices[v2],
-        ];
+        for i in 0..3 {
+            let index = self.counter + i;
 
-        let n = if self.mesh.has_normals() {
-            let (n0, n1, n2) = (
-                self.mesh.indices.n[self.counter],
-                self.mesh.indices.n[self.counter + 1],
-                self.mesh.indices.n[self.counter + 2],
-            );
+            let v_id = self.mesh.indices.v[index];
+            let n_id = self.mesh.indices.n[index];
+            let uv_id = self.mesh.indices.uv[index];
 
-            [
-                self.mesh.normals[n0],
-                self.mesh.normals[n1],
-                self.mesh.normals[n2],
-            ]
-        } else {
-            [Normal::default(); 3]
-        };
+            let v = self.mesh.vertices[v_id];
+            let n = self.mesh.normals[n_id];
+            let uv = self.mesh.uv[uv_id];
 
-        let uv = if self.mesh.has_uv() {
-            let (n0, n1, n2) = (
-                self.mesh.indices.uv[self.counter],
-                self.mesh.indices.uv[self.counter + 1],
-                self.mesh.indices.uv[self.counter + 2],
-            );
+            let tangent = self.mesh.tangents[v_id];
+            let bi_tangent = self.mesh.bi_tangents[v_id];
 
-            [self.mesh.uv[n0], self.mesh.uv[n1], self.mesh.uv[n2]]
-        } else {
-            [UV::default(); 3]
-        };
+            v_attributes[i].set_position(v);
+            v_attributes[i].set_normal(n);
+            v_attributes[i].set_uv(uv);
+            v_attributes[i].set_tangent(tangent);
+            v_attributes[i].set_bi_tangent(bi_tangent);
+        }
 
         self.counter += 3;
-        Some((v, n, uv))
+        Some(v_attributes)
     }
 }
 

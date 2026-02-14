@@ -8,6 +8,7 @@ use std::ops::{Add, Mul, Sub};
 pub use mesh::*;
 pub use shapes::*;
 pub use triangle::*;
+pub use vertex::*;
 
 use crate::math::{Vector2, Vector3};
 
