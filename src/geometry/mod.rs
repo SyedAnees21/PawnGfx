@@ -1,6 +1,7 @@
 mod mesh;
 mod shapes;
 mod triangle;
+mod vertex;
 
 use std::ops::{Add, Mul, Sub};
 
