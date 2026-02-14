@@ -9,13 +9,18 @@ pub struct Flat;
 impl VertexShader for Flat {
     fn shade(&self, input: VertexIn, u: &GlobalUniforms) -> VertexOut {
         let world_pos = (u.affine.model * Vector4::from((input.attributes.position, 1.0))).xyz();
+
         let normal = (u.affine.normal * Vector4::from((input.face_normal, 0.0))).xyz();
+        let tangent = (u.affine.normal * Vector4::from((input.attributes.tangent, 0.0))).xyz();
+        let bi_tangent = (u.affine.normal * Vector4::from((input.attributes.bi_tangent, 0.0))).xyz();
 
         VertexOut {
             clip: u.affine.mvp * Vector4::from((input.attributes.position, 1.0)),
             vary: Varyings {
                 uv: input.attributes.uv,
                 normal,
+                tangent,
+                bi_tangent,
                 world_pos,
                 intensity: 0.0,
             },

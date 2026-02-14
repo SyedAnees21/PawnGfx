@@ -6,7 +6,7 @@ pub use effects::*;
 
 use crate::{
     color::Color,
-    geometry::{Normal, UV, VertexAttributes},
+    geometry::{BiTangent, Normal, Tangent, UV, VertexAttributes},
     math::{AffineMatrices, Vector3, Vector4},
     scene::Texture,
 };
@@ -44,6 +44,8 @@ pub struct VertexIn {
 pub struct Varyings {
     pub uv: UV,
     pub normal: Normal,
+    pub tangent: Tangent,
+    pub bi_tangent: BiTangent,
     pub world_pos: Vector3,
     pub intensity: f64,
 }
@@ -56,6 +58,8 @@ impl Mul<f64> for Varyings {
         Self {
             uv: self.uv * rhs,
             normal: self.normal * rhs,
+            tangent: self.tangent * rhs,
+            bi_tangent: self.bi_tangent * rhs,
             world_pos: self.world_pos * rhs,
             intensity: self.intensity * rhs,
         }
@@ -70,6 +74,8 @@ impl Add for Varyings {
         Self {
             uv: self.uv + rhs.uv,
             normal: self.normal + rhs.normal,
+            tangent: self.tangent + rhs.tangent,
+            bi_tangent: self.bi_tangent + rhs.bi_tangent,
             world_pos: self.world_pos + rhs.world_pos,
             intensity: self.intensity + rhs.intensity,
         }
