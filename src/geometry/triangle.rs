@@ -46,9 +46,9 @@ impl Iterator for Triangles<'_> {
 
         let uv = if self.mesh.has_uv() {
             let (n0, n1, n2) = (
-                self.mesh.indices.t[self.counter],
-                self.mesh.indices.t[self.counter + 1],
-                self.mesh.indices.t[self.counter + 2],
+                self.mesh.indices.uv[self.counter],
+                self.mesh.indices.uv[self.counter + 1],
+                self.mesh.indices.uv[self.counter + 2],
             );
 
             [self.mesh.uv[n0], self.mesh.uv[n1], self.mesh.uv[n2]]

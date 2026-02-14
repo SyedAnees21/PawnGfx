@@ -94,5 +94,5 @@ pub trait VertexShader {
 }
 
 pub trait FragmentShader {
-    fn shade(&self, input: Varyings, u: &GlobalUniforms, texture: &Texture) -> Color;
+    fn shade(&self, input: Varyings, u: &GlobalUniforms, texture: &Texture<Color>) -> Color;
 }

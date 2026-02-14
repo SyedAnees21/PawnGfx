@@ -1,8 +1,13 @@
-use crate::{geometry::Mesh, math::Vector3, scene::Texture};
+use crate::{
+    color::Color,
+    geometry::Mesh,
+    math::Vector3,
+    scene::{Albedo, Texture},
+};
 
 pub struct Object {
     pub mesh: Mesh,
-    pub texture: Texture,
+    pub albedo: Albedo,
     pub transform: Transform,
 }
 
@@ -10,15 +15,15 @@ impl Object {
     pub fn new(mesh: Mesh) -> Self {
         Self {
             mesh,
-            texture: Texture::default(),
+            albedo: Albedo::default(),
             transform: Transform::default(),
         }
     }
 
-    pub fn from_mesh_texture(mesh: Mesh, texture: Texture) -> Self {
+    pub fn from_mesh_texture(mesh: Mesh, texture: Albedo) -> Self {
         Self {
             mesh,
-            texture,
+            albedo: texture,
             transform: Transform::default(),
         }
     }

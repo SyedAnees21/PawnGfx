@@ -1,6 +1,13 @@
 use std::path::Path;
 
-use crate::{color::Color, error::PResult, math};
+use image::Rgb;
+
+use crate::{
+    color::Color,
+    error::PResult,
+    geometry::Normal,
+    math::{self, Arithmetic},
+};
 
 pub enum Wrap {
     clamp,
@@ -8,14 +15,19 @@ pub enum Wrap {
     Mirror,
 }
 
-pub struct Texture {
+pub enum TextureKind {
+    Albedo,
+    Normal,
+}
+
+pub struct Texture<T> {
     width: usize,
     height: usize,
     wrap: Wrap,
-    data: Vec<Color>,
+    data: Vec<T>,
 }
 
-impl Default for Texture {
+impl<T> Default for Texture<T> {
     fn default() -> Self {
         Self {
             width: 0,
@@ -26,8 +38,8 @@ impl Default for Texture {
     }
 }
 
-impl Texture {
-    pub fn new(w: usize, h: usize, data: Vec<Color>) -> Self {
+impl<T> Texture<T> {
+    pub fn new(w: usize, h: usize, data: Vec<T>) -> Self {
         Self {
             width: w,
             height: h,
@@ -39,6 +51,7 @@ impl Texture {
     pub fn from_file<P>(path: P, wrap_mode: Wrap) -> PResult<Self>
     where
         P: AsRef<Path>,
+        T: From<Rgb<u8>>,
     {
         let img = image::open(path)?.to_rgb8();
         let (w, h) = img.dimensions();
@@ -46,11 +59,7 @@ impl Texture {
         let mut data = Vec::with_capacity((w * h) as usize);
 
         for pixel in img.pixels() {
-            data.push(Color::new_rgb(
-                pixel[0] as f32 / 255.0,
-                pixel[1] as f32 / 255.0,
-                pixel[2] as f32 / 255.0,
-            ));
+            data.push(T::from(*pixel))
         }
 
         Ok(Self {
@@ -61,7 +70,10 @@ impl Texture {
         })
     }
 
-    pub fn texel(&self, u: usize, v: usize) -> Color {
+    pub fn texel(&self, u: usize, v: usize) -> T
+    where
+        T: Copy,
+    {
         self.data[v * self.width + u]
     }
 
@@ -84,7 +96,10 @@ impl Texture {
         }
     }
 
-    pub fn sample(&self, mut u: f64, mut v: f64) -> Color {
+    pub fn sample(&self, mut u: f64, mut v: f64) -> T
+    where
+        T: Copy,
+    {
         u = self.wrap_uv(u);
         v = self.wrap_uv(v);
 
@@ -99,7 +114,10 @@ impl Texture {
         self.texel(x, y)
     }
 
-    pub fn bi_sample(&self, mut u: f64, mut v: f64) -> Color {
+    pub fn bi_sample(&self, mut u: f64, mut v: f64) -> T
+    where
+        T: Copy + Arithmetic,
+    {
         u = self.wrap_uv(u);
         v = self.wrap_uv(v);
 
@@ -121,19 +139,46 @@ impl Texture {
         let c10 = self.texel(x1, y0);
         let c01 = self.texel(x0, y1);
         let c11 = self.texel(x1, y1);
-        
+
         math::bi_lerp(c00, c01, c10, c11, tx, ty)
+    }
+}
+
+pub type Albedo = Texture<Color>;
+
+impl From<Rgb<u8>> for Color {
+    fn from(value: Rgb<u8>) -> Self {
+        Color::new_rgb(
+            value[0] as f32 / 255.0,
+            value[1] as f32 / 255.0,
+            value[2] as f32 / 255.0,
+        )
+    }
+}
+
+pub type NormalMap = Texture<Normal>;
+
+impl From<Rgb<u8>> for Normal {
+    fn from(value: Rgb<u8>) -> Self {
+        Normal::new(
+            value[0] as f64 / 255.0 * 2.0 - 1.0,
+            value[1] as f64 / 255.0 * 2.0 - 1.0,
+            value[2] as f64 / 255.0 * 2.0 - 1.0,
+        )
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::scene::{Texture, Wrap};
+    use crate::{
+        color::Color,
+        scene::{Texture, TextureKind, Wrap},
+    };
 
     #[test]
     fn load_checker_texture() {
         let path = "./assets/texture/Checker-Texture.png";
-        let texture = Texture::from_file(path, Wrap::clamp).unwrap();
+        let texture = Texture::<Color>::from_file(path, Wrap::clamp).unwrap();
 
         assert_eq!(texture.width, 1024);
         assert_eq!(texture.height, 1024);

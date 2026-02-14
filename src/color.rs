@@ -1,5 +1,7 @@
 use std::ops::{Add, Mul, Sub};
 
+use image::Rgb;
+
 #[derive(Clone, Copy)]
 pub struct Color(f32, f32, f32, f32);
 
@@ -99,5 +101,12 @@ impl Mul<f64> for Color {
             self.2 * scalar as f32,
             self.3,
         )
+    }
+}
+
+impl Mul for Color {
+    type Output = Self;
+    fn mul(self, rhs: Self) -> Self::Output {
+        self
     }
 }

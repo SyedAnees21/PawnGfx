@@ -53,7 +53,7 @@ impl Cube {
 
         Self(Object {
             mesh: c_mesh,
-            texture: Texture::default(),
+            albedo: Texture::default(),
             transform,
         })
     }

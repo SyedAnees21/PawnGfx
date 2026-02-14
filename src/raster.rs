@@ -1,11 +1,8 @@
 use crate::{
-    geometry::{Triangles, bounding_rect, edge_function},
-    math::{self, Vector2, Vector4},
-    scene::Texture,
-    shaders::{
+    color::Color, geometry::{Triangles, bounding_rect, edge_function}, math::{self, Vector2, Vector4}, scene::Texture, shaders::{
         FragmentShader, GlobalUniforms, Varyings, VertexAttributes, VertexIn, VertexOut,
         VertexShader,
-    },
+    }
 };
 
 #[derive(Default, Clone, Copy)]
@@ -30,7 +27,7 @@ pub fn draw_call<F, D, VS, FS>(
     frame_buffer: &mut F,
     depth_buffer: &mut D,
     global_uniforms: &GlobalUniforms,
-    texture: &Texture,
+    texture: &Texture<Color>,
     triangles: Triangles,
     vs: &VS,
     fs: &FS,
@@ -107,7 +104,7 @@ fn draw_triangle_shaded<F, D, FS>(
     frame_buffer: &mut F,
     depth_buffer: &mut D,
     global_uniforms: &GlobalUniforms,
-    texture: &Texture,
+    texture: &Texture<Color>,
     fs: &FS,
     varyings: [Varyings; 3],
     raster_in: [RasterIn; 3],

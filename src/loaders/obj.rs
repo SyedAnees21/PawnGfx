@@ -103,7 +103,7 @@ mod tests {
 
         assert!(
             mesh.indices.v.len() == mesh.indices.n.len()
-                && mesh.indices.v.len() == mesh.indices.t.len()
+                && mesh.indices.v.len() == mesh.indices.uv.len()
         );
 
         assert!(mesh.uv.len() == 14);

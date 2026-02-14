@@ -56,7 +56,7 @@ impl<'a> Renderer<'a> {
             frame_buffer,
             depth_buffer,
             &global_uniforms,
-            &scene.object.texture,
+            &scene.object.albedo,
             scene.object.mesh.iter_triangles(),
             &v_shader,
             &f_shader,

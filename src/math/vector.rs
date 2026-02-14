@@ -79,6 +79,17 @@ impl Add for Vector2 {
     }
 }
 
+impl Sub for Vector2 {
+    type Output = Self;
+    #[inline(always)]
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Vector3 {
     pub x: f64,
@@ -153,6 +164,15 @@ impl Vector3 {
             x: self.x,
             y: self.y,
         }
+    }
+}
+
+impl Mul for Vector3 {
+    type Output = Vector3;
+
+    #[inline(always)]
+    fn mul(self, scalar: Self) -> Vector3 {
+        self
     }
 }
 

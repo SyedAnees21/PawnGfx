@@ -24,7 +24,7 @@ impl VertexShader for Flat {
 }
 
 impl FragmentShader for Flat {
-    fn shade(&self, input: Varyings, u: &GlobalUniforms, texture: &crate::scene::Texture) -> Color {
+    fn shade(&self, input: Varyings, u: &GlobalUniforms, texture: &crate::scene::Texture<Color>) -> Color {
         let n = input.normal.normalize();
         let l = u.light.direction;
         let diff = n.dot(&l).max(0.0);
