@@ -102,8 +102,7 @@ mod tests {
         let mesh = load_obj(file_path).unwrap();
 
         assert!(
-            mesh.indices.v.len() == mesh.indices.n.len()
-                && mesh.indices.v.len() == mesh.indices.uv.len()
+            mesh.indices.v.len() == mesh.indices.n.len() && mesh.indices.v.len() == mesh.indices.uv.len()
         );
 
         assert!(mesh.uv.len() == 14);

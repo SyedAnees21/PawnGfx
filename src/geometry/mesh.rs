@@ -1,7 +1,6 @@
 use crate::{
     geometry::{
-        BiTangent, Idx, NIdx, Normal, Normals, TIdx, Tangent, UV, VIdx, Vertex, Vertices,
-        triangle::Triangles,
+        BiTangent, Idx, NIdx, Normal, Normals, TIdx, Tangent, UV, VIdx, Vertex, Vertices, triangle::Triangles,
     },
     math::Vector3,
 };
@@ -72,14 +71,8 @@ impl Default for Mesh {
 }
 
 impl Mesh {
-    pub fn new(
-        vertices: Vertices,
-        mut uv: Vec<UV>,
-        mut indices: Indices,
-        mut vnormals: Normals,
-    ) -> Self {
-        let (tangents, bi_tangents) =
-            Self::bake_mesh(&vertices, &mut indices, &mut uv, &mut vnormals);
+    pub fn new(vertices: Vertices, mut uv: Vec<UV>, mut indices: Indices, mut vnormals: Normals) -> Self {
+        let (tangents, bi_tangents) = Self::bake_mesh(&vertices, &mut indices, &mut uv, &mut vnormals);
 
         Self {
             vertices,
@@ -176,11 +169,7 @@ impl Mesh {
         normals.iter_mut().for_each(|n| *n = n.normalize());
     }
 
-    fn bake_tangents(
-        vertices: &Vertices,
-        uv: &Vec<UV>,
-        indices: &Indices,
-    ) -> (Vec<Tangent>, Vec<BiTangent>) {
+    fn bake_tangents(vertices: &Vertices, uv: &Vec<UV>, indices: &Indices) -> (Vec<Tangent>, Vec<BiTangent>) {
         let size: usize = indices.v.len();
         let mut tangents = vec![Vector3::default(); size];
         let mut bi_tangents = vec![Vector3::default(); size];

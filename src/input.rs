@@ -16,7 +16,6 @@ pub enum Keys {
     Down,
     Left,
     Right,
-
 }
 
 impl TryFrom<winit::keyboard::KeyCode> for Keys {
@@ -131,6 +130,5 @@ pub fn read_inputs(ism: &mut InputState, event: &WindowEvent) {
 }
 
 pub trait Controller {
-
     fn apply_inputs(&mut self, controller: &InputState) {}
 }

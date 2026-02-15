@@ -23,9 +23,7 @@ impl Matrix4 {
 
     #[inline(always)]
     pub fn transpose(&self) -> Matrix4 {
-        let mut transposed = Matrix4 {
-            data: [[0.0; 4]; 4],
-        };
+        let mut transposed = Matrix4 { data: [[0.0; 4]; 4] };
 
         for i in 0..4 {
             for j in 0..4 {
@@ -205,9 +203,7 @@ impl Mul for Matrix4 {
 
     #[inline(always)]
     fn mul(self, rhs: Matrix4) -> Matrix4 {
-        let mut result = Matrix4 {
-            data: [[0.0; 4]; 4],
-        };
+        let mut result = Matrix4 { data: [[0.0; 4]; 4] };
 
         for i in 0..4 {
             for j in 0..4 {
@@ -273,9 +269,7 @@ impl Matrix3 {
 
     #[inline(always)]
     pub fn transpose(&self) -> Matrix3 {
-        let mut transposed = Matrix3 {
-            data: [[0.0; 3]; 3],
-        };
+        let mut transposed = Matrix3 { data: [[0.0; 3]; 3] };
         for i in 0..3 {
             for j in 0..3 {
                 transposed.data[j][i] = self.data[i][j];
@@ -287,8 +281,7 @@ impl Matrix3 {
     #[inline(always)]
     pub fn determinant(&self) -> f64 {
         let m = self.data;
-        m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1])
-            - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0])
+        m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0])
             + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0])
     }
 }
@@ -298,9 +291,7 @@ impl Mul for Matrix3 {
 
     #[inline(always)]
     fn mul(self, rhs: Matrix3) -> Matrix3 {
-        let mut result = Matrix3 {
-            data: [[0.0; 3]; 3],
-        };
+        let mut result = Matrix3 { data: [[0.0; 3]; 3] };
         for i in 0..3 {
             for j in 0..3 {
                 for k in 0..3 {

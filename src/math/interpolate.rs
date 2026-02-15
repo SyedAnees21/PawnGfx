@@ -30,11 +30,7 @@ where
 }
 
 #[inline(always)]
-pub fn perspective_interpolate<T>(
-    bary: (f64, f64, f64),
-    inv_d_lerped: f64,
-    elements: (T, T, T),
-) -> T
+pub fn perspective_interpolate<T>(bary: (f64, f64, f64), inv_d_lerped: f64, elements: (T, T, T)) -> T
 where
     T: Mul<f64, Output = T> + Add<Output = T> + Copy,
 {

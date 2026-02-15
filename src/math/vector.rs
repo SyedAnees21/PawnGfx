@@ -168,10 +168,7 @@ impl Vector3 {
 
     #[inline(always)]
     pub fn xy(&self) -> Vector2 {
-        Vector2 {
-            x: self.x,
-            y: self.y,
-        }
+        Vector2 { x: self.x, y: self.y }
     }
 }
 
