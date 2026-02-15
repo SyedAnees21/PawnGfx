@@ -145,6 +145,14 @@ impl Vector3 {
     }
 
     #[inline(always)]
+    pub fn self_normalize(&mut self) {
+        let n = self.normalize();
+        self.x = n.x;
+        self.y = n.y;
+        self.z = n.z;
+    }
+
+    #[inline(always)]
     pub fn dot(&self, other: &Vector3) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }

@@ -183,7 +183,7 @@ impl Mesh {
         uv: &Vec<UV>,
         indices: &Indices,
     ) -> (Vec<Tangent>, Vec<BiTangent>) {
-        let size: usize = vertices.len();
+        let size: usize = indices.v.len();
         let mut tangents = vec![Vector3::default(); size];
         let mut bi_tangents = vec![Vector3::default(); size];
 
@@ -192,7 +192,7 @@ impl Mesh {
         for i in 0..count {
             let i_0 = i * 3;
             let i_1 = i * 3 + 1;
-            let i_2 = i * 3 + 1;
+            let i_2 = i * 3 + 2;
 
             let v_id0 = indices.v[i_0];
             let v_id1 = indices.v[i_1];
@@ -219,7 +219,7 @@ impl Mesh {
             let f = 1.0 / (uv_e1.x * uv_e2.y - uv_e2.x * uv_e1.y);
 
             let tangent = (v_e1 * uv_e2.y - v_e2 * uv_e1.y) * f;
-            let bi_tangent = (v_e1 * -uv_e2.x + v_e2 * uv_e1.x) * f;
+            let bi_tangent = (v_e2 * uv_e1.x - v_e1 * uv_e2.x) * f;
 
             tangents[v_id0] += tangent;
             tangents[v_id1] += tangent;

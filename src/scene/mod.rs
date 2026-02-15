@@ -25,10 +25,18 @@ impl Default for Scene {
 
         let cube_mesh = crate::loaders::load_mesh_file("./assets/meshes/cube-local.obj").unwrap();
 
-        let texture =
-            Texture::from_file("./assets/texture/Checker-Texture.png", Wrap::Mirror).unwrap();
+        let albedo =
+            Albedo::from_file("./assets/texture/Checker-Texture.png", Wrap::Mirror).unwrap();
 
-        let object = Object::from_mesh_texture(cube_mesh, texture);
+        let normal =
+            NormalMap::from_file("./assets/texture/checker-normal.png", Wrap::Repeat).unwrap();
+
+        let mut object = Object::new(cube_mesh);
+
+        object.set_albedo(albedo);
+        object.set_normal_map(normal);
+
+        // let object = Object::from_mesh_texture(cube_mesh, albedo);
 
         let light = Light::default();
         let input = InputState::default();

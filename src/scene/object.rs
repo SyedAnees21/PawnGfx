@@ -2,12 +2,13 @@ use crate::{
     color::Color,
     geometry::Mesh,
     math::Vector3,
-    scene::{Albedo, Texture},
+    scene::{Albedo, NormalMap, Texture},
 };
 
 pub struct Object {
     pub mesh: Mesh,
     pub albedo: Albedo,
+    pub normal: NormalMap,
     pub transform: Transform,
 }
 
@@ -16,6 +17,7 @@ impl Object {
         Self {
             mesh,
             albedo: Albedo::default(),
+            normal: NormalMap::default(),
             transform: Transform::default(),
         }
     }
@@ -24,6 +26,7 @@ impl Object {
         Self {
             mesh,
             albedo: texture,
+            normal: NormalMap::default(),
             transform: Transform::default(),
         }
     }
@@ -35,6 +38,14 @@ impl Object {
             self.transform.position,
             self.transform.rotation,
         )
+    }
+
+    pub fn set_albedo(&mut self, albedo: Albedo) {
+        self.albedo = albedo;
+    }
+
+    pub fn set_normal_map(&mut self, normal: NormalMap) {
+        self.normal = normal;
     }
 }
 

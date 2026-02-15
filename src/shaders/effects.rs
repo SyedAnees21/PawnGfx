@@ -1,6 +1,7 @@
 ﻿use crate::{
     color::Color,
-    math::Vector4,
+    math::{Matrix3, Vector4},
+    scene::{Albedo, NormalMap},
     shaders::{FragmentShader, GlobalUniforms, Varyings, VertexIn, VertexOut, VertexShader},
 };
 
@@ -12,7 +13,8 @@ impl VertexShader for Flat {
 
         let normal = (u.affine.normal * Vector4::from((input.face_normal, 0.0))).xyz();
         let tangent = (u.affine.normal * Vector4::from((input.attributes.tangent, 0.0))).xyz();
-        let bi_tangent = (u.affine.normal * Vector4::from((input.attributes.bi_tangent, 0.0))).xyz();
+        let bi_tangent =
+            (u.affine.normal * Vector4::from((input.attributes.bi_tangent, 0.0))).xyz();
 
         VertexOut {
             clip: u.affine.mvp * Vector4::from((input.attributes.position, 1.0)),
@@ -29,13 +31,36 @@ impl VertexShader for Flat {
 }
 
 impl FragmentShader for Flat {
-    fn shade(&self, input: Varyings, u: &GlobalUniforms, texture: &crate::scene::Texture<Color>) -> Color {
+    fn shade(
+        &self,
+        input: Varyings,
+        uniforms: &GlobalUniforms,
+        albedo: &Albedo,
+        normal: &NormalMap,
+    ) -> Color {
         let n = input.normal.normalize();
-        let l = u.light.direction;
-        let diff = n.dot(&l).max(0.0);
-        let intensity = (u.light.ambient + diff).min(1.0);
+        let t = input.tangent.normalize();
+        // let b = input.bi_tangent.normalize();
 
-        texture.bi_sample(input.uv.x, input.uv.y) * intensity
+        let u = input.uv.x;
+        let v = input.uv.y;
+
+        // T = normalize(T - N * dot(T, N))
+        // B = cross(N, T)
+        let t = (t - n * t.dot(&n)).normalize();
+        // let b = n.cross(&t);
+        let b = (input.bi_tangent - n * input.bi_tangent.dot(&n)).normalize();
+
+        let tbn = Matrix3::from_tbn(t, b, n);
+        let g_normal = normal.bi_sample(u, v);
+
+        let n_world = (tbn * g_normal).normalize();
+
+        let l = uniforms.light.direction;
+        let diff = n_world.dot(&l).max(0.0);
+        let intensity = (uniforms.light.ambient + diff).min(1.0);
+
+        albedo.bi_sample(input.uv.x, input.uv.y) * intensity
     }
 }
 

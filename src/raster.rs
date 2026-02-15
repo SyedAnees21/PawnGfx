@@ -2,7 +2,7 @@ use crate::{
     color::Color,
     geometry::{Triangles, bounding_rect, edge_function},
     math::{self, Vector2, Vector4},
-    scene::Texture,
+    scene::{Albedo, NormalMap, Texture},
     shaders::{FragmentShader, GlobalUniforms, Varyings, VertexIn, VertexOut, VertexShader},
 };
 
@@ -28,7 +28,8 @@ pub fn draw_call<F, D, VS, FS>(
     frame_buffer: &mut F,
     depth_buffer: &mut D,
     global_uniforms: &GlobalUniforms,
-    texture: &Texture<Color>,
+    albedo: &Albedo,
+    normal: &NormalMap,
     triangles: Triangles,
     vs: &VS,
     fs: &FS,
@@ -91,7 +92,8 @@ pub fn draw_call<F, D, VS, FS>(
             frame_buffer,
             depth_buffer,
             global_uniforms,
-            texture,
+            albedo,
+            normal,
             fs,
             varyings,
             r_vertices,
@@ -103,7 +105,8 @@ fn draw_triangle_shaded<F, D, FS>(
     frame_buffer: &mut F,
     depth_buffer: &mut D,
     global_uniforms: &GlobalUniforms,
-    texture: &Texture<Color>,
+    albedo: &Albedo,
+    normal: &NormalMap,
     fs: &FS,
     varyings: [Varyings; 3],
     raster_in: [RasterIn; 3],
@@ -172,7 +175,7 @@ fn draw_triangle_shaded<F, D, FS>(
                 let [v0, v1, v2] = varyings;
 
                 let varying = math::perspective_interpolate(bary, inv_depth, (v0, v1, v2));
-                let color = fs.shade(varying, global_uniforms, texture);
+                let color = fs.shade(varying, global_uniforms, albedo, normal);
 
                 depth_buffer[depth_index] = z;
                 frame_buffer[pixel_index..pixel_index + 4].copy_from_slice(&color.to_rgba8());

@@ -8,7 +8,7 @@ use crate::{
     color::Color,
     geometry::{BiTangent, Normal, Tangent, UV, VertexAttributes},
     math::{AffineMatrices, Vector3, Vector4},
-    scene::Texture,
+    scene::{Albedo, NormalMap, Texture},
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -93,5 +93,5 @@ pub trait VertexShader {
 }
 
 pub trait FragmentShader {
-    fn shade(&self, input: Varyings, u: &GlobalUniforms, texture: &Texture<Color>) -> Color;
+    fn shade(&self, input: Varyings, u: &GlobalUniforms, albedo: &Albedo, normal: &NormalMap) -> Color;
 }
