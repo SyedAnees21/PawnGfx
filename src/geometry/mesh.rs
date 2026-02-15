@@ -154,7 +154,7 @@ impl Mesh {
         for i in 0..count {
             let i_0 = i * 3;
             let i_1 = i * 3 + 1;
-            let i_2 = i * 3 + 1;
+            let i_2 = i * 3 + 2;
 
             let id0 = indices.v[i_0];
             let id1 = indices.v[i_1];

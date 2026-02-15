@@ -38,27 +38,29 @@ impl FragmentShader for Flat {
         albedo: &Albedo,
         normal: &NormalMap,
     ) -> Color {
-        let n = input.normal.normalize();
+        let ng = input.normal.normalize();
         let t = input.tangent.normalize();
-        // let b = input.bi_tangent.normalize();
+        let b = input.bi_tangent.normalize();
 
         let u = input.uv.x;
         let v = input.uv.y;
 
         // T = normalize(T - N * dot(T, N))
         // B = cross(N, T)
-        let t = (t - n * t.dot(&n)).normalize();
-        // let b = n.cross(&t);
-        let b = (input.bi_tangent - n * input.bi_tangent.dot(&n)).normalize();
+        let t = (t - ng * t.dot(&ng)).normalize();
+        let b = (b - ng * b.dot(&ng)).normalize();
 
-        let tbn = Matrix3::from_tbn(t, b, n);
-        let g_normal = normal.bi_sample(u, v);
+        let tbn = Matrix3::from_tbn(t, b, ng);
+        let np = normal.bi_sample(u, v);
 
-        let n_world = (tbn * g_normal).normalize();
+        let np_world = (tbn * np).normalize();
 
         let l = uniforms.light.direction;
-        let diff = n_world.dot(&l).max(0.0);
-        let intensity = (uniforms.light.ambient + diff).min(1.0);
+        let i_ng = ng.dot(&l).max(0.0);
+        let i_np = np_world.dot(&l).max(0.0);
+        let diffuse = i_ng * i_np;
+
+        let intensity = (uniforms.light.ambient + diffuse).min(1.0);
 
         albedo.bi_sample(input.uv.x, input.uv.y) * intensity
     }

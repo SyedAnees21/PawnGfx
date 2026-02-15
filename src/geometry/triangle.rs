@@ -1,7 +1,4 @@
-use crate::{
-    geometry::{Normal, UV, VertexAttributes, edge_function, mesh::Mesh},
-    math::{Vector2, Vector3},
-};
+use crate::geometry::{VertexAttributes, mesh::Mesh};
 
 pub struct Triangles<'a> {
     pub mesh: &'a Mesh,
@@ -48,12 +45,4 @@ impl<'a> Triangles<'a> {
     pub fn new(mesh: &'a Mesh) -> Self {
         Self { mesh, counter: 0 }
     }
-}
-
-pub fn point_inside_triangle(v0: Vector2, v1: Vector2, v2: Vector2, p: Vector2) -> bool {
-    let ef0 = edge_function(v0, v1, p);
-    let ef1 = edge_function(v1, v2, p);
-    let ef2 = edge_function(v2, v0, p);
-
-    ef0 <= 0.0 && ef1 <= 0.0 && ef2 <= 0.0
 }

@@ -1,8 +1,7 @@
 use crate::{
-    color::Color,
     geometry::{Triangles, bounding_rect, edge_function},
     math::{self, Vector2, Vector4},
-    scene::{Albedo, NormalMap, Texture},
+    scene::{Albedo, NormalMap},
     shaders::{FragmentShader, GlobalUniforms, Varyings, VertexIn, VertexOut, VertexShader},
 };
 
@@ -69,6 +68,10 @@ pub fn draw_call<F, D, VS, FS>(
         let mut r_vertices = [RasterIn::default(); 3];
         let mut varyings = [Varyings::default(); 3];
 
+        // This block is applying:
+        //
+        // - Perspective division to clip space vertex
+        // - Clip space to screen space transformation
         for i in 0..3 {
             let v_clip = v_out[i].clip;
             let inv_w = 1.0 / v_clip.w;
@@ -80,10 +83,13 @@ pub fn draw_call<F, D, VS, FS>(
             varyings[i] = v_out[i].vary;
         }
 
+        // Backface culling
         if is_backfacing(r_vertices[0].s, r_vertices[1].s, r_vertices[2].s) {
             continue;
         }
 
+        // Perspective division:
+        // uv, normal, tangents and varyings
         for i in 0..3 {
             varyings[i] = varyings[i] * r_vertices[i].inv_w;
         }

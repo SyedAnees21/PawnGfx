@@ -15,11 +15,6 @@ pub enum Wrap {
     Mirror,
 }
 
-pub enum TextureKind {
-    Albedo,
-    Normal,
-}
-
 pub struct Texture<T> {
     width: usize,
     height: usize,
@@ -172,7 +167,7 @@ impl From<Rgb<u8>> for Normal {
 mod tests {
     use crate::{
         color::Color,
-        scene::{Texture, TextureKind, Wrap},
+        scene::{Texture, Wrap},
     };
 
     #[test]
