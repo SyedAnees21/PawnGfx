@@ -65,6 +65,7 @@ impl<T> Texture<T> {
         })
     }
 
+    #[inline(always)]
     pub fn texel(&self, u: usize, v: usize) -> T
     where
         T: Copy,
@@ -72,6 +73,7 @@ impl<T> Texture<T> {
         self.data[v * self.width + u]
     }
 
+    #[inline(always)]
     pub fn wrap_uv(&self, mut p: f64) -> f64 {
         match self.wrap {
             Wrap::clamp => p.clamp(0.0, 1.0),
@@ -91,6 +93,8 @@ impl<T> Texture<T> {
         }
     }
 
+    #[inline(always)]
+    #[allow(unused)]
     pub fn sample(&self, mut u: f64, mut v: f64) -> T
     where
         T: Copy,
@@ -109,6 +113,7 @@ impl<T> Texture<T> {
         self.texel(x, y)
     }
 
+    #[inline(always)]
     pub fn bi_sample(&self, mut u: f64, mut v: f64) -> T
     where
         T: Copy + Arithmetic,

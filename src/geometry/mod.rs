@@ -1,12 +1,10 @@
 mod mesh;
-mod shapes;
 mod triangle;
 mod vertex;
 
 use std::ops::{Add, Mul, Sub};
 
 pub use mesh::*;
-pub use shapes::*;
 pub use triangle::*;
 pub use vertex::*;
 

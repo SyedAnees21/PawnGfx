@@ -1,11 +1,9 @@
-use std::ops::Index;
-
 use crate::{
     geometry::{
         BiTangent, Idx, NIdx, Normal, Normals, TIdx, Tangent, UV, VIdx, Vertex, Vertices,
         triangle::Triangles,
     },
-    math::{Vector2, Vector3},
+    math::Vector3,
 };
 
 #[derive(Debug)]

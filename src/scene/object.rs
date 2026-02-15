@@ -1,8 +1,7 @@
 use crate::{
-    color::Color,
     geometry::Mesh,
     math::Vector3,
-    scene::{Albedo, NormalMap, Texture},
+    scene::{Albedo, NormalMap},
 };
 
 pub struct Object {

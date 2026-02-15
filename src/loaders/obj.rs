@@ -5,7 +5,7 @@ use std::{
 };
 
 use crate::{
-    error::{FileError, PResult},
+    error::PResult,
     geometry::{Indices, Mesh},
     math::{Vector2, Vector3},
 };

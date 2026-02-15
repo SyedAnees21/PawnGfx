@@ -36,8 +36,6 @@ impl Default for Scene {
         object.set_albedo(albedo);
         object.set_normal_map(normal);
 
-        // let object = Object::from_mesh_texture(cube_mesh, albedo);
-
         let light = Light::default();
         let input = InputState::default();
 

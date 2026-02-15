@@ -8,7 +8,7 @@ use crate::{
     color::Color,
     geometry::{BiTangent, Normal, Tangent, UV, VertexAttributes},
     math::{AffineMatrices, Vector3, Vector4},
-    scene::{Albedo, NormalMap, Texture},
+    scene::{Albedo, NormalMap},
 };
 
 #[derive(Debug, Clone, Copy)]
