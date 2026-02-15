@@ -4,7 +4,11 @@ use winit::{
 };
 
 use crate::{
-    error::PResult, fps::FPSCounter, input::{self, InputState}, render::Renderer, scene::Scene
+    error::PResult,
+    fps::FPSCounter,
+    input::{self, InputState},
+    render::Renderer,
+    scene::Scene,
 };
 
 pub struct Engine<'a> {

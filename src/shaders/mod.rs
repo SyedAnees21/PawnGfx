@@ -1,4 +1,4 @@
-﻿mod effects;
+mod effects;
 
 use std::ops::{Add, Mul};
 
@@ -6,9 +6,9 @@ pub use effects::*;
 
 use crate::{
     color::Color,
-    geometry::{Normal, UV},
-    math::{AffineMatrices, Vector2, Vector3, Vector4},
-    scene::Texture,
+    geometry::{BiTangent, Normal, Tangent, UV, VertexAttributes},
+    math::{AffineMatrices, Vector3, Vector4},
+    scene::{Albedo, NormalMap},
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -40,17 +40,12 @@ pub struct VertexIn {
     pub face_normal: Vector3,
 }
 
-#[derive(Debug, Clone, Copy)]
-pub struct VertexAttributes {
-    pub position: Vector3,
-    pub normal: Normal,
-    pub uv: UV,
-}
-
 #[derive(Default, Debug, Clone, Copy)]
 pub struct Varyings {
     pub uv: UV,
     pub normal: Normal,
+    pub tangent: Tangent,
+    pub bi_tangent: BiTangent,
     pub world_pos: Vector3,
     pub intensity: f64,
 }
@@ -63,6 +58,8 @@ impl Mul<f64> for Varyings {
         Self {
             uv: self.uv * rhs,
             normal: self.normal * rhs,
+            tangent: self.tangent * rhs,
+            bi_tangent: self.bi_tangent * rhs,
             world_pos: self.world_pos * rhs,
             intensity: self.intensity * rhs,
         }
@@ -77,6 +74,8 @@ impl Add for Varyings {
         Self {
             uv: self.uv + rhs.uv,
             normal: self.normal + rhs.normal,
+            tangent: self.tangent + rhs.tangent,
+            bi_tangent: self.bi_tangent + rhs.bi_tangent,
             world_pos: self.world_pos + rhs.world_pos,
             intensity: self.intensity + rhs.intensity,
         }
@@ -94,5 +93,11 @@ pub trait VertexShader {
 }
 
 pub trait FragmentShader {
-    fn shade(&self, input: Varyings, u: &GlobalUniforms, texture: &Texture) -> Color;
+    fn shade(
+        &self,
+        input: Varyings,
+        u: &GlobalUniforms,
+        albedo: &Albedo,
+        normal: &NormalMap,
+    ) -> Color;
 }

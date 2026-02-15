@@ -19,6 +19,9 @@
     - [x] Flat-Lambart
     - [ ] Gouraud
     - [ ] Blinn-Phong
+- [x] Normal Maps
+    - [x] TBN matrix
+    - [x] Sampling (linear/bilinear)
 - [ ] Shadow rendering
 - [ ] Anti-aliasing
 
@@ -26,6 +29,7 @@
 - [x] Vector3 operations (add, subtract, multiply, dot, cross, normalize)
 - [x] Vector4 operations
 - [x] Matrix4 operations (identity, transpose, multiplication)
+- [x] Matrix3 operations (identity, transpose, multiplication)
 - [x] Transformation matrices (translation, rotation, scaling)
 - [x] Perspective projection matrix
 - [ ] View frustum culling
@@ -56,6 +60,8 @@
 - [ ] Plane rendering
 - [ ] Pyramid rendering
 - [x] Custom mesh loading
+    - [x] Normal baking
+    - [x] Tangents baking
 - [ ] Model file support (OBJ, glTF, etc.)
     - [x] OBJ
     - [ ] glTF

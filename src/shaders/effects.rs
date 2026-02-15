@@ -1,6 +1,7 @@
 ﻿use crate::{
     color::Color,
-    math::Vector4,
+    math::{Matrix3, Vector4},
+    scene::{Albedo, NormalMap},
     shaders::{FragmentShader, GlobalUniforms, Varyings, VertexIn, VertexOut, VertexShader},
 };
 
@@ -9,13 +10,19 @@ pub struct Flat;
 impl VertexShader for Flat {
     fn shade(&self, input: VertexIn, u: &GlobalUniforms) -> VertexOut {
         let world_pos = (u.affine.model * Vector4::from((input.attributes.position, 1.0))).xyz();
+
         let normal = (u.affine.normal * Vector4::from((input.face_normal, 0.0))).xyz();
+        let tangent = (u.affine.normal * Vector4::from((input.attributes.tangent, 0.0))).xyz();
+        let bi_tangent =
+            (u.affine.normal * Vector4::from((input.attributes.bi_tangent, 0.0))).xyz();
 
         VertexOut {
             clip: u.affine.mvp * Vector4::from((input.attributes.position, 1.0)),
             vary: Varyings {
                 uv: input.attributes.uv,
                 normal,
+                tangent,
+                bi_tangent,
                 world_pos,
                 intensity: 0.0,
             },
@@ -24,13 +31,38 @@ impl VertexShader for Flat {
 }
 
 impl FragmentShader for Flat {
-    fn shade(&self, input: Varyings, u: &GlobalUniforms, texture: &crate::scene::Texture) -> Color {
-        let n = input.normal.normalize();
-        let l = u.light.direction;
-        let diff = n.dot(&l).max(0.0);
-        let intensity = (u.light.ambient + diff).min(1.0);
+    fn shade(
+        &self,
+        input: Varyings,
+        uniforms: &GlobalUniforms,
+        albedo: &Albedo,
+        normal: &NormalMap,
+    ) -> Color {
+        let ng = input.normal.normalize();
+        let t = input.tangent.normalize();
+        let b = input.bi_tangent.normalize();
 
-        texture.bi_sample(input.uv.x, input.uv.y) * intensity
+        let u = input.uv.x;
+        let v = input.uv.y;
+
+        // T = normalize(T - N * dot(T, N))
+        // B = cross(N, T)
+        let t = (t - ng * t.dot(&ng)).normalize();
+        let b = (b - ng * b.dot(&ng)).normalize();
+
+        let tbn = Matrix3::from_tbn(t, b, ng);
+        let np = normal.bi_sample(u, v);
+
+        let np_world = (tbn * np).normalize();
+
+        let l = uniforms.light.direction;
+        let i_ng = ng.dot(&l).max(0.0);
+        let i_np = np_world.dot(&l).max(0.0);
+        let diffuse = i_ng * i_np;
+
+        let intensity = (uniforms.light.ambient + diffuse).min(1.0);
+
+        albedo.bi_sample(input.uv.x, input.uv.y) * intensity
     }
 }
 

@@ -1,8 +1,13 @@
-use crate::{geometry::Mesh, math::Vector3, scene::Texture};
+use crate::{
+    geometry::Mesh,
+    math::Vector3,
+    scene::{Albedo, NormalMap},
+};
 
 pub struct Object {
     pub mesh: Mesh,
-    pub texture: Texture,
+    pub albedo: Albedo,
+    pub normal: NormalMap,
     pub transform: Transform,
 }
 
@@ -10,15 +15,17 @@ impl Object {
     pub fn new(mesh: Mesh) -> Self {
         Self {
             mesh,
-            texture: Texture::default(),
+            albedo: Albedo::default(),
+            normal: NormalMap::default(),
             transform: Transform::default(),
         }
     }
 
-    pub fn from_mesh_texture(mesh: Mesh, texture: Texture) -> Self {
+    pub fn from_mesh_texture(mesh: Mesh, texture: Albedo) -> Self {
         Self {
             mesh,
-            texture,
+            albedo: texture,
+            normal: NormalMap::default(),
             transform: Transform::default(),
         }
     }
@@ -30,6 +37,14 @@ impl Object {
             self.transform.position,
             self.transform.rotation,
         )
+    }
+
+    pub fn set_albedo(&mut self, albedo: Albedo) {
+        self.albedo = albedo;
+    }
+
+    pub fn set_normal_map(&mut self, normal: NormalMap) {
+        self.normal = normal;
     }
 }
 

@@ -1,11 +1,8 @@
 use crate::{
     geometry::{Triangles, bounding_rect, edge_function},
     math::{self, Vector2, Vector4},
-    scene::Texture,
-    shaders::{
-        FragmentShader, GlobalUniforms, Varyings, VertexAttributes, VertexIn, VertexOut,
-        VertexShader,
-    },
+    scene::{Albedo, NormalMap},
+    shaders::{FragmentShader, GlobalUniforms, Varyings, VertexIn, VertexOut, VertexShader},
 };
 
 #[derive(Default, Clone, Copy)]
@@ -30,7 +27,8 @@ pub fn draw_call<F, D, VS, FS>(
     frame_buffer: &mut F,
     depth_buffer: &mut D,
     global_uniforms: &GlobalUniforms,
-    texture: &Texture,
+    albedo: &Albedo,
+    normal: &NormalMap,
     triangles: Triangles,
     vs: &VS,
     fs: &FS,
@@ -43,20 +41,18 @@ pub fn draw_call<F, D, VS, FS>(
     let w = global_uniforms.screen.width as i32;
     let h = global_uniforms.screen.height as i32;
 
-    for (v, n, uv) in triangles {
+    for v in triangles {
         let [v0, v1, v2] = v;
 
-        let face_normal = (v1 - v0).cross(&(v2 - v0)).normalize();
+        let face_normal = (v1.position - v0.position)
+            .cross(&(v2.position - v0.position))
+            .normalize();
 
         let mut v_out = [VertexOut::default(); 3];
 
         for i in 0..3 {
             let v_in = VertexIn {
-                attributes: VertexAttributes {
-                    position: v[i],
-                    normal: n[i],
-                    uv: uv[i],
-                },
+                attributes: v[i],
                 face_normal,
             };
 
@@ -72,6 +68,10 @@ pub fn draw_call<F, D, VS, FS>(
         let mut r_vertices = [RasterIn::default(); 3];
         let mut varyings = [Varyings::default(); 3];
 
+        // This block is applying:
+        //
+        // - Perspective division to clip space vertex
+        // - Clip space to screen space transformation
         for i in 0..3 {
             let v_clip = v_out[i].clip;
             let inv_w = 1.0 / v_clip.w;
@@ -83,10 +83,13 @@ pub fn draw_call<F, D, VS, FS>(
             varyings[i] = v_out[i].vary;
         }
 
+        // Backface culling
         if is_backfacing(r_vertices[0].s, r_vertices[1].s, r_vertices[2].s) {
             continue;
         }
 
+        // Perspective division:
+        // uv, normal, tangents and varyings
         for i in 0..3 {
             varyings[i] = varyings[i] * r_vertices[i].inv_w;
         }
@@ -95,7 +98,8 @@ pub fn draw_call<F, D, VS, FS>(
             frame_buffer,
             depth_buffer,
             global_uniforms,
-            texture,
+            albedo,
+            normal,
             fs,
             varyings,
             r_vertices,
@@ -107,7 +111,8 @@ fn draw_triangle_shaded<F, D, FS>(
     frame_buffer: &mut F,
     depth_buffer: &mut D,
     global_uniforms: &GlobalUniforms,
-    texture: &Texture,
+    albedo: &Albedo,
+    normal: &NormalMap,
     fs: &FS,
     varyings: [Varyings; 3],
     raster_in: [RasterIn; 3],
@@ -176,7 +181,7 @@ fn draw_triangle_shaded<F, D, FS>(
                 let [v0, v1, v2] = varyings;
 
                 let varying = math::perspective_interpolate(bary, inv_depth, (v0, v1, v2));
-                let color = fs.shade(varying, global_uniforms, texture);
+                let color = fs.shade(varying, global_uniforms, albedo, normal);
 
                 depth_buffer[depth_index] = z;
                 frame_buffer[pixel_index..pixel_index + 4].copy_from_slice(&color.to_rgba8());

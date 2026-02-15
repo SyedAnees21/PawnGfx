@@ -248,6 +248,83 @@ impl Mul<Vector4> for Matrix4 {
 }
 
 #[derive(Debug, Clone, Copy)]
+pub struct Matrix3 {
+    pub data: [[f64; 3]; 3],
+}
+
+impl Matrix3 {
+    pub const IDENTITY: Matrix3 = Matrix3 {
+        data: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
+    };
+
+    #[inline(always)]
+    pub fn identity() -> Matrix3 {
+        Matrix3::IDENTITY
+    }
+
+    /// Creates a TBN matrix (Tangent Space -> World/Model Space)
+    /// The vectors t, b, and n become the COLUMNS of the matrix.
+    #[inline(always)]
+    pub fn from_tbn(t: Vector3, b: Vector3, n: Vector3) -> Matrix3 {
+        Matrix3 {
+            data: [[t.x, b.x, n.x], [t.y, b.y, n.y], [t.z, b.z, n.z]],
+        }
+    }
+
+    #[inline(always)]
+    pub fn transpose(&self) -> Matrix3 {
+        let mut transposed = Matrix3 {
+            data: [[0.0; 3]; 3],
+        };
+        for i in 0..3 {
+            for j in 0..3 {
+                transposed.data[j][i] = self.data[i][j];
+            }
+        }
+        transposed
+    }
+
+    #[inline(always)]
+    pub fn determinant(&self) -> f64 {
+        let m = self.data;
+        m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1])
+            - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0])
+            + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0])
+    }
+}
+
+impl Mul for Matrix3 {
+    type Output = Matrix3;
+
+    #[inline(always)]
+    fn mul(self, rhs: Matrix3) -> Matrix3 {
+        let mut result = Matrix3 {
+            data: [[0.0; 3]; 3],
+        };
+        for i in 0..3 {
+            for j in 0..3 {
+                for k in 0..3 {
+                    result.data[i][j] += self.data[i][k] * rhs.data[k][j];
+                }
+            }
+        }
+        result
+    }
+}
+
+impl Mul<Vector3> for Matrix3 {
+    type Output = Vector3;
+
+    #[inline(always)]
+    fn mul(self, rhs: Vector3) -> Vector3 {
+        let x = self.data[0][0] * rhs.x + self.data[0][1] * rhs.y + self.data[0][2] * rhs.z;
+        let y = self.data[1][0] * rhs.x + self.data[1][1] * rhs.y + self.data[1][2] * rhs.z;
+        let z = self.data[2][0] * rhs.x + self.data[2][1] * rhs.y + self.data[2][2] * rhs.z;
+        Vector3 { x, y, z }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
 pub struct AffineMatrices {
     pub model: Matrix4,
     pub view: Matrix4,
