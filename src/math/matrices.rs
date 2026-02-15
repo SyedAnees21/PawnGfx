@@ -254,11 +254,7 @@ pub struct Matrix3 {
 
 impl Matrix3 {
     pub const IDENTITY: Matrix3 = Matrix3 {
-        data: [
-            [1.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.0, 0.0, 1.0],
-        ],
+        data: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]],
     };
 
     #[inline(always)]
@@ -271,11 +267,7 @@ impl Matrix3 {
     #[inline(always)]
     pub fn from_tbn(t: Vector3, b: Vector3, n: Vector3) -> Matrix3 {
         Matrix3 {
-            data: [
-                [t.x, b.x, n.x],
-                [t.y, b.y, n.y],
-                [t.z, b.z, n.z],
-            ],
+            data: [[t.x, b.x, n.x], [t.y, b.y, n.y], [t.z, b.z, n.z]],
         }
     }
 
@@ -295,9 +287,9 @@ impl Matrix3 {
     #[inline(always)]
     pub fn determinant(&self) -> f64 {
         let m = self.data;
-        m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
-        m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
-        m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0])
+        m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1])
+            - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0])
+            + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0])
     }
 }
 

@@ -1,4 +1,4 @@
-﻿mod effects;
+mod effects;
 
 use std::ops::{Add, Mul};
 
@@ -93,5 +93,11 @@ pub trait VertexShader {
 }
 
 pub trait FragmentShader {
-    fn shade(&self, input: Varyings, u: &GlobalUniforms, albedo: &Albedo, normal: &NormalMap) -> Color;
+    fn shade(
+        &self,
+        input: Varyings,
+        u: &GlobalUniforms,
+        albedo: &Albedo,
+        normal: &NormalMap,
+    ) -> Color;
 }

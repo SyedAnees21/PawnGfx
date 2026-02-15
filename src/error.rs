@@ -24,7 +24,7 @@ pub enum PError {
     Loader(#[from] FileError),
 
     #[error("Error occured while texture loading: {0}")]
-    TextureLoading(#[from] ImageError)
+    TextureLoading(#[from] ImageError),
 }
 
 #[derive(Debug, Error)]
