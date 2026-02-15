@@ -1,4 +1,3 @@
-use crate::{math::Vector3, scene::Camera};
 use std::collections::HashSet;
 use winit::{
     event::{ElementState, KeyEvent, MouseButton, WindowEvent},
