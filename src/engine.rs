@@ -42,18 +42,7 @@ impl<'a> Engine<'a> {
                 handler,
             )?,
             Event::AboutToWait => {
-                let animator = &mut self.scene.animator;
-                let camera = &mut self.scene.camera;
-
-                if !animator.is_complete() {
-                    camera.position = animator.step(0.005);
-                } else {
-                    self.input.apply_inputs(
-                        &mut self.scene.camera,
-                        &mut self.scene.object.transform.rotation,
-                    );
-                }
-
+                self.scene.update(&self.input);
                 self.fps.update();
                 self.renderer.get_window().request_redraw()
             }

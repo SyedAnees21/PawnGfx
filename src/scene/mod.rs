@@ -9,7 +9,11 @@ pub use light::*;
 pub use object::*;
 pub use texture::*;
 
-use crate::{animate::ProceduralAnimator, input::InputState, math::Vector3};
+use crate::{
+    animate::ProceduralAnimator,
+    input::{Controller, InputState},
+    math::Vector3,
+};
 
 pub struct Scene {
     pub camera: Camera,
@@ -55,5 +59,15 @@ impl Default for Scene {
 impl Scene {
     pub fn initialize_default() -> Self {
         Self::default()
+    }
+
+    pub fn update(&mut self, ism: &InputState) {
+        if !self.animator.is_complete() {
+            self.camera.position = self.animator.step(0.005);
+            return;
+        }
+
+        self.camera.apply_inputs(ism);
+        self.object.apply_inputs(ism);
     }
 }
