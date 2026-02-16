@@ -15,11 +15,7 @@ pub struct RasterIn {
 impl From<(Vector2, f64, f64)> for RasterIn {
     fn from(value: (Vector2, f64, f64)) -> Self {
         let (screen, z, inv_w) = value;
-        Self {
-            s: screen,
-            z,
-            inv_w,
-        }
+        Self { s: screen, z, inv_w }
     }
 }
 

@@ -85,8 +85,7 @@ impl<'a> Renderer<'a> {
     }
 
     pub fn resize_buffers(&mut self, width: u32, height: u32) -> PResult<()> {
-        self.depth_buffer
-            .resize((width * height) as usize, DEFAULT_DEPTH);
+        self.depth_buffer.resize((width * height) as usize, DEFAULT_DEPTH);
         self.framebuffer.resize_surface(width, height)?;
         self.framebuffer.resize_buffer(width, height)?;
 

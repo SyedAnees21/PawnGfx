@@ -1,4 +1,3 @@
-use crate::{math::Vector3, scene::Camera};
 use std::collections::HashSet;
 use winit::{
     event::{ElementState, KeyEvent, MouseButton, WindowEvent},
@@ -102,28 +101,16 @@ impl InputState {
         }
     }
 
-    pub fn apply_inputs(&mut self, camera: &mut Camera, rotation: &mut Vector3) {
-        let camera_speed = 0.05;
-        for key in &self.keys_pressed {
-            match key {
-                Keys::W => camera.move_forward(camera_speed),
-                Keys::S => camera.move_forward(-camera_speed),
-                Keys::A => camera.move_right(-camera_speed),
-                Keys::D => camera.move_right(camera_speed),
-                Keys::Q => camera.move_up(-camera_speed),
-                Keys::E => camera.move_up(camera_speed),
-                Keys::Up => rotation.x -= 0.9,
-                Keys::Down => rotation.x += 0.9,
-                Keys::Left => rotation.y -= 0.9,
-                Keys::Right => rotation.y += 0.9,
-            }
-        }
+    pub fn is_pressed(&self, key_code: Keys) -> bool {
+        self.keys_pressed.contains(&key_code)
+    }
 
-        if self.mouse_right {
-            let (delta_x, delta_y) = self.mouse_delta;
-            let sensitivity = 0.1;
-            camera.rotate(delta_x * sensitivity, -delta_y * sensitivity);
-        }
+    pub fn mouse_right_clicked(&self) -> bool {
+        self.mouse_right
+    }
+
+    pub fn mouse_left_clicked(&self) -> bool {
+        self.mouse_left
     }
 }
 
@@ -140,4 +127,8 @@ pub fn read_inputs(ism: &mut InputState, event: &WindowEvent) {
         WindowEvent::MouseInput { state, button, .. } => ism.process_mouse_input(state, button),
         _ => {}
     }
+}
+
+pub trait Controller {
+    fn apply_inputs(&mut self, controller: &InputState) {}
 }

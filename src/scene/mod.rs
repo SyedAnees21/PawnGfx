@@ -9,7 +9,11 @@ pub use light::*;
 pub use object::*;
 pub use texture::*;
 
-use crate::{animate::ProceduralAnimator, input::InputState, math::Vector3};
+use crate::{
+    animate::ProceduralAnimator,
+    input::{Controller, InputState},
+    math::Vector3,
+};
 
 pub struct Scene {
     pub camera: Camera,
@@ -25,11 +29,9 @@ impl Default for Scene {
 
         let cube_mesh = crate::loaders::load_mesh_file("./assets/meshes/cube-local.obj").unwrap();
 
-        let albedo =
-            Albedo::from_file("./assets/texture/Checker-Texture.png", Wrap::Mirror).unwrap();
+        let albedo = Albedo::from_file("./assets/texture/Checker-Texture.png", Wrap::Mirror).unwrap();
 
-        let normal =
-            NormalMap::from_file("./assets/texture/checker-normal.png", Wrap::Repeat).unwrap();
+        let normal = NormalMap::from_file("./assets/texture/checker-normal.png", Wrap::Repeat).unwrap();
 
         let mut object = Object::new(cube_mesh);
 
@@ -39,8 +41,7 @@ impl Default for Scene {
         let light = Light::default();
         let input = InputState::default();
 
-        let animator =
-            ProceduralAnimator::new(Vector3::new(15.0, 0.0, 10.0), Vector3::new(0.0, 0.0, 5.0));
+        let animator = ProceduralAnimator::new(Vector3::new(15.0, 0.0, 10.0), Vector3::new(0.0, 0.0, 5.0));
 
         Self {
             camera,
@@ -55,5 +56,15 @@ impl Default for Scene {
 impl Scene {
     pub fn initialize_default() -> Self {
         Self::default()
+    }
+
+    pub fn update(&mut self, ism: &InputState) {
+        if !self.animator.is_complete() {
+            self.camera.position = self.animator.step(0.005);
+            return;
+        }
+
+        self.camera.apply_inputs(ism);
+        self.object.apply_inputs(ism);
     }
 }

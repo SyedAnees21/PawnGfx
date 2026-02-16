@@ -1,4 +1,7 @@
-use crate::math::{Matrix4, Vector3};
+use crate::{
+    input::{Controller, Keys},
+    math::{Matrix4, Vector3},
+};
 
 const UP: usize = 0;
 const RIGHT: usize = 1;
@@ -6,6 +9,8 @@ const FORWARD: usize = 2;
 
 pub struct Camera {
     pub position: Vector3,
+    pub speed: f64,
+    pub sensitivity: f64,
     pub yaw: f64,
     pub pitch: f64,
     pub basis: [Vector3; 3],
@@ -15,6 +20,8 @@ impl Camera {
     pub fn new(position: Vector3) -> Self {
         let mut cam = Camera {
             position,
+            speed: 0.05,
+            sensitivity: 0.01,
             yaw: -90.0,
             pitch: 0.0,
             basis: [Vector3::ZERO; 3],
@@ -74,6 +81,41 @@ impl Camera {
                 [-f.x, -f.y, -f.z, f.dot(&p)],
                 [0.0, 0.0, 0.0, 1.0],
             ],
+        }
+    }
+}
+
+impl Controller for Camera {
+    fn apply_inputs(&mut self, controller: &crate::input::InputState) {
+        let speed = self.speed;
+
+        if controller.is_pressed(Keys::W) {
+            self.move_forward(speed);
+        }
+
+        if controller.is_pressed(Keys::S) {
+            self.move_forward(-speed);
+        }
+
+        if controller.is_pressed(Keys::A) {
+            self.move_right(-speed);
+        }
+
+        if controller.is_pressed(Keys::D) {
+            self.move_right(speed);
+        }
+
+        if controller.is_pressed(Keys::Q) {
+            self.move_up(-speed);
+        }
+
+        if controller.is_pressed(Keys::E) {
+            self.move_up(speed);
+        }
+
+        if controller.mouse_right_clicked() {
+            let (delta_x, delta_y) = controller.mouse_delta;
+            self.rotate(delta_x * self.sensitivity, -delta_y * self.sensitivity);
         }
     }
 }

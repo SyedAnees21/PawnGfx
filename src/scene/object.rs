@@ -1,5 +1,6 @@
 use crate::{
     geometry::Mesh,
+    input::{Controller, Keys},
     math::Vector3,
     scene::{Albedo, NormalMap},
 };
@@ -60,6 +61,26 @@ impl Default for Transform {
             scale: Vector3::splat(1.0),
             position: Vector3::splat(0.0),
             rotation: Vector3::default(),
+        }
+    }
+}
+
+impl Controller for Object {
+    fn apply_inputs(&mut self, controller: &crate::input::InputState) {
+        if controller.is_pressed(Keys::Up) {
+            self.transform.rotation.x -= 0.9;
+        }
+
+        if controller.is_pressed(Keys::Down) {
+            self.transform.rotation.x += 0.9;
+        }
+
+        if controller.is_pressed(Keys::Left) {
+            self.transform.rotation.y -= 0.9;
+        }
+
+        if controller.is_pressed(Keys::Right) {
+            self.transform.rotation.y += 0.9;
         }
     }
 }

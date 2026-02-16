@@ -1,4 +1,4 @@
-﻿use crate::{
+use crate::{
     color::Color,
     math::{Matrix3, Vector4},
     scene::{Albedo, NormalMap},
@@ -13,8 +13,7 @@ impl VertexShader for Flat {
 
         let normal = (u.affine.normal * Vector4::from((input.face_normal, 0.0))).xyz();
         let tangent = (u.affine.normal * Vector4::from((input.attributes.tangent, 0.0))).xyz();
-        let bi_tangent =
-            (u.affine.normal * Vector4::from((input.attributes.bi_tangent, 0.0))).xyz();
+        let bi_tangent = (u.affine.normal * Vector4::from((input.attributes.bi_tangent, 0.0))).xyz();
 
         VertexOut {
             clip: u.affine.mvp * Vector4::from((input.attributes.position, 1.0)),
