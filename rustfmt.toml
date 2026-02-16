@@ -1,30 +1,11 @@
-# Use the unstable features of rustfmt (requires Nightly, but better for math)
 version = "Two"
-
-# Increase line length slightly to accommodate long math expressions/matrix rows
 max_width = 110
-
-# Keep small blocks on one line (great for simple Vector getters/setters)
 fn_single_line = true
 where_single_line = true
-
-# This is critical for renderers: keep your color/vector arrays organized
 array_layout = "Tall"
-
-# Use Unix-style line endings
 newline_style = "Unix"
-
-# Group imports by category (Std, external crates, then your local modules)
 group_imports = "StdExternalCrate"
-
-# Forces long function signatures to be more readable
 indent_style = "Block"
-
-# Allows comments to be formatted (keeps your math explanations tidy)
 wrap_comments = true
-
-# Don't reformat strings (important if you have embedded shader code strings)
 format_strings = false
-
-# Combine multiple lines of "use" into one nested line
 imports_granularity = "Crate"
