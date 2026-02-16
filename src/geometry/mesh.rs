@@ -141,7 +141,7 @@ impl Mesh {
     fn bake_normals(vertices: &Vertices, indices: &mut Indices, normals: &mut Normals) {
         normals.resize(vertices.len(), Normal::default());
         indices.n.resize(indices.v.len(), 0);
-            
+
         let count = indices.v.len() / 3;
 
         for i in 0..count {
