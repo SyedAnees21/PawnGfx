@@ -21,7 +21,7 @@ impl Camera {
         let mut cam = Camera {
             position,
             speed: 0.05,
-            sensitivity: 0.01,
+            sensitivity: 0.1,
             yaw: -90.0,
             pitch: 0.0,
             basis: [Vector3::ZERO; 3],

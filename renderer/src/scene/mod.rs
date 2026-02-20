@@ -31,7 +31,7 @@ impl Default for Scene {
 
         let albedo = Albedo::from_file("./assets/texture/Checker-Texture.png", Wrap::Mirror).unwrap();
 
-        let normal = NormalMap::from_file("./assets/texture/checker-normal.png", Wrap::Repeat).unwrap();
+        let normal = NormalMap::from_file("./assets/texture/stones-normal.png", Wrap::Repeat).unwrap();
 
         let mut object = Object::new(cube_mesh);
 
