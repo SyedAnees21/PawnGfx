@@ -1,5 +1,5 @@
 [package]
-name = "pawngfx"
+name = "pawngfx-editor"
 authors.workspace = true
 repository.workspace = true
 version.workspace = true
@@ -10,8 +10,8 @@ publish.workspace = true
 license.workspace = true
 
 [dependencies]
-pixels.workspace = true
-winit.workspace = true
-hex.workspace = true
-thiserror.workspace = true
-image.workspace = true
+eframe.workspace = true
+rfd.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["winuser", "windef", "wingdi"] }
