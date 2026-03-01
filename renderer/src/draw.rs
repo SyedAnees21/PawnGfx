@@ -3,107 +3,107 @@
 use pcore::math::{Matrix4, Vector3};
 
 pub fn draw_line<T>(
-    mut frame: T,
-    depth_buffer: &mut [f64],
-    w: i32,
-    h: i32,
-    x0: i32,
-    y0: i32,
-    z0: f64,
-    x1: i32,
-    y1: i32,
-    z1: f64,
+	mut frame: T,
+	depth_buffer: &mut [f64],
+	w: i32,
+	h: i32,
+	x0: i32,
+	y0: i32,
+	z0: f64,
+	x1: i32,
+	y1: i32,
+	z1: f64,
 ) where
-    T: AsMut<[u8]>,
+	T: AsMut<[u8]>,
 {
-    let frame = frame.as_mut();
-    let dx = (x1 - x0).abs();
-    let dy = -(y1 - y0).abs();
-    let sx = if x0 < x1 { 1 } else { -1 };
-    let sy = if y0 < y1 { 1 } else { -1 };
-    let mut err = dx + dy;
-    let mut x = x0;
-    let mut y = y0;
+	let frame = frame.as_mut();
+	let dx = (x1 - x0).abs();
+	let dy = -(y1 - y0).abs();
+	let sx = if x0 < x1 { 1 } else { -1 };
+	let sy = if y0 < y1 { 1 } else { -1 };
+	let mut err = dx + dy;
+	let mut x = x0;
+	let mut y = y0;
 
-    let length = ((x1 - x0).abs().max((y1 - y0).abs())) as f64;
-    let mut step = 0.0;
+	let length = ((x1 - x0).abs().max((y1 - y0).abs())) as f64;
+	let mut step = 0.0;
 
-    loop {
-        if x >= 0 && y >= 0 && x < w && y < h {
-            let t = if length > 0.0 { step / length } else { 0.0 };
-            let z = z0 * (1.0 - t) + z1 * t;
-            let depth_index = (y * w + x) as usize;
+	loop {
+		if x >= 0 && y >= 0 && x < w && y < h {
+			let t = if length > 0.0 { step / length } else { 0.0 };
+			let z = z0 * (1.0 - t) + z1 * t;
+			let depth_index = (y * w + x) as usize;
 
-            if z < depth_buffer[depth_index] {
-                depth_buffer[depth_index] = z;
+			if z < depth_buffer[depth_index] {
+				depth_buffer[depth_index] = z;
 
-                let pixel_index = (depth_index * 4) as usize;
-                frame[pixel_index] = 255;
-                frame[pixel_index + 1] = 255;
-                frame[pixel_index + 2] = 255;
-                frame[pixel_index + 3] = 255;
-            }
-        }
-        if x == x1 && y == y1 {
-            break;
-        }
-        let e2 = 2 * err;
-        if e2 >= dy {
-            err += dy;
-            x += sx;
-        }
-        if e2 <= dx {
-            err += dx;
-            y += sy;
-        }
+				let pixel_index = (depth_index * 4) as usize;
+				frame[pixel_index] = 255;
+				frame[pixel_index + 1] = 255;
+				frame[pixel_index + 2] = 255;
+				frame[pixel_index + 3] = 255;
+			}
+		}
+		if x == x1 && y == y1 {
+			break;
+		}
+		let e2 = 2 * err;
+		if e2 >= dy {
+			err += dy;
+			x += sx;
+		}
+		if e2 <= dx {
+			err += dx;
+			y += sy;
+		}
 
-        step += 1.0;
-    }
+		step += 1.0;
+	}
 }
 
 pub const CUBE_VERTS: [Vector3; 8] = [
-    Vector3::new(-1.0, -1.0, -1.0), // 0
-    Vector3::new(1.0, -1.0, -1.0),  // 1
-    Vector3::new(1.0, 1.0, -1.0),   // 2
-    Vector3::new(-1.0, 1.0, -1.0),  // 3
-    Vector3::new(-1.0, -1.0, 1.0),  // 4
-    Vector3::new(1.0, -1.0, 1.0),   // 5
-    Vector3::new(1.0, 1.0, 1.0),    // 6
-    Vector3::new(-1.0, 1.0, 1.0),   // 7
+	Vector3::new(-1.0, -1.0, -1.0), // 0
+	Vector3::new(1.0, -1.0, -1.0),  // 1
+	Vector3::new(1.0, 1.0, -1.0),   // 2
+	Vector3::new(-1.0, 1.0, -1.0),  // 3
+	Vector3::new(-1.0, -1.0, 1.0),  // 4
+	Vector3::new(1.0, -1.0, 1.0),   // 5
+	Vector3::new(1.0, 1.0, 1.0),    // 6
+	Vector3::new(-1.0, 1.0, 1.0),   // 7
 ];
 
 const EDGES: [(usize, usize); 12] = [
-    (0, 1),
-    (1, 2),
-    (2, 3),
-    (3, 0),
-    (4, 5),
-    (5, 6),
-    (6, 7),
-    (7, 4),
-    (0, 4),
-    (1, 5),
-    (2, 6),
-    (3, 7),
+	(0, 1),
+	(1, 2),
+	(2, 3),
+	(3, 0),
+	(4, 5),
+	(5, 6),
+	(6, 7),
+	(7, 4),
+	(0, 4),
+	(1, 5),
+	(2, 6),
+	(3, 7),
 ];
 
 pub const CUBE_TRIS: [usize; 36] = [
-    // FRONT  (-Z)
-    0, 2, 1, 0, 3, 2, // BACK   (+Z)
-    4, 5, 6, 4, 6, 7, // LEFT   (-X)
-    0, 7, 3, 0, 4, 7, // RIGHT  (+X)
-    1, 2, 6, 1, 6, 5, // TOP    (+Y)
-    3, 7, 6, 3, 6, 2, // BOTTOM (-Y)
-    0, 1, 5, 0, 5, 4,
+	// FRONT  (-Z)
+	0, 2, 1, 0, 3, 2, // BACK   (+Z)
+	4, 5, 6, 4, 6, 7, // LEFT   (-X)
+	0, 7, 3, 0, 4, 7, // RIGHT  (+X)
+	1, 2, 6, 1, 6, 5, // TOP    (+Y)
+	3, 7, 6, 3, 6, 2, // BOTTOM (-Y)
+	0, 1, 5, 0, 5, 4,
 ];
 
 pub const FACE_NORMALS: [Vector3; 6] = [
-    Vector3::new(0.0, 0.0, -1.0), // FRONT
-    Vector3::new(0.0, 0.0, 1.0),  // BACK
-    Vector3::new(-1.0, 0.0, 0.0), // LEFT
-    Vector3::new(1.0, 0.0, 0.0),  // RIGHT
-    Vector3::new(0.0, 1.0, 0.0),  // TOP
-    Vector3::new(0.0, -1.0, 0.0), // BOTTOM
+	Vector3::new(0.0, 0.0, -1.0), // FRONT
+	Vector3::new(0.0, 0.0, 1.0),  // BACK
+	Vector3::new(-1.0, 0.0, 0.0), // LEFT
+	Vector3::new(1.0, 0.0, 0.0),  // RIGHT
+	Vector3::new(0.0, 1.0, 0.0),  // TOP
+	Vector3::new(0.0, -1.0, 0.0), // BOTTOM
 ];
 
 // pub fn draw_cube<T>(mut frame: T, mvp: Matrix4, width: f64, height: f64)
@@ -168,9 +168,10 @@ pub const FACE_NORMALS: [Vector3; 6] = [
 //     for (_idx, (v, n, uv)) in triangles.enumerate() {
 //         let [v0, v1, v2] = v;
 
-//         let v0_clip = transform_to_clip_space(v0, global_uniforms.affine.mvp);
-//         let v1_clip = transform_to_clip_space(v1, global_uniforms.affine.mvp);
-//         let v2_clip = transform_to_clip_space(v2, global_uniforms.affine.mvp);
+//         let v0_clip = transform_to_clip_space(v0,
+// global_uniforms.affine.mvp);         let v1_clip =
+// transform_to_clip_space(v1, global_uniforms.affine.mvp);         let v2_clip
+// = transform_to_clip_space(v2, global_uniforms.affine.mvp);
 
 //         if v0_clip.w <= 0.0 || v1_clip.w <= 0.0 || v2_clip.w <= 0.0 {
 //             continue;
@@ -178,7 +179,8 @@ pub const FACE_NORMALS: [Vector3; 6] = [
 
 //         let [n1, _, _] = n;
 
-//         let face_normal = (global_uniforms.affine.normal * Vector4::from((n1, 0.0))).xyz();
+//         let face_normal = (global_uniforms.affine.normal * Vector4::from((n1,
+// 0.0))).xyz();
 
 //         let inv_w0 = 1.0 / v0_clip.w;
 //         let inv_w1 = 1.0 / v1_clip.w;
@@ -257,14 +259,16 @@ pub const FACE_NORMALS: [Vector3; 6] = [
 //                 let bary_cords = (w0, w1, w2);
 //                 let inv_depth_cords = (inv_w0, inv_w1, inv_w2);
 
-//                 let z = persp_correct_interpolate(bary_cords, inv_depth_cords, (z0, z1, z2));
+//                 let z = persp_correct_interpolate(bary_cords,
+// inv_depth_cords, (z0, z1, z2));
 
 //                 let depth_index = (y * w + x) as usize;
 //                 let pixel_index = (depth_index * 4) as usize;
 
 //                 if z < depth_buffer[depth_index] {
 //                     let [uv0, uv1, uv2] = uv;
-//                     let (uv0, uv1, uv2) = (uv0 * inv_w0, uv1 * inv_w1, uv2 * inv_w2);
+//                     let (uv0, uv1, uv2) = (uv0 * inv_w0, uv1 * inv_w1, uv2 *
+// inv_w2);
 
 //                     let u = persp_correct_interpolate(
 //                         bary_cords,
@@ -279,12 +283,13 @@ pub const FACE_NORMALS: [Vector3; 6] = [
 
 //                     let s_color = texture.bi_sample(u, v);
 
-//                     let intensity = face_normal.normalize().dot(&light).max(0.0);
-//                     let color = s_color * intensity;
+//                     let intensity =
+// face_normal.normalize().dot(&light).max(0.0);                     let color =
+// s_color * intensity;
 
 //                     depth_buffer[depth_index] = z;
-//                     frame[pixel_index..pixel_index + 4].copy_from_slice(&color.to_rgba8());
-//                 }
+//                     frame[pixel_index..pixel_index +
+// 4].copy_from_slice(&color.to_rgba8());                 }
 //             }
 //         }
 //     }

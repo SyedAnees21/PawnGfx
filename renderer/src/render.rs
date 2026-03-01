@@ -1,97 +1,100 @@
-use pcore::{
-    error::PResult,
-    math::{AffineMatrices, Matrix4},
-};
-use pscene::global::Scene;
-
-use crate::{
-    buffer::Buffers,
-    raster,
-    shaders::{self, GlobalUniforms, LightUniforms, ScreenUniforms},
+use {
+	crate::{
+		buffer::Buffers,
+		raster,
+		shaders::{self, GlobalUniforms, LightUniforms, ScreenUniforms},
+	},
+	pcore::{
+		error::PResult,
+		math::{AffineMatrices, Matrix4},
+	},
+	pscene::global::Scene,
 };
 
 pub struct WinSize {
-    pub width: u32,
-    pub height: u32,
+	pub width: u32,
+	pub height: u32,
 }
 
 pub struct Renderer {
-    win_size: WinSize,
-    buffers: Buffers,
+	win_size: WinSize,
+	buffers: Buffers,
 }
 
 impl Renderer {
-    pub fn new(win_width: u32, win_height: u32) -> Self {
-        Renderer {
-            win_size: WinSize {
-                width: win_width,
-                height: win_height,
-            },
-            buffers: Buffers::new(win_width, win_height),
-        }
-    }
-    pub fn render<R>(&mut self, scene: &mut Scene, target: &mut R) -> PResult<()>
-    where
-        R: AsMut<[u8]> + ?Sized,
-    {
-        let screen = self.uniforms();
-        let aspect = screen.width as f64 / screen.height as f64;
+	pub fn new(win_width: u32, win_height: u32) -> Self {
+		Renderer {
+			win_size: WinSize {
+				width: win_width,
+				height: win_height,
+			},
+			buffers: Buffers::new(win_width, win_height),
+		}
+	}
 
-        self.reset_buffers();
+	pub fn render<R>(&mut self, scene: &mut Scene, target: &mut R) -> PResult<()>
+	where
+		R: AsMut<[u8]> + ?Sized,
+	{
+		let screen = self.uniforms();
+		let aspect = screen.width as f64 / screen.height as f64;
 
-        let (scale, position, rotation) = scene.object.get_transforms_props();
+		self.reset_buffers();
 
-        let model = Matrix4::from_transforms(position, scale, rotation);
-        let view = scene.camera.get_view_matrix();
-        let projection = Matrix4::perspective_matrix(90.0_f64.to_radians(), aspect, 0.1, 100.0);
+		let (scale, position, rotation) = scene.object.get_transforms_props();
 
-        let affine = AffineMatrices::from_mvp(model, view, projection);
-        let light = LightUniforms {
-            position: scene.light.position,
-            direction: scene.light.direction(),
-            ambient: scene.light.ambient,
-        };
+		let model = Matrix4::from_transforms(position, scale, rotation);
+		let view = scene.camera.get_view_matrix();
+		let projection =
+			Matrix4::perspective_matrix(90.0_f64.to_radians(), aspect, 0.1, 100.0);
 
-        let global_uniforms = GlobalUniforms {
-            affine,
-            screen,
-            light,
-            camera_pos: scene.camera.position,
-            specular_strength: 0.4,
-            shininess: 32.0,
-        };
+		let affine = AffineMatrices::from_mvp(model, view, projection);
+		let light = LightUniforms {
+			position: scene.light.position,
+			direction: scene.light.direction(),
+			ambient: scene.light.ambient,
+		};
 
-        let v_shader = shaders::Flat;
-        let f_shader = shaders::Flat;
+		let global_uniforms = GlobalUniforms {
+			affine,
+			screen,
+			light,
+			camera_pos: scene.camera.position,
+			specular_strength: 0.4,
+			shininess: 32.0,
+		};
 
-        raster::draw_call(
-            &mut self.buffers,
-            &global_uniforms,
-            &scene.object.albedo,
-            &scene.object.normal,
-            scene.object.mesh.iter_triangles(),
-            &v_shader,
-            &f_shader,
-        );
+		let v_shader = shaders::Flat;
+		let f_shader = shaders::Flat;
 
-        target.as_mut().copy_from_slice(&self.buffers.f_buffer);
-        Ok(())
-    }
+		raster::draw_call(
+			&mut self.buffers,
+			&global_uniforms,
+			&scene.object.albedo,
+			&scene.object.normal,
+			scene.object.mesh.iter_triangles(),
+			&v_shader,
+			&f_shader,
+		);
 
-    pub fn uniforms(&self) -> ScreenUniforms {
-        ScreenUniforms {
-            width: self.win_size.width as f64,
-            height: self.win_size.height as f64,
-        }
-    }
+		target.as_mut().copy_from_slice(&self.buffers.f_buffer);
+		Ok(())
+	}
 
-    pub fn reset_buffers(&mut self) {
-        self.buffers.reset();
-    }
+	pub fn uniforms(&self) -> ScreenUniforms {
+		ScreenUniforms {
+			width: self.win_size.width as f64,
+			height: self.win_size.height as f64,
+		}
+	}
 
-    pub fn resize(&mut self, width: u32, height: u32) {
-        self.win_size.height = height;
-        self.win_size.width = width;
-        self.buffers.resize(width, height);
-    }
+	pub fn reset_buffers(&mut self) {
+		self.buffers.reset();
+	}
+
+	pub fn resize(&mut self, width: u32, height: u32) {
+		self.win_size.height = height;
+		self.win_size.width = width;
+		self.buffers.resize(width, height);
+	}
 }
