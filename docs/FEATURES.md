@@ -1,31 +1,33 @@
 # PawnGFX Feature Checklist
 
 ## Core Rendering
+
 - [x] Framebuffer rendering
 - [x] Line rasterization (Bresenham's algorithm)
 - [x] Wireframe cube rendering
 - [x] Triangle rasterization
-    - [x] Bounding box (naive)
-    - [ ] Scan line (advance)
+  - [x] Bounding box (naive)
+  - [ ] Scan line (advance)
 - [x] Face filling / solid rendering
 - [x] Texture mapping
-    - [x] Linear sampling
-    - [x] Bi-Linear sampling
-    - [x] Wrapping
+  - [x] Linear sampling
+  - [x] Bi-Linear sampling
+  - [x] Wrapping
 - [x] Shaders
-    - [x] Vertex
-    - [x] Fragment
+  - [x] Vertex
+  - [x] Fragment
 - [ ] Shading models (flat, Gouraud, Phong)
-    - [x] Flat-Lambart
-    - [ ] Gouraud
-    - [ ] Blinn-Phong
+  - [x] Flat-Lambart
+  - [ ] Gouraud
+  - [ ] Blinn-Phong
 - [x] Normal Maps
-    - [x] TBN matrix
-    - [x] Sampling (linear/bilinear)
+  - [x] TBN matrix
+  - [x] Sampling (linear/bilinear)
 - [ ] Shadow rendering
 - [ ] Anti-aliasing
 
 ## 3D Mathematics
+
 - [x] Vector3 operations (add, subtract, multiply, dot, cross, normalize)
 - [x] Vector4 operations
 - [x] Matrix4 operations (identity, transpose, multiplication)
@@ -37,6 +39,7 @@
 - [ ] Quaternion support
 
 ## Camera System
+
 - [x] Perspective camera
 - [x] Camera movement (forward, backward, left, right)
 - [x] Camera rotation (yaw, pitch)
@@ -46,6 +49,7 @@
 - [ ] Orbital camera
 
 ## Input Handling
+
 - [x] Basic Input state machine
 - [x] Keyboard input (WASD + arrows)
 - [x] Mouse input detection
@@ -55,19 +59,21 @@
 - [ ] Gamepad support
 
 ## Geometry & Objects
+
 - [x] Cube rendering
 - [ ] Sphere rendering
 - [ ] Plane rendering
 - [ ] Pyramid rendering
 - [x] Custom mesh loading
-    - [x] Normal baking
-    - [x] Tangents baking
+  - [x] Normal baking
+  - [x] Tangents baking
 - [ ] Model file support (OBJ, glTF, etc.)
-    - [x] OBJ
-    - [ ] glTF
+  - [x] OBJ
+  - [ ] glTF
 - [ ] Mesh instancing
 
 ## Performance & Optimization
+
 - [x] Depth buffer
 - [x] Z-buffer optimization
 - [x] Back-face culling
@@ -76,6 +82,7 @@
 - [ ] Multi-threading support
 
 ## Lighting & Effects
+
 - [x] Ambient lighting
 - [x] Directional lights
 - [ ] Point lights
@@ -86,6 +93,7 @@
 - [ ] Fog
 
 ## UI & Visualization
+
 - [ ] Framerate counter
 - [ ] Debug visualization
 - [ ] Wireframe/solid mode toggle
@@ -93,6 +101,7 @@
 - [ ] Grid overlay
 
 ## Window Management
+
 - [x] Resizable window
 - [x] Window event handling
 - [ ] Full-screen support
@@ -100,6 +109,7 @@
 - [ ] Frame rate limiting
 
 ## Configuration
+
 - [ ] Settings file support
 - [ ] Runtime configuration
 - [ ] Customizable resolution
