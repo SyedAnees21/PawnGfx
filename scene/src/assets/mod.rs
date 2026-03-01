@@ -7,6 +7,8 @@ use pcore::{
 
 pub mod loader;
 pub mod obj;
+// pub mod handle;
+pub mod registry;
 
 pub fn load_mesh_file<P>(path: P) -> PResult<Mesh>
 where

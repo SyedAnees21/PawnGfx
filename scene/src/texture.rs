@@ -2,7 +2,7 @@ use std::path::Path;
 
 use image::Rgb;
 
-use crate::color::Color;
+use crate::{assets::loader::AssetLoader, color::Color};
 use pcore::{
     error::PResult,
     geometry::Normal,
@@ -144,30 +144,6 @@ impl<T> Texture<T> {
     }
 }
 
-// impl<T: From<Rgb<u8>>> AssetLoader for Texture<T> {
-//     fn load_from_file<P>(path: P) -> PResult<Self>
-//     where
-//         P: AsRef<Path>,
-//         Self: Sized,
-//     {
-//         let img = image::open(path)?.to_rgb8();
-//         let (w, h) = img.dimensions();
-
-//         let mut data = Vec::with_capacity((w * h) as usize);
-
-//         for pixel in img.pixels() {
-//             data.push(T::from(*pixel))
-//         }
-
-//         Ok(Self {
-//             width: w as usize,
-//             height: h as usize,
-//             wrap: wrap_mode,
-//             data,
-//         })
-//     }
-// }
-
 pub type Albedo = Texture<Color>;
 
 impl From<Rgb<u8>> for Color {
@@ -177,6 +153,32 @@ impl From<Rgb<u8>> for Color {
             value[1] as f32 / 255.0,
             value[2] as f32 / 255.0,
         )
+    }
+}
+
+impl AssetLoader for Albedo {
+    type Args = Wrap;
+
+    fn load_from_file<P>(path: P, args: Self::Args) -> PResult<Self>
+    where
+        P: AsRef<Path>,
+        Self: Sized,
+    {
+        let img = image::open(path)?.to_rgb8();
+        let (w, h) = img.dimensions();
+
+        let mut data = Vec::with_capacity((w * h) as usize);
+
+        for pixel in img.pixels() {
+            data.push(Color::from(*pixel))
+        }
+
+        Ok(Self {
+            width: w as usize,
+            height: h as usize,
+            wrap: args,
+            data,
+        })
     }
 }
 

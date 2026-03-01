@@ -11,8 +11,6 @@ pub struct Scene {
     pub camera: Camera,
     pub object: Object,
     pub light: Light,
-    // pub input: InputState,
-    // pub animator: ProceduralAnimator,
 }
 
 impl Default for Scene {
@@ -31,9 +29,6 @@ impl Default for Scene {
         object.set_normal_map(normal);
 
         let light = Light::default();
-        // let input = InputState::default();
-
-        // let animator = ProceduralAnimator::new(Vector3::new(15.0, 0.0, 10.0), Vector3::new(0.0, 0.0, 5.0));
 
         Self {
             camera,
@@ -42,19 +37,3 @@ impl Default for Scene {
         }
     }
 }
-
-// impl Scene {
-//     pub fn initialize_default() -> Self {
-//         Self::default()
-//     }
-
-//     pub fn update(&mut self, ism: &InputState) {
-//         if !self.animator.is_complete() {
-//             self.camera.position = self.animator.step(0.005);
-//             return;
-//         }
-
-//         self.camera.apply_inputs(ism);
-//         self.object.apply_inputs(ism);
-//     }
-// }
