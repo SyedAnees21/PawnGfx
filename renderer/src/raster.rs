@@ -1,9 +1,12 @@
 use crate::{
-    geometry::{Triangles, bounding_rect, edge_function},
-    math::{self, Vector2, Vector4},
-    scene::{Albedo, NormalMap},
+    buffer::Buffers,
     shaders::{FragmentShader, GlobalUniforms, Varyings, VertexIn, VertexOut, VertexShader},
 };
+use pcore::{
+    geometry::{Triangles, bounding_rect, edge_function},
+    math::{self, Vector2, Vector4},
+};
+use pscene::texture::{Albedo, NormalMap};
 
 #[derive(Default, Clone, Copy)]
 pub struct RasterIn {
@@ -19,9 +22,8 @@ impl From<(Vector2, f64, f64)> for RasterIn {
     }
 }
 
-pub fn draw_call<F, D, VS, FS>(
-    frame_buffer: &mut F,
-    depth_buffer: &mut D,
+pub fn draw_call<VS, FS>(
+    buffers: &mut Buffers,
     global_uniforms: &GlobalUniforms,
     albedo: &Albedo,
     normal: &NormalMap,
@@ -29,8 +31,6 @@ pub fn draw_call<F, D, VS, FS>(
     vs: &VS,
     fs: &FS,
 ) where
-    F: AsMut<[u8]> + ?Sized,
-    D: AsMut<[f64]> + ?Sized,
     VS: VertexShader,
     FS: FragmentShader,
 {
@@ -90,22 +90,14 @@ pub fn draw_call<F, D, VS, FS>(
             varyings[i] = varyings[i] * r_vertices[i].inv_w;
         }
 
-        draw_triangle_shaded(
-            frame_buffer,
-            depth_buffer,
-            global_uniforms,
-            albedo,
-            normal,
-            fs,
-            varyings,
-            r_vertices,
-        );
+        draw_triangle_shaded(buffers, global_uniforms, albedo, normal, fs, varyings, r_vertices);
     }
 }
 
-fn draw_triangle_shaded<F, D, FS>(
-    frame_buffer: &mut F,
-    depth_buffer: &mut D,
+fn draw_triangle_shaded<FS>(
+    // frame_buffer: &mut F,
+    // depth_buffer: &mut D,
+    buffers: &mut Buffers,
     global_uniforms: &GlobalUniforms,
     albedo: &Albedo,
     normal: &NormalMap,
@@ -113,12 +105,14 @@ fn draw_triangle_shaded<F, D, FS>(
     varyings: [Varyings; 3],
     raster_in: [RasterIn; 3],
 ) where
-    F: AsMut<[u8]> + ?Sized,
-    D: AsMut<[f64]> + ?Sized,
+    // F: AsMut<[u8]> + ?Sized,
+    // D: AsMut<[f64]> + ?Sized,
     FS: FragmentShader,
 {
-    let depth_buffer = depth_buffer.as_mut();
-    let frame_buffer = frame_buffer.as_mut();
+    // let z_buffer = depth_buffer.as_mut();
+    // let f_buffer = frame_buffer.as_mut();
+
+    let (f_buffer, z_buffer) = buffers.mut_buffers();
 
     let w = global_uniforms.screen.width as i32;
     let h = global_uniforms.screen.height as i32;
@@ -173,14 +167,14 @@ fn draw_triangle_shaded<F, D, FS>(
             let depth_index = (y * w + x) as usize;
             let pixel_index = depth_index * 4;
 
-            if z < depth_buffer[depth_index] {
+            if z < z_buffer[depth_index] {
                 let [v0, v1, v2] = varyings;
 
                 let varying = math::perspective_interpolate(bary, inv_depth, (v0, v1, v2));
                 let color = fs.shade(varying, global_uniforms, albedo, normal);
 
-                depth_buffer[depth_index] = z;
-                frame_buffer[pixel_index..pixel_index + 4].copy_from_slice(&color.to_rgba8());
+                z_buffer[depth_index] = z;
+                f_buffer[pixel_index..pixel_index + 4].copy_from_slice(&color.to_rgba8());
             }
         }
     }

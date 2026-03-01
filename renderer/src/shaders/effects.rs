@@ -1,8 +1,12 @@
+use pcore::math::{Matrix3, Vector4};
 use crate::{
-    color::Color,
-    math::{Matrix3, Vector4},
-    scene::{Albedo, NormalMap},
+    // color::Color,
+    // scene::{Albedo, NormalMap},
     shaders::{FragmentShader, GlobalUniforms, Varyings, VertexIn, VertexOut, VertexShader},
+};
+use pscene::{
+    color::Color,
+    texture::{Albedo, NormalMap}
 };
 
 pub struct Flat;

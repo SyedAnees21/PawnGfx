@@ -1,15 +1,22 @@
-mod effects;
-
+use pcore::{
+    geometry::{BiTangent, Normal, Tangent, UV, VertexAttributes},
+    math::{AffineMatrices, Vector3, Vector4},
+};
 use std::ops::{Add, Mul};
+
+// use crate::{
+//     color::Color,
+//     scene::{Albedo, NormalMap},
+// };
+
+use pscene::{
+    color::Color,
+    texture::{Albedo, NormalMap}
+};
 
 pub use effects::*;
 
-use crate::{
-    color::Color,
-    geometry::{BiTangent, Normal, Tangent, UV, VertexAttributes},
-    math::{AffineMatrices, Vector3, Vector4},
-    scene::{Albedo, NormalMap},
-};
+mod effects;
 
 #[derive(Debug, Clone, Copy)]
 pub struct GlobalUniforms {

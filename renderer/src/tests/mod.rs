@@ -1,7 +1,7 @@
 #[test]
 pub fn point_inside_triangle() {
-    use crate::geometry::edge_function;
-    use crate::math::Vector2;
+    use pcore::geometry::edge_function;
+    use pcore::math::Vector2;
 
     let v0 = Vector2 { x: 0.0, y: 0.0 };
     let v1 = Vector2 { x: 1.0, y: 0.0 };

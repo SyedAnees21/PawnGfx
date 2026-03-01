@@ -1,4 +1,4 @@
-use crate::math::{Vector3, lerp};
+use pcore::math::{Vector3, lerp};
 
 pub struct ProceduralAnimator {
     pub start: Vector3,

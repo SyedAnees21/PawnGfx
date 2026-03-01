@@ -1,5 +1,5 @@
 [package]
-name = "pawngfx"
+name = "prenderer"
 authors.workspace = true
 repository.workspace = true
 version.workspace = true
@@ -10,8 +10,18 @@ publish.workspace = true
 license.workspace = true
 
 [dependencies]
-pixels.workspace = true
-winit.workspace = true
+pixels = {workspace = true, optional = true}
+winit = {workspace = true, optional = true}
 hex.workspace = true
 thiserror.workspace = true
 image.workspace = true
+pcore = { path = "../core" }
+pscene = { path = "../scene" }
+
+[features]
+standalone = ["pixels", "winit"]
+
+[[example]]
+name = "standalone"
+path = "examples/standalone.rs"
+required-features = ["standalone"]
