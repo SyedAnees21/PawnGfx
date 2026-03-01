@@ -1,5 +1,5 @@
 [workspace]
-members = ["renderer", "editor"]
+members = ["renderer", "editor", "scene", "core"]
 
 resolver = "2"
 

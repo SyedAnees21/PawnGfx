@@ -8,6 +8,7 @@ To view the currently implemented flow and architecture of the application and r
 ## Overview
 
 PawnGFX is a barebone graphics renderer that implements core 3D graphics concepts including:
+
 - Software-based rasterization
 - Camera system with perspective projection
 - 3D transformations (rotation, translation, scaling)
@@ -27,11 +28,13 @@ For update features list refer to [features](./docs/FEATURES.md)
 ## Building & Running
 
 ### Build
+
 ```bash
 cargo build --release
 ```
 
 ### Run
+
 ```bash
 cargo run --release
 ```
@@ -41,4 +44,3 @@ cargo run --release
 - **W/A/S/D/Q/E**: Move camera (forward, back, left, right, up, down)
 - **Arrow Keys**: Rotate cube (↑/↓ for X-axis, ←/→ for Y-axis)
 - **Right client + Mouse drag**: Camera rotation
-

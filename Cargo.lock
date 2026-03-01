@@ -2596,23 +2596,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
-name = "pawngfx"
-version = "0.1.0"
-dependencies = [
- "hex",
- "image",
- "pixels",
- "thiserror 2.0.18",
- "winit 0.29.15",
-]
-
-[[package]]
 name = "pawngfx-editor"
 version = "0.1.0"
 dependencies = [
  "eframe",
+ "pcore",
+ "pscene",
  "rfd",
  "winapi",
+]
+
+[[package]]
+name = "pcore"
+version = "0.1.0"
+dependencies = [
+ "image",
+ "pixels",
+ "thiserror 2.0.18",
+ "winit 0.29.15",
 ]
 
 [[package]]
@@ -2732,6 +2733,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "prenderer"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "image",
+ "pcore",
+ "pixels",
+ "pscene",
+ "thiserror 2.0.18",
+ "winit 0.29.15",
+]
+
+[[package]]
 name = "presser"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2770,6 +2784,14 @@ name = "profiling"
 version = "1.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3eb8486b569e12e2c32ad3e204dbaba5e4b5b216e9367044f25f1dba42341773"
+
+[[package]]
+name = "pscene"
+version = "0.1.0"
+dependencies = [
+ "image",
+ "pcore",
+]
 
 [[package]]
 name = "qoi"
