@@ -22,7 +22,9 @@ jobs:
           cargo +nightly fmt --all -- --check
 
       - name: Build
-        run: cargo build --all-targets
+        run: |
+          sudo apt-get update && sudo apt-get install -y libglib2.0-dev
+          cargo build --all-targets
 
       - name: Test
         run: cargo test --all
