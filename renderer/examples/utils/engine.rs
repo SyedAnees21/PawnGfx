@@ -1,7 +1,6 @@
 
 
 use prenderer::render::Renderer;
-use pcore::error::*;
 use winit::event::{DeviceEvent, Event, WindowEvent};
 
 use pscene::global::Scene;

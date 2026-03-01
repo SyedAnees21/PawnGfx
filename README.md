@@ -38,7 +38,7 @@ The renderer includes a standalone example that opens its own window and renders
 Run it with:
 
 ```bash
-cargo run -p pawngfx --example standalone --features standalone --release
+cargo run -p prenderer --example standalone --features standalone --release
 ```
 
 ### Controls (Standalone)
