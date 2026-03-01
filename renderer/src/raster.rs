@@ -2,11 +2,7 @@ use {
 	crate::{
 		buffer::Buffers,
 		shaders::{
-			FragmentShader,
-			GlobalUniforms,
-			Varyings,
-			VertexIn,
-			VertexOut,
+			FragmentShader, GlobalUniforms, Varyings, VertexIn, VertexOut,
 			VertexShader,
 		},
 	},

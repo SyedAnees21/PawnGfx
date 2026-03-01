@@ -1,4 +1,5 @@
 #![allow(unused)]
+#![allow(clippy::too_many_arguments)]
 
 use pcore::math::{Matrix4, Vector3};
 
@@ -37,7 +38,7 @@ pub fn draw_line<T>(
 			if z < depth_buffer[depth_index] {
 				depth_buffer[depth_index] = z;
 
-				let pixel_index = (depth_index * 4) as usize;
+				let pixel_index = (depth_index * 4);
 				frame[pixel_index] = 255;
 				frame[pixel_index + 1] = 255;
 				frame[pixel_index + 2] = 255;

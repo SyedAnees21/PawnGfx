@@ -37,7 +37,7 @@ impl Renderer {
 		R: AsMut<[u8]> + ?Sized,
 	{
 		let screen = self.uniforms();
-		let aspect = screen.width as f64 / screen.height as f64;
+		let aspect = screen.width / screen.height;
 
 		self.reset_buffers();
 

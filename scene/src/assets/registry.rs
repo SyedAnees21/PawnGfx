@@ -51,20 +51,11 @@ impl<T> AssetStore<T> {
 	}
 }
 
+#[derive(Default)]
 pub struct AssetRegistry {
 	meshes: AssetStore<Mesh>,
 	albedos: AssetStore<Albedo>,
 	normals: AssetStore<NormalMap>,
-}
-
-impl Default for AssetRegistry {
-	fn default() -> Self {
-		Self {
-			meshes: AssetStore::default(),
-			albedos: AssetStore::default(),
-			normals: AssetStore::default(),
-		}
-	}
 }
 
 impl AssetRegistry {

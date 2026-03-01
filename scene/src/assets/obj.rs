@@ -25,7 +25,7 @@ where
 
 	for line in reader.lines() {
 		let line = line?;
-		let parts = line.trim().split_whitespace().collect::<Vec<_>>();
+		let parts = line.split_whitespace().collect::<Vec<_>>();
 
 		if parts.is_empty() {
 			continue;

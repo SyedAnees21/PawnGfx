@@ -10,12 +10,7 @@ use crate::{
 	// color::Color,
 	// scene::{Albedo, NormalMap},
 	shaders::{
-		FragmentShader,
-		GlobalUniforms,
-		Varyings,
-		VertexIn,
-		VertexOut,
-		VertexShader,
+		FragmentShader, GlobalUniforms, Varyings, VertexIn, VertexOut, VertexShader,
 	},
 };
 

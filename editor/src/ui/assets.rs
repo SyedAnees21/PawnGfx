@@ -32,28 +32,25 @@ pub fn show(
 		.resizable(true)
 		.show(ctx, |ui| {
 			ui.horizontal(|ui| {
-				if ui.button("M").on_hover_text("Load Mesh").clicked() {
-					if let Some(path) =
+				if ui.button("M").on_hover_text("Load Mesh").clicked()
+					&& let Some(path) =
 						FileDialog::new().add_filter("obj", &["obj"]).pick_file()
-					{
-						let _ = state.assets.load_mesh(path);
-					}
+				{
+					let _ = state.assets.load_mesh(path);
 				}
-				if ui.button("A").on_hover_text("Load Albedo").clicked() {
-					if let Some(path) = FileDialog::new()
+				if ui.button("A").on_hover_text("Load Albedo").clicked()
+					&& let Some(path) = FileDialog::new()
 						.add_filter("images", &["png", "jpg", "jpeg"])
 						.pick_file()
-					{
-						let _ = state.assets.load_albedo(path);
-					}
+				{
+					let _ = state.assets.load_albedo(path);
 				}
-				if ui.button("N").on_hover_text("Load Normal").clicked() {
-					if let Some(path) = FileDialog::new()
+				if ui.button("N").on_hover_text("Load Normal").clicked()
+					&& let Some(path) = FileDialog::new()
 						.add_filter("images", &["png", "jpg", "jpeg"])
 						.pick_file()
-					{
-						let _ = state.assets.load_normal(path);
-					}
+				{
+					let _ = state.assets.load_normal(path);
 				}
 			});
 

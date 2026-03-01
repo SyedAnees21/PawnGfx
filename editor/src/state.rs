@@ -4,7 +4,10 @@ use {
 		assets,
 		texture::{Albedo, NormalMap, Wrap},
 	},
-	std::{collections::HashMap, path::PathBuf},
+	std::{
+		collections::HashMap,
+		path::{Path, PathBuf},
+	},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -172,7 +175,7 @@ impl AssetRegistry {
 	}
 }
 
-fn file_stem(path: &PathBuf) -> String {
+fn file_stem(path: &Path) -> String {
 	path
 		.file_stem()
 		.unwrap_or_default()

@@ -1,41 +1,25 @@
 use crate::{
 	geometry::{
-		BiTangent,
-		Idx,
-		NIdx,
-		Normal,
-		Normals,
-		TIdx,
-		Tangent,
-		Triangles,
-		UV,
-		VIdx,
-		Vertex,
-		Vertices,
+		BiTangent, Idx, NIdx, Normal, Normals, TIdx, Tangent, Triangles, UV, VIdx,
+		Vertex, Vertices,
 	},
 	math::Vector3,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Indices {
 	pub v: Vec<Idx>,
 	pub n: Vec<Idx>,
 	pub uv: Vec<Idx>,
 }
 
-impl Default for Indices {
-	fn default() -> Self {
-		Self {
-			v: vec![],
-			n: vec![],
-			uv: vec![],
-		}
-	}
-}
-
 impl Indices {
 	pub fn len(&self) -> usize {
 		self.v.len()
+	}
+
+	pub fn is_empty(&self) -> bool {
+		self.len() == 0
 	}
 
 	pub fn index(&self, index: Idx) -> (VIdx, NIdx, TIdx) {
@@ -58,7 +42,7 @@ impl Indices {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Mesh {
 	pub vertices: Vertices,
 	pub normals: Normals,
@@ -66,19 +50,6 @@ pub struct Mesh {
 	pub tangents: Vec<Tangent>,
 	pub bi_tangents: Vec<BiTangent>,
 	pub indices: Indices,
-}
-
-impl Default for Mesh {
-	fn default() -> Self {
-		Self {
-			vertices: vec![],
-			normals: vec![],
-			uv: vec![],
-			tangents: vec![],
-			bi_tangents: vec![],
-			indices: Indices::default(),
-		}
-	}
 }
 
 impl Mesh {
@@ -139,20 +110,18 @@ impl Mesh {
 	fn bake_mesh(
 		vertices: &Vertices,
 		indices: &mut Indices,
-		uv: &mut Vec<UV>,
+		uv: &mut [UV],
 		normals: &mut Normals,
 	) -> (Vec<Tangent>, Vec<BiTangent>) {
 		if normals.is_empty() {
 			Self::bake_normals(vertices, indices, normals);
 		}
 
-		let tangents = if !uv.is_empty() {
+		if !uv.is_empty() {
 			Self::bake_tangents(vertices, uv, indices)
 		} else {
 			(vec![], vec![])
-		};
-
-		tangents
+		}
 	}
 
 	fn bake_normals(
@@ -184,9 +153,9 @@ impl Mesh {
 			indices.n[i_1] = id1;
 			indices.n[i_2] = id2;
 
-			normals[id0] = normals[id0] + f_normal;
-			normals[id1] = normals[id1] + f_normal;
-			normals[id2] = normals[id2] + f_normal;
+			normals[id0] += f_normal;
+			normals[id1] += f_normal;
+			normals[id2] += f_normal;
 		}
 
 		normals.iter_mut().for_each(|n| *n = n.normalize());
@@ -194,7 +163,7 @@ impl Mesh {
 
 	fn bake_tangents(
 		vertices: &Vertices,
-		uv: &Vec<UV>,
+		uv: &[UV],
 		indices: &Indices,
 	) -> (Vec<Tangent>, Vec<BiTangent>) {
 		let size: usize = indices.v.len();
@@ -284,7 +253,7 @@ impl Iterator for IterNormals<'_> {
 	type Item = Normal;
 
 	fn next(&mut self) -> Option<Self::Item> {
-		if self.mesh.indices.n.len() == 0
+		if self.mesh.indices.n.is_empty()
 			|| self.mesh.indices.n.len() <= self.counter
 		{
 			return None;
@@ -306,7 +275,7 @@ impl Iterator for IterUV<'_> {
 	type Item = UV;
 
 	fn next(&mut self) -> Option<Self::Item> {
-		if self.mesh.indices.uv.len() == 0
+		if self.mesh.indices.uv.is_empty()
 			|| self.mesh.indices.uv.len() <= self.counter
 		{
 			return None;
