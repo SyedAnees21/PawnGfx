@@ -10,7 +10,7 @@ use {
 };
 
 pub enum Wrap {
-	clamp,
+	Clamp,
 	Repeat,
 	Mirror,
 }
@@ -27,7 +27,7 @@ impl<T> Default for Texture<T> {
 		Self {
 			width: 0,
 			height: 0,
-			wrap: Wrap::clamp,
+			wrap: Wrap::Clamp,
 			data: vec![],
 		}
 	}
@@ -38,7 +38,7 @@ impl<T> Texture<T> {
 		Self {
 			width: w,
 			height: h,
-			wrap: Wrap::clamp,
+			wrap: Wrap::Clamp,
 			data,
 		}
 	}
@@ -76,7 +76,7 @@ impl<T> Texture<T> {
 	#[inline(always)]
 	pub fn wrap_uv(&self, mut p: f64) -> f64 {
 		match self.wrap {
-			Wrap::clamp => p.clamp(0.0, 1.0),
+			Wrap::Clamp => p.clamp(0.0, 1.0),
 			Wrap::Repeat => {
 				if p.fract() < 0.0 {
 					p += 1.0;
@@ -204,7 +204,7 @@ mod tests {
 	#[test]
 	fn load_checker_texture() {
 		let path = "./assets/texture/Checker-Texture.png";
-		let texture = Texture::<Color>::from_file(path, Wrap::clamp).unwrap();
+		let texture = Texture::<Color>::from_file(path, Wrap::Clamp).unwrap();
 
 		assert_eq!(texture.width, 1024);
 		assert_eq!(texture.height, 1024);

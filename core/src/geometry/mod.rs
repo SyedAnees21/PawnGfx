@@ -27,7 +27,7 @@ pub type Normal = Vector3;
 pub type Tangent = Vector3;
 pub type BiTangent = Vector3;
 
-trait Arithmetic:
+pub trait Arithmetic:
 	Add<Output = Self> + Sub<Output = Self> + Mul<Output = Self>
 where
 	Self: Sized,

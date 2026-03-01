@@ -183,7 +183,7 @@ impl Mul for Vector3 {
 	type Output = Vector3;
 
 	#[inline(always)]
-	fn mul(self, scalar: Self) -> Vector3 {
+	fn mul(self, _scalar: Self) -> Vector3 {
 		self
 	}
 }

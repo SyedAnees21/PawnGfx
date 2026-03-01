@@ -124,7 +124,7 @@ impl Mesh {
 		self.indices.index(index)
 	}
 
-	pub fn iter_triangles(&self) -> Triangles {
+	pub fn iter_triangles(&self) -> Triangles<'_> {
 		Triangles::new(self)
 	}
 
