@@ -105,7 +105,7 @@ mod tests {
 
 	#[test]
 	fn load_example_cube() {
-		let file_path = "./assets/meshes/cube.obj";
+		let file_path = "../assets/meshes/cube.obj";
 		let mesh = load_obj(file_path).unwrap();
 
 		assert!(

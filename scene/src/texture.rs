@@ -203,7 +203,7 @@ mod tests {
 
 	#[test]
 	fn load_checker_texture() {
-		let path = "./assets/texture/Checker-Texture.png";
+		let path = "../assets/texture/Checker-Texture.png";
 		let texture = Texture::<Color>::from_file(path, Wrap::Clamp).unwrap();
 
 		assert_eq!(texture.width, 1024);
