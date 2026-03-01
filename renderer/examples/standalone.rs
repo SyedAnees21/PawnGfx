@@ -32,7 +32,7 @@ fn main() -> PResult<()> {
     )?;
 
     let scene = pscene::global::Scene::default();
-    let renderer = render::initialize_renderer(size.width, size.height).unwrap();
+    let renderer = render::Renderer::new(size.width, size.height);
     let input = InputState::default();
 
     // let mut engine = Engine::new(scene, renderer, input);

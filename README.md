@@ -1,46 +1,50 @@
 # PawnGFX
 
-A minimal software renderer written in Rust for learning and experimentation with 3D graphics fundamentals.
-The aim is to develop a fast and optimized light weight CPU based software renderer to view .obj and gltf models.
+PawnGFX is a CPU-based software renderer built in Rust to explore 3D graphics fundamentals. The workspace now includes a headless renderer library, a scene crate, and an in-progress editor UI.
 
-To view the currently implemented flow and architecture of the application and rendering pipeline [Architecture](./docs/ARCHITECTURE.md)
+See the current pipeline diagrams and flow notes in `docs/ARCHITECTURE.md`.
 
 ## Overview
 
-PawnGFX is a barebone graphics renderer that implements core 3D graphics concepts including:
+Core renderer capabilities:
 
-- Software-based rasterization
-- Camera system with perspective projection
-- 3D transformations (rotation, translation, scaling)
-- Wireframe rendering of 3D objects
-- User input handling for object and camera control
+- Software rasterization pipeline (triangles + depth)
+- Camera + transforms (model/view/projection)
+- Texturing + normal mapping
+- Basic lighting/shading models
+- Asset loading for meshes/textures
 
-For update features list refer to [features](./docs/FEATURES.md)
+For the full feature list, see `docs/FEATURES.md`.
 
-## Features
+## Project Structure
 
-- **3D Math Library**: Vector3, Vector4, and Matrix4 implementations with essential operations
-- **Camera System**: Perspective camera with smooth movement and rotation
-- **Wireframe Rendering**: Line-based drawing using Bresenham's line algorithm
-- **Interactive Controls**: Keyboard input for camera movement and object rotation
-- **Depth Management**: Depth buffer for proper rendering
-
-## Building & Running
-
-### Build
-
-```bash
-cargo build --release
+```text
+.
++- core/            # Math + geometry primitives used by other crates
++- scene/           # Scene data + assets + utilities (shared)
++- renderer/        # Software renderer library
++- editor/          # Editor UI (egui) #WIP
++- assets/          # Sample assets (meshes/textures)
++- docs/            # Architecture + design docs + mdBook
++- README.md
 ```
 
-### Run
+---
+
+## Standalone Example
+
+The renderer includes a standalone example that opens its own window and renders a default scene.
+
+Run it with:
 
 ```bash
-cargo run --release
+cargo run -p pawngfx --example standalone --features standalone --release
 ```
 
-## Controls
+### Controls (Standalone)
 
-- **W/A/S/D/Q/E**: Move camera (forward, back, left, right, up, down)
-- **Arrow Keys**: Rotate cube (↑/↓ for X-axis, ←/→ for Y-axis)
-- **Right client + Mouse drag**: Camera rotation
+- `W/A/S/D/Q/E`: Move camera (forward, back, left, right, up, down)
+- `Arrow Keys`: Rotate the object (up/down = X axis, left/right = Y axis)
+- `Right click + Drag`: Camera rotation
+
+---

@@ -95,13 +95,3 @@ impl Renderer {
         self.buffers.resize(width, height);
     }
 }
-
-pub fn initialize_renderer(window_width: u32, window_height: u32) -> PResult<Renderer> {
-    Ok(Renderer {
-        win_size: WinSize {
-            width: window_width,
-            height: window_height,
-        },
-        buffers: Buffers::new(window_width, window_height),
-    })
-}
