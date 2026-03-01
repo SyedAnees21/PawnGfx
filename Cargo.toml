@@ -1,4 +1,9 @@
-[package]
+[workspace]
+members = ["renderer", "editor", "scene", "core"]
+
+resolver = "2"
+
+[workspace.package]
 name = "pawngfx"
 authors = ["Syed Anees <syedanees816@gmail.com>"]
 repository = "https://github.com/SyedAnees21/PawnGfx"
@@ -9,12 +14,14 @@ readme = "README.md"
 publish = false
 license = "MIT OR Apache-2.0"
 
-[dependencies]
+[workspace.dependencies]
 pixels = "0.15.0"
 winit = "0.29"
 hex = "0.4.3"
 thiserror = "2.0.18"
 image = "0.24"
+eframe = "0.24"
+rfd = "0.12"
 
 [profile.release]
 opt-level = 3

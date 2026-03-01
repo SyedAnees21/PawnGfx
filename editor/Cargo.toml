@@ -1,0 +1,19 @@
+﻿[package]
+name = "pawngfx-editor"
+authors.workspace = true
+repository.workspace = true
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+readme.workspace = true
+publish.workspace = true
+license.workspace = true
+
+[dependencies]
+eframe.workspace = true
+rfd.workspace = true
+pscene = { path = "../scene" }
+pcore = { path = "../core" }
+
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["winuser", "windef", "wingdi"] }

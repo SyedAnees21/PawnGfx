@@ -1,0 +1,16 @@
+﻿[package]
+name = "pcore"
+authors.workspace = true
+repository.workspace = true
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+readme.workspace = true
+publish.workspace = true
+license.workspace = true
+
+[dependencies]
+winit.workspace = true
+pixels.workspace = true
+thiserror.workspace = true
+image.workspace = true
