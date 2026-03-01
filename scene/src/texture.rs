@@ -187,10 +187,10 @@ pub type NormalMap = Texture<Normal>;
 // impl From<Rgb<u8>> for Normal {
 //     fn from(value: Rgb<u8>) -> Self {
 //         Normal::new(
-//             value[0] as f64 / 255.0 * 2.0 - 1.0,
-//             value[1] as f64 / 255.0 * 2.0 - 1.0,
-//             value[2] as f64 / 255.0 * 2.0 - 1.0,
-//         )
+//             value[0] as f64 / 255.0 * 2.0 -
+// 1.0,             value[1] as f64 / 255.0 * 2.0
+// - 1.0,             value[2] as f64 / 255.0 *
+// 2.0 - 1.0,         )
 //     }
 // }
 

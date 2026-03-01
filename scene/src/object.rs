@@ -68,10 +68,10 @@ impl Default for Transform {
 }
 
 // impl Controller for Object {
-//     fn apply_inputs(&mut self, controller: &crate::input::InputState) {
-//         if controller.is_pressed(Keys::Up) {
-//             self.transform.rotation.x -= 0.9;
-//         }
+//     fn apply_inputs(&mut self, controller:
+// &crate::input::InputState) {         if
+// controller.is_pressed(Keys::Up) {
+// self.transform.rotation.x -= 0.9;         }
 
 //         if controller.is_pressed(Keys::Down) {
 //             self.transform.rotation.x += 0.9;

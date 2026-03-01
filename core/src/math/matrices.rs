@@ -42,7 +42,8 @@ impl Matrix4 {
 	pub fn inverse(&self) -> Self {
 		let m = self.data;
 
-		// Sub-determinants for Row-Major indexing: m[row][col]
+		// Sub-determinants for Row-Major indexing:
+		// m[row][col]
 		let s0 = m[0][0] * m[1][1] - m[0][1] * m[1][0];
 		let s1 = m[0][0] * m[1][2] - m[0][2] * m[1][0];
 		let s2 = m[0][0] * m[1][3] - m[0][3] * m[1][0];
@@ -279,8 +280,9 @@ impl Matrix3 {
 		Matrix3::IDENTITY
 	}
 
-	/// Creates a TBN matrix (Tangent Space -> World/Model Space)
-	/// The vectors t, b, and n become the COLUMNS of the matrix.
+	/// Creates a TBN matrix (Tangent Space ->
+	/// World/Model Space) The vectors t, b, and n
+	/// become the COLUMNS of the matrix.
 	#[inline(always)]
 	pub fn from_tbn(t: Vector3, b: Vector3, n: Vector3) -> Matrix3 {
 		Matrix3 {

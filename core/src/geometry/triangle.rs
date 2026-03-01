@@ -13,7 +13,8 @@ impl Iterator for Triangles<'_> {
 			return None;
 		}
 
-		// let mut v_attributes = [VertexAttributes::default(); 3];
+		// let mut v_attributes =
+		// [VertexAttributes::default(); 3];
 
 		let v_attributes = [0, 1, 2].map(|i| {
 			let index = self.counter + i;
@@ -50,14 +51,15 @@ impl Iterator for Triangles<'_> {
 		// 	let uv = self.mesh.uv[uv_id];
 
 		// 	let tangent = self.mesh.tangents[v_id];
-		// 	let bi_tangent = self.mesh.bi_tangents[v_id];
+		// 	let bi_tangent =
+		// self.mesh.bi_tangents[v_id];
 
 		// 	v_attributes[i].set_position(v);
 		// 	v_attributes[i].set_normal(n);
 		// 	v_attributes[i].set_uv(uv);
 		// 	v_attributes[i].set_tangent(tangent);
-		// 	v_attributes[i].set_bi_tangent(bi_tangent);
-		// }
+		// 	v_attributes[i].
+		// set_bi_tangent(bi_tangent); }
 
 		self.counter += 3;
 		Some(v_attributes)

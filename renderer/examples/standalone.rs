@@ -35,7 +35,8 @@ fn main() -> PResult<()> {
 	let renderer = render::Renderer::new(size.width, size.height);
 	let input = InputState::default();
 
-	// let mut engine = Engine::new(scene, renderer, input);
+	// let mut engine = Engine::new(scene, renderer,
+	// input);
 	let mut engine = Engine {
 		scene,
 		fps: FPSCounter::default(),

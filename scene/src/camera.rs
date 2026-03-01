@@ -86,8 +86,9 @@ impl Camera {
 }
 
 // impl Controller for Camera {
-//     fn apply_inputs(&mut self, controller: &crate::input::InputState) {
-//         let speed = self.speed;
+//     fn apply_inputs(&mut self, controller:
+// &crate::input::InputState) {         let speed
+// = self.speed;
 
 //         if controller.is_pressed(Keys::W) {
 //             self.move_forward(speed);
@@ -114,8 +115,9 @@ impl Camera {
 //         }
 
 //         if controller.mouse_right_clicked() {
-//             let (delta_x, delta_y) = controller.mouse_delta;
-//             self.rotate(delta_x * self.sensitivity, -delta_y *
-// self.sensitivity);         }
+//             let (delta_x, delta_y) =
+// controller.mouse_delta;
+// self.rotate(delta_x * self.sensitivity,
+// -delta_y * self.sensitivity);         }
 //     }
 // }
