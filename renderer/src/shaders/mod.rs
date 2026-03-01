@@ -2,17 +2,11 @@ use pcore::{
     geometry::{BiTangent, Normal, Tangent, UV, VertexAttributes},
     math::{AffineMatrices, Vector3, Vector4},
 };
-use std::ops::{Add, Mul};
-
-// use crate::{
-//     color::Color,
-//     scene::{Albedo, NormalMap},
-// };
-
 use pscene::{
     color::Color,
-    texture::{Albedo, NormalMap}
+    texture::{Albedo, NormalMap},
 };
+use std::ops::{Add, Mul};
 
 pub use effects::*;
 
