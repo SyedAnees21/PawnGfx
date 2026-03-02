@@ -60,12 +60,12 @@ impl Renderer {
 			screen,
 			light,
 			camera_pos: scene.camera.position,
-			specular_strength: 0.4,
-			shininess: 32.0,
+			specular_strength: 0.6,
+			shininess: 64.0,
 		};
 
-		let v_shader = shaders::Flat;
-		let f_shader = shaders::Flat;
+		let v_shader = shaders::BlinnPhong;
+		let f_shader = shaders::BlinnPhong;
 
 		raster::draw_call(
 			&mut self.buffers,
