@@ -1,13 +1,12 @@
 use {
+	crate::shaders::{
+		FragmentShader, GlobalUniforms, Varyings, VertexIn, VertexOut, VertexShader,
+	},
 	pcore::math::{Matrix3, Vector4},
 	pscene::{
 		color::Color,
 		texture::{Albedo, NormalMap},
 	},
-};
-
-use crate::shaders::{
-	FragmentShader, GlobalUniforms, Varyings, VertexIn, VertexOut, VertexShader,
 };
 
 pub struct Flat;
