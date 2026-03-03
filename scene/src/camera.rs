@@ -8,6 +8,9 @@ const RIGHT: usize = 1;
 const FORWARD: usize = 2;
 
 pub struct Camera {
+	pub fov: f64,
+	pub near: f64,
+	pub far: f64,
 	pub position: Vector3,
 	pub speed: f64,
 	pub sensitivity: f64,
@@ -19,6 +22,9 @@ pub struct Camera {
 impl Camera {
 	pub fn new(position: Vector3) -> Self {
 		let mut cam = Camera {
+			fov: 90.0f64.to_radians(),
+			near: 0.1,
+			far: 100.0,
 			position,
 			speed: 0.05,
 			sensitivity: 0.1,
@@ -82,5 +88,9 @@ impl Camera {
 				[0.0, 0.0, 0.0, 1.0],
 			],
 		}
+	}
+
+	pub fn get_projection_matrix(&self, aspect: f64) -> Matrix4 {
+		Matrix4::perspective_matrix(self.fov, aspect, self.near, self.far)
 	}
 }

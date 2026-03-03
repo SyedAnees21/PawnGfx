@@ -1,4 +1,3 @@
-pub use effects::*;
 use {
 	pcore::{
 		geometry::{BiTangent, Normal, Tangent, UV, VertexAttributes},
@@ -11,7 +10,10 @@ use {
 	std::ops::{Add, Mul},
 };
 
+pub use effects::*;
+
 mod effects;
+pub mod uniform;
 
 #[derive(Debug, Clone, Copy)]
 pub struct GlobalUniforms {

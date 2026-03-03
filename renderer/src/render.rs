@@ -16,6 +16,12 @@ pub struct WinSize {
 	pub height: u32,
 }
 
+impl WinSize {
+	pub fn aspect(&self) -> f64 {
+		(self.width / self.height) as f64
+	}
+}
+
 pub struct Renderer {
 	win_size: WinSize,
 	buffers: Buffers,
@@ -96,5 +102,9 @@ impl Renderer {
 		self.win_size.height = height;
 		self.win_size.width = width;
 		self.buffers.resize(width, height);
+	}
+
+	pub fn win_size(&self) -> &WinSize {
+		&self.win_size
 	}
 }
