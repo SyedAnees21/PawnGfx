@@ -2,6 +2,9 @@
 #![allow(clippy::too_many_arguments)]
 
 use pcore::math::{Matrix4, Vector3};
+use pscene::object::ObjectRef;
+
+use crate::shaders::GlobalUniforms;
 
 pub fn draw_line<T>(
 	mut frame: T,
@@ -60,6 +63,11 @@ pub fn draw_line<T>(
 
 		step += 1.0;
 	}
+}
+
+pub struct DrawCall<'d> {
+	objects: Vec<ObjectRef<'d>>,
+	uniforms: GlobalUniforms,
 }
 
 pub const CUBE_VERTS: [Vector3; 8] = [

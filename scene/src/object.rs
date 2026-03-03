@@ -32,17 +32,19 @@ impl Object {
 		}
 	}
 
-	pub fn resolve<'m>(
-		&'m self,
-		registry: &'m AssetRegistry,
-	) -> ObjectRef<'m> {
+	pub fn resolve<'m>(&'m self, registry: &'m AssetRegistry) -> ObjectRef<'m> {
+		let m_model = Matrix4::from_transforms(
+			self.transform.position,
+			self.transform.scale,
+			self.transform.rotation,
+		);
+
+		let m_normal = m_model.inverse().transpose();
+
 		ObjectRef {
 			model: self.model.resolve(registry),
-			transform: Matrix4::from_transforms(
-				self.transform.position,
-				self.transform.scale,
-				self.transform.rotation,
-			),
+			m_model,
+			m_normal,
 		}
 	}
 
@@ -93,5 +95,6 @@ impl Default for Transform {
 
 pub struct ObjectRef<'m> {
 	pub model: ModelRef<'m>,
-	pub transform: Matrix4,
+	pub m_model: Matrix4,
+	pub m_normal: Matrix4,
 }
