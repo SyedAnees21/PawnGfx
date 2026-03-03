@@ -1,7 +1,6 @@
 use {
 	crate::{
 		buffer::Buffers,
-		draw::DrawCall,
 		shaders::{
 			FS, FragmentShader, GlobalUniforms, VS, Varyings, VertexIn, VertexOut,
 			VertexShader, uniform,
@@ -9,7 +8,7 @@ use {
 	},
 	pcore::{
 		geometry::{Triangles, bounding_rect, edge_function},
-		math::{self, Vector2, Vector3, Vector4},
+		math::{self, Vector2, Vector4},
 	},
 	pscene::{
 		object::ObjectRef,
@@ -47,7 +46,6 @@ pub fn consume_draw_call<'d, S>(
 	let h = uniforms.screen.height as i32;
 
 	for v in object.model.mesh.iter_triangles() {
-
 		let [v0, v1, v2] = v;
 
 		let face_normal = (v1.position - v0.position)
