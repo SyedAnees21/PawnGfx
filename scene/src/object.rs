@@ -1,6 +1,14 @@
 use {
-	crate::{material::Material, model::Model, texture::{Albedo, NormalMap}},
-	pcore::{geometry::Mesh, math::Vector3},
+	crate::{
+		assets::registry::AssetRegistry,
+		material::Material,
+		model::{Model, ModelRef},
+		texture::{Albedo, NormalMap},
+	},
+	pcore::{
+		geometry::Mesh,
+		math::{Matrix4, Vector3},
+	},
 };
 
 pub struct Object {
@@ -21,6 +29,20 @@ impl Object {
 			albedo: Albedo::default(),
 			normal: NormalMap::default(),
 			transform: Transform::default(),
+		}
+	}
+
+	pub fn object_ref<'m>(
+		&'m self,
+		registry: &'m AssetRegistry,
+	) -> ObjectRef<'m> {
+		ObjectRef {
+			model: self.model.resolve(registry),
+			transform: Matrix4::from_transforms(
+				self.transform.position,
+				self.transform.scale,
+				self.transform.rotation,
+			),
 		}
 	}
 
@@ -67,4 +89,9 @@ impl Default for Transform {
 			rotation: Vector3::default(),
 		}
 	}
+}
+
+pub struct ObjectRef<'m> {
+	pub model: ModelRef<'m>,
+	pub transform: Matrix4,
 }

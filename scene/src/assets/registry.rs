@@ -1,6 +1,6 @@
 use {
 	crate::{
-		material::Material,
+		material::{Material, MaterialRef},
 		texture::{Albedo, NormalMap},
 	},
 	pcore::geometry::Mesh,
@@ -73,7 +73,7 @@ impl<T> AssetStore<T> {
 		AssetHandle::new(index, generation)
 	}
 
-	pub fn get(&self, handle: AssetHandle<T>) -> Option<&T> {
+	pub fn get(&self, handle: &AssetHandle<T>) -> Option<&T> {
 		let slot = self.list.get(handle.index as usize)?;
 		if slot.generation != handle.generation {
 			return None;
@@ -81,7 +81,7 @@ impl<T> AssetStore<T> {
 		slot.asset.as_ref()
 	}
 
-	pub fn remove(&mut self, handle: AssetHandle<T>) -> bool {
+	pub fn remove(&mut self, handle: &AssetHandle<T>) -> bool {
 		if let Some(slot) = self.list.get_mut(handle.index as usize) {
 			if slot.generation == handle.generation {
 				slot.generation += 1;
@@ -101,11 +101,11 @@ macro_rules! impl_asset_type {
 						self.[<$name s>].insert(asset)
 				}
 
-				pub fn [<get_ $name>](&self, handle: $handle) -> Option<&$type> {
+				pub fn [<get_ $name>](&self, handle: &$handle) -> Option<&$type> {
 						self.[<$name s>].get(handle)
 				}
 
-				pub fn [<remove_ $name>](&mut self, handle: $handle) -> bool {
+				pub fn [<remove_ $name>](&mut self, handle: &$handle) -> bool {
 						self.[<$name s>].remove(handle)
 				}
 		}
@@ -123,6 +123,14 @@ pub struct AssetRegistry {
 impl AssetRegistry {
 	pub fn new() -> Self {
 		Self::default()
+	}
+
+	pub fn get_material_ref<'m>(
+		&'m self,
+		handle: &'m MaterialHandle,
+	) -> MaterialRef<'m> {
+		let mtl = self.get_material(handle).unwrap();
+		mtl.resolve(self)
 	}
 
 	impl_asset_type!(mesh, Mesh, MeshHandle);
