@@ -1,14 +1,12 @@
-// use crate::{
-//     input::{Controller, Keys},
-//     scene::{Albedo, NormalMap},
-// };
 use {
-	crate::texture::{Albedo, NormalMap},
+	crate::{material::Material, model::Model, texture::{Albedo, NormalMap}},
 	pcore::{geometry::Mesh, math::Vector3},
 };
 
 pub struct Object {
+	pub model: Model,
 	pub mesh: Mesh,
+	pub material: Material,
 	pub albedo: Albedo,
 	pub normal: NormalMap,
 	pub transform: Transform,
@@ -17,7 +15,9 @@ pub struct Object {
 impl Object {
 	pub fn new(mesh: Mesh) -> Self {
 		Self {
+			model: Model::default(),
 			mesh,
+			material: Material::default(),
 			albedo: Albedo::default(),
 			normal: NormalMap::default(),
 			transform: Transform::default(),
@@ -26,8 +26,10 @@ impl Object {
 
 	pub fn from_mesh_texture(mesh: Mesh, texture: Albedo) -> Self {
 		Self {
+			model: Model::default(),
 			mesh,
 			albedo: texture,
+			material: Material::default(),
 			normal: NormalMap::default(),
 			transform: Transform::default(),
 		}
@@ -66,23 +68,3 @@ impl Default for Transform {
 		}
 	}
 }
-
-// impl Controller for Object {
-//     fn apply_inputs(&mut self, controller:
-// &crate::input::InputState) {         if
-// controller.is_pressed(Keys::Up) {
-// self.transform.rotation.x -= 0.9;         }
-
-//         if controller.is_pressed(Keys::Down) {
-//             self.transform.rotation.x += 0.9;
-//         }
-
-//         if controller.is_pressed(Keys::Left) {
-//             self.transform.rotation.y -= 0.9;
-//         }
-
-//         if controller.is_pressed(Keys::Right) {
-//             self.transform.rotation.y += 0.9;
-//         }
-//     }
-// }

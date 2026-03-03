@@ -25,8 +25,14 @@ impl Color {
 		)
 	}
 
+	#[inline]
 	pub fn new_rgb(r: f32, g: f32, b: f32) -> Self {
 		Color(r.clamp(0.0, 1.0), g.clamp(0.0, 1.0), b.clamp(0.0, 1.0), 1.0)
+	}
+
+	#[inline]
+	pub fn new_rgb_splat(v: f32) -> Self {
+		Self::new_rgb(v, v, v)
 	}
 
 	pub fn from_hex(hex: &str) -> Option<Self> {
@@ -53,12 +59,13 @@ impl Color {
 }
 
 impl Color {
+	#[inline(always)]
 	pub fn to_rgba8(&self) -> [u8; 4] {
 		[
-			(self.0 * 255.0) as u8,
-			(self.1 * 255.0) as u8,
-			(self.2 * 255.0) as u8,
-			(self.3 * 255.0) as u8,
+			(self.0.clamp(0.0, 1.0) * 255.0) as u8,
+			(self.1.clamp(0.0, 1.0) * 255.0) as u8,
+			(self.2.clamp(0.0, 1.0) * 255.0) as u8,
+			(self.3.clamp(0.0, 1.0) * 255.0) as u8,
 		]
 	}
 }
@@ -66,12 +73,13 @@ impl Color {
 impl Add for Color {
 	type Output = Color;
 
+	#[inline(always)]
 	fn add(self, other: Color) -> Color {
 		Color(
-			(self.0 + other.0).min(1.0),
-			(self.1 + other.1).min(1.0),
-			(self.2 + other.2).min(1.0),
-			(self.3 + other.3).min(1.0),
+			self.0 + other.0,
+			self.1 + other.1,
+			self.2 + other.2,
+			self.3 + other.3,
 		)
 	}
 }
@@ -79,12 +87,13 @@ impl Add for Color {
 impl Sub for Color {
 	type Output = Color;
 
+	#[inline(always)]
 	fn sub(self, other: Color) -> Color {
 		Color(
-			(self.0 - other.0).max(0.0),
-			(self.1 - other.1).max(0.0),
-			(self.2 - other.2).max(0.0),
-			(self.3 - other.3).max(0.0),
+			self.0 - other.0,
+			self.1 - other.1,
+			self.2 - other.2,
+			self.3 - other.3,
 		)
 	}
 }
@@ -92,6 +101,7 @@ impl Sub for Color {
 impl Mul<f64> for Color {
 	type Output = Color;
 
+	#[inline(always)]
 	fn mul(self, scalar: f64) -> Color {
 		Color(
 			self.0 * scalar as f32,
@@ -105,7 +115,13 @@ impl Mul<f64> for Color {
 impl Mul for Color {
 	type Output = Self;
 
-	fn mul(self, _rhs: Self) -> Self::Output {
-		self
+	#[inline(always)]
+	fn mul(self, rhs: Self) -> Self::Output {
+		Color(
+			self.0 * rhs.0,
+			self.1 * rhs.1,
+			self.2 * rhs.2,
+			self.3 * rhs.3,
+		)
 	}
 }

@@ -1,14 +1,13 @@
 use {
 	crate::{
-		camera::Camera,
-		light::Light,
-		object::Object,
-		texture::{Albedo, NormalMap, Wrap},
+		assets::registry::AssetRegistry, camera::Camera, light::Light, object::Object, texture::{Albedo, NormalMap, Wrap}
 	},
 	pcore::math::Vector3,
 };
 
 pub struct Scene {
+	pub assets: AssetRegistry,
+	pub objects: Vec<Object>,
 	pub camera: Camera,
 	pub object: Object,
 	pub light: Light,
@@ -37,6 +36,8 @@ impl Default for Scene {
 		let light = Light::default();
 
 		Self {
+			assets: AssetRegistry::default(),
+			objects: Vec::new(),
 			camera,
 			object,
 			light,

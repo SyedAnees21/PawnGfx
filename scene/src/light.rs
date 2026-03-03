@@ -19,12 +19,4 @@ impl Light {
 	pub fn direction(&self) -> Vector3 {
 		self.position.normalize()
 	}
-
-	// pub fn uniforms(&self) -> LightUniforms {
-	//     LightUniforms {
-	//         position: self.position,
-	//         direction: self.direction(),
-	//         ambient: self.ambient,
-	//     }
-	// }
 }

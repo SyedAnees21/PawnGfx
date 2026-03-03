@@ -11,4 +11,5 @@ license.workspace = true
 
 [dependencies]
 image.workspace = true
+paste = "1.0"
 pcore = { path = "../core" }
