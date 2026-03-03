@@ -77,5 +77,8 @@ fn handle_internal_events(
 
 fn update_scene(scene: &mut Scene, input: &InputState) {
 	scene.camera.apply_inputs(input);
-	scene.object.apply_inputs(input);
+	for object in scene.objects.iter_mut() {
+		object.apply_inputs(input)
+	}
+	// scene.object.apply_inputs(input);
 }

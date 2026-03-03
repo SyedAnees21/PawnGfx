@@ -1,16 +1,15 @@
 use {
 	crate::{
 		buffer::Buffers,
+		draw::DrawCall,
 		raster,
-		shaders::{self, GlobalUniforms, LightUniforms, ScreenUniforms},
+		shaders::{BlinnPhong, ScreenUniforms},
 	},
-	pcore::{
-		error::PResult,
-		math::{AffineMatrices, Matrix4},
-	},
+	pcore::error::PResult,
 	pscene::global::Scene,
 };
 
+#[derive(Clone, Copy)]
 pub struct WinSize {
 	pub width: u32,
 	pub height: u32,
@@ -18,7 +17,7 @@ pub struct WinSize {
 
 impl WinSize {
 	pub fn aspect(&self) -> f64 {
-		(self.width / self.height) as f64
+		self.width as f64 / self.height as f64
 	}
 }
 
@@ -42,46 +41,51 @@ impl Renderer {
 	where
 		R: AsMut<[u8]> + ?Sized,
 	{
-		let screen = self.uniforms();
-		let aspect = screen.width / screen.height;
-
 		self.reset_buffers();
 
-		let (scale, position, rotation) = scene.objects[0].get_transforms_props();
+		let draw_call = DrawCall::submit_draw_call(scene, self.win_size);
+		let blinn_phong = BlinnPhong;
 
-		let model = Matrix4::from_transforms(position, scale, rotation);
-		let view = scene.camera.get_view_matrix();
-		let projection =
-			Matrix4::perspective_matrix(90.0_f64.to_radians(), aspect, 0.1, 100.0);
-
-		let affine = AffineMatrices::from_mvp(model, view, projection);
-		let light = LightUniforms {
-			position: scene.light.position,
-			direction: scene.light.direction(),
-			ambient: scene.light.ambient,
-		};
-
-		let global_uniforms = GlobalUniforms {
-			affine,
-			screen,
-			light,
-			camera_pos: scene.camera.position,
-			specular_strength: 0.6,
-			shininess: 64.0,
-		};
-
-		let v_shader = shaders::BlinnPhong;
-		let f_shader = shaders::BlinnPhong;
-
-		raster::draw_call(
+		draw_call.execute(
 			&mut self.buffers,
-			&global_uniforms,
-			&scene.objects[0].albedo,
-			&scene.objects[0].normal,
-			scene.objects[0].mesh.iter_triangles(),
-			&v_shader,
-			&f_shader,
+			&blinn_phong,
+			raster::consume_draw_call,
 		);
+		// let (scale, position, rotation) = scene.objects[0].get_transforms_props();
+
+		// let model = Matrix4::from_transforms(position, scale, rotation);
+		// let view = scene.camera.get_view_matrix();
+		// let projection =
+		// 	Matrix4::perspective_matrix(90.0_f64.to_radians(), aspect, 0.1, 100.0);
+
+		// let affine = AffineMatrices::from_mvp(model, view, projection);
+		// let light = LightUniforms {
+		// 	position: scene.light.position,
+		// 	direction: scene.light.direction(),
+		// 	ambient: scene.light.ambient,
+		// };
+
+		// let global_uniforms = GlobalUniforms {
+		// 	affine,
+		// 	screen,
+		// 	light,
+		// 	camera_pos: scene.camera.position,
+		// 	specular_strength: 0.6,
+		// 	shininess: 64.0,
+		// };
+
+		// let v_shader = shaders::BlinnPhong;
+		// let f_shader = shaders::BlinnPhong;
+
+		// raster::draw_call(
+		// 	&mut self.buffers,
+		// 	&global_uniforms,
+		// 	&scene.objects[0].albedo,
+		// 	&scene.objects[0].normal,
+		// 	scene.objects[0].mesh.iter_triangles(),
+		// 	&v_shader,
+		// 	&f_shader,
+		// );
 
 		target.as_mut().copy_from_slice(&self.buffers.f_buffer);
 		Ok(())

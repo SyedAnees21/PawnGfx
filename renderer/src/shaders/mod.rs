@@ -5,6 +5,7 @@ use {
 	},
 	pscene::{
 		color::Color,
+		object::ObjectRef,
 		texture::{Albedo, NormalMap},
 	},
 	std::ops::{Add, Mul},
@@ -103,5 +104,23 @@ pub trait FragmentShader {
 		u: &GlobalUniforms,
 		albedo: &Albedo,
 		normal: &NormalMap,
+	) -> Color;
+}
+
+pub trait VS {
+	fn shade_vertex<'d>(
+		&self,
+		input: VertexIn,
+		object: ObjectRef<'d>,
+		uniforms: &uniform::GlobalUniforms,
+	) -> VertexOut;
+}
+
+pub trait FS {
+	fn shade_pixel<'d>(
+		&self,
+		input: Varyings,
+		object: ObjectRef<'d>,
+		uniforms: &uniform::GlobalUniforms,
 	) -> Color;
 }

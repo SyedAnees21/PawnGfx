@@ -1,9 +1,9 @@
 use pcore::math::{Matrix4, Vector3};
-use pscene::{camera::Camera, light::Light};
+use pscene::{camera::Camera, color::Color, light::Light};
 
 use crate::render::WinSize;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct GlobalUniforms {
 	pub m_view: Matrix4,
 	pub m_projection: Matrix4,
@@ -13,10 +13,11 @@ pub struct GlobalUniforms {
 	pub camera: CameraUniforms,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct LightUniforms {
 	pub position: Vector3,
 	pub direction: Vector3,
+	pub color: Color,
 	pub ambient: f64,
 }
 
@@ -26,6 +27,7 @@ impl From<&Light> for LightUniforms {
 			position: value.position,
 			direction: value.direction(),
 			ambient: value.ambient,
+			color: value.color,
 		}
 	}
 }

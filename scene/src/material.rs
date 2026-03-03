@@ -21,7 +21,7 @@ impl Default for Material {
 			specular_strength: 0.5,
 			diffuse: Color::new_rgb_splat(0.6),
 			ambient: Color::new_rgb_splat(0.1),
-			specular: Color::new_rgb_splat(0.0),
+			specular: Color::new_rgb_splat(0.5),
 			albedo: None,
 			normal: None,
 		}
@@ -58,6 +58,7 @@ impl Material {
 	}
 }
 
+#[derive(Clone, Copy)]
 pub struct MaterialRef<'m> {
 	pub shininess: f32,
 	pub diffuse: Color,

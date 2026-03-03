@@ -20,6 +20,7 @@ impl Model {
 	}
 }
 
+#[derive(Clone, Copy)]
 pub struct ModelRef<'m> {
 	pub mesh: &'m Mesh,
 	pub material: MaterialRef<'m>,

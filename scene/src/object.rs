@@ -21,6 +21,17 @@ pub struct Object {
 }
 
 impl Object {
+	pub fn from_model(model: Model) -> Self {
+		Self {
+			model,
+			mesh: Mesh::default(),
+			material: Material::default(),
+			albedo: Albedo::default(),
+			normal: NormalMap::default(),
+			transform: Transform::default(),
+		}
+	}
+	
 	pub fn new(mesh: Mesh) -> Self {
 		Self {
 			model: Model::default(),
@@ -93,6 +104,7 @@ impl Default for Transform {
 	}
 }
 
+#[derive(Clone, Copy)]
 pub struct ObjectRef<'m> {
 	pub model: ModelRef<'m>,
 	pub m_model: Matrix4,

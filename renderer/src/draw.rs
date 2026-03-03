@@ -5,9 +5,11 @@ use pcore::math::{Matrix4, Vector3};
 use pscene::{global::Scene, object::ObjectRef};
 
 use crate::{
-	render::Renderer,
-	shaders::uniform::{
-		CameraUniforms, GlobalUniforms, LightUniforms, ScreenUniforms,
+	buffer::Buffers,
+	render::{Renderer, WinSize},
+	shaders::{
+		FS, FragmentShader, VS, VertexShader,
+		uniform::{CameraUniforms, GlobalUniforms, LightUniforms, ScreenUniforms},
 	},
 };
 
@@ -76,14 +78,14 @@ pub struct DrawCall<'d> {
 }
 
 impl<'d> DrawCall<'d> {
-	pub fn submit_draw_call(scene: &'d Scene, renderer: &'d Renderer) -> Self {
+	pub fn submit_draw_call(scene: &'d Scene, window: WinSize) -> Self {
 		let objects = scene
 			.objects
 			.iter()
 			.map(|obj| obj.resolve(&scene.assets))
 			.collect::<Vec<_>>();
 
-		let aspect = renderer.win_size().aspect();
+		let aspect = window.aspect();
 		let m_view = scene.camera.get_view_matrix();
 		let m_projection = scene.camera.get_projection_matrix(aspect);
 
@@ -91,12 +93,22 @@ impl<'d> DrawCall<'d> {
 			m_view,
 			m_projection,
 			m_view_projection: m_projection * m_view,
-			screen: ScreenUniforms::from(renderer.win_size()),
+			screen: ScreenUniforms::from(&window),
 			light: LightUniforms::from(&scene.light),
 			camera: CameraUniforms::from(&scene.camera),
 		};
 
 		DrawCall { objects, uniforms }
+	}
+
+	pub fn execute<F, S>(self, buffers: &mut Buffers, shader: &S, mut consumer: F)
+	where
+		F: FnMut(&mut Buffers, ObjectRef<'d>, &GlobalUniforms, &S),
+		S: VS + FS,
+	{
+		for object in self.objects.into_iter() {
+			consumer(buffers, object, &self.uniforms, shader)
+		}
 	}
 }
 

@@ -1,6 +1,7 @@
 use {
 	crate::shaders::{
-		FragmentShader, GlobalUniforms, Varyings, VertexIn, VertexOut, VertexShader,
+		FS, FragmentShader, GlobalUniforms, VS, Varyings, VertexIn, VertexOut,
+		VertexShader,
 	},
 	pcore::math::{Matrix3, Vector4},
 	pscene::{
@@ -155,6 +156,102 @@ impl FragmentShader for BlinnPhong {
 	}
 }
 
+impl VS for BlinnPhong {
+	fn shade_vertex<'d>(
+		&self,
+		input: VertexIn,
+		object: pscene::object::ObjectRef<'d>,
+		uniforms: &super::uniform::GlobalUniforms,
+	) -> VertexOut {
+		let m_model = object.m_model;
+		let m_normal = object.m_normal;
+
+		let world_pos =
+			(m_model * Vector4::from((input.attributes.position, 1.0))).xyz();
+
+		let normal = (m_normal * Vector4::from((input.face_normal, 0.0))).xyz();
+
+		let tangent =
+			(m_normal * Vector4::from((input.attributes.tangent, 0.0))).xyz();
+		let bi_tangent =
+			(m_normal * Vector4::from((input.attributes.bi_tangent, 0.0))).xyz();
+
+		let m_mvp = uniforms.m_projection * uniforms.m_view * m_model;
+
+		VertexOut {
+			clip: m_mvp * Vector4::from((input.attributes.position, 1.0)),
+			vary: Varyings {
+				uv: input.attributes.uv,
+				normal,
+				tangent,
+				bi_tangent,
+				world_pos,
+				intensity: 0.0,
+			},
+		}
+	}
+}
+
+impl FS for BlinnPhong {
+	fn shade_pixel<'d>(
+		&self,
+		input: Varyings,
+		object: pscene::object::ObjectRef<'d>,
+		uniforms: &super::uniform::GlobalUniforms,
+	) -> Color {
+		let material = object.model.material;
+
+		let ng = input.normal.normalize();
+		let t = input.tangent.normalize();
+		let b = input.bi_tangent.normalize();
+
+		let u = input.uv.x;
+		let v = input.uv.y;
+
+		// Albedo Color
+		let color = material.albedo.unwrap().bi_sample(u, v);
+
+		// T = normalize(T - N * dot(T, N))
+		// B = cross(N, T)
+		let t = (t - ng * t.dot(&ng)).normalize();
+		let b = (b - ng * b.dot(&ng)).normalize();
+
+		let tbn = Matrix3::from_tbn(t, b, ng);
+		let np = material.normal.unwrap().bi_sample(u, v);
+
+		// N (perpatuated world normal)
+		let np_world = (tbn * np).normalize();
+
+		// L (Light didrection)
+		let light_dir = uniforms.light.direction;
+
+		// V (View direction)
+		let view_dir = (uniforms.camera.position - input.world_pos).normalize();
+
+		// H = normalize(L + V)
+		let half_vec = (light_dir + view_dir).normalize();
+
+		// Diffuse
+		let diff = color * uniforms.light.color * np_world.dot(&light_dir).max(0.0);
+
+		let ambient = color * material.ambient * uniforms.light.ambient;
+
+		// Specular factor, max(dot(N, H), 0)
+		let ndoth = np_world.dot(&half_vec).max(0.0);
+		let spec_factor = ndoth.powf(material.shininess as f64);
+
+		// Specular
+		// let specular = uniforms.specular_strength * ndoth.powf(uniforms.shininess);
+		let specular = material.specular * uniforms.light.color * spec_factor;
+		// Specular Highlight
+		// let highlight = Color::WHITE * specular;
+		// Final intensity
+		// let intensity = uniforms.light.ambient + diff;
+
+		// object.model.material.albedo.unwrap().bi_sample(input.uv.x, input.uv.y) * intensity + highlight
+		ambient + diff + specular
+	}
+}
 // pub struct Gouraud;
 
 // impl VertexShader for Gouraud {
