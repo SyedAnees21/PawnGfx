@@ -41,7 +41,7 @@ impl Renderer {
 
 		self.reset_buffers();
 
-		let (scale, position, rotation) = scene.object.get_transforms_props();
+		let (scale, position, rotation) = scene.objects[0].get_transforms_props();
 
 		let model = Matrix4::from_transforms(position, scale, rotation);
 		let view = scene.camera.get_view_matrix();
@@ -70,9 +70,9 @@ impl Renderer {
 		raster::draw_call(
 			&mut self.buffers,
 			&global_uniforms,
-			&scene.object.albedo,
-			&scene.object.normal,
-			scene.object.mesh.iter_triangles(),
+			&scene.objects[0].albedo,
+			&scene.objects[0].normal,
+			scene.objects[0].mesh.iter_triangles(),
 			&v_shader,
 			&f_shader,
 		);

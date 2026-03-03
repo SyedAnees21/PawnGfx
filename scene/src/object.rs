@@ -32,7 +32,7 @@ impl Object {
 		}
 	}
 
-	pub fn object_ref<'m>(
+	pub fn resolve<'m>(
 		&'m self,
 		registry: &'m AssetRegistry,
 	) -> ObjectRef<'m> {
