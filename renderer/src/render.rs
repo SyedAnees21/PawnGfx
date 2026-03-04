@@ -3,7 +3,7 @@ use {
 		buffer::Buffers,
 		draw::DrawCall,
 		raster,
-		shaders::{Flat, ScreenUniforms},
+		shaders::{Flat},
 	},
 	pcore::error::PResult,
 	pscene::global::Scene,
@@ -54,13 +54,6 @@ impl Renderer {
 
 		target.as_mut().copy_from_slice(&self.buffers.f_buffer);
 		Ok(())
-	}
-
-	pub fn uniforms(&self) -> ScreenUniforms {
-		ScreenUniforms {
-			width: self.win_size.width as f64,
-			height: self.win_size.height as f64,
-		}
 	}
 
 	pub fn reset_buffers(&mut self) {

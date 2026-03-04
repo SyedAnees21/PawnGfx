@@ -8,7 +8,7 @@ use crate::{
 	buffer::Buffers,
 	render::{Renderer, WinSize},
 	shaders::{
-		FS, FragmentShader, VS, VertexShader,
+		FS, VS,
 		uniform::{CameraUniforms, GlobalUniforms, LightUniforms, ScreenUniforms},
 	},
 };
