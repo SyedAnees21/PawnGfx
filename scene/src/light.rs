@@ -1,6 +1,4 @@
-// use crate::shaders::LightUniforms;
 use pcore::math::Vector3;
-
 use crate::color::Color;
 
 pub struct Light {
