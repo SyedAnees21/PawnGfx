@@ -22,7 +22,7 @@ pub struct Camera {
 impl Camera {
 	pub fn new(position: Vector3) -> Self {
 		let mut cam = Camera {
-			fov: 90.0f64.to_radians(),
+			fov: 75.0f64.to_radians(),
 			near: 0.1,
 			far: 100.0,
 			position,

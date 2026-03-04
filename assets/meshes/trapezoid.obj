@@ -1,0 +1,40 @@
+# Trapezoidal prism (v/vt only). CCW winding (outward).
+# Bottom (y=-1) is larger than top (y=1).
+
+v -1.0 -1.0 -1.0
+v  1.0 -1.0 -1.0
+v  1.0 -1.0  1.0
+v -1.0 -1.0  1.0
+v -0.5  1.0 -0.5
+v  0.5  1.0 -0.5
+v  0.5  1.0  0.5
+v -0.5  1.0  0.5
+
+vt 0.0 0.0
+vt 1.0 0.0
+vt 1.0 1.0
+vt 0.0 1.0
+
+# Bottom (faces downward)
+f 1/1 2/2 3/3
+f 1/1 3/3 4/4
+
+# Top (faces upward)
+f 5/1 7/3 6/2
+f 5/1 8/4 7/3
+
+# Front (z-)
+f 1/1 6/3 2/2
+f 1/1 5/4 6/3
+
+# Back (z+)
+f 4/1 3/2 7/3
+f 4/1 7/3 8/4
+
+# Left (x-)
+f 1/1 4/2 8/3
+f 1/1 8/3 5/4
+
+# Right (x+)
+f 2/1 7/3 3/4
+f 2/1 6/2 7/3

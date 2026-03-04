@@ -55,36 +55,6 @@ pub enum FileError {
 	ParseInt(#[from] ParseIntError),
 }
 
-// impl From<pixels::TextureError> for PError {
-// 	fn from(value: pixels::TextureError) -> Self {
-// 		value.into()
-// 	}
-// }
-
-// impl From<pixels::Error> for PError {
-// 	fn from(value: pixels::Error) -> Self {
-// 		value.into()
-// 	}
-// }
-
-// impl From<io::Error> for PError {
-// 	fn from(value: io::Error) -> Self {
-// 		value.into()
-// 	}
-// }
-
-// impl From<ParseFloatError> for PError {
-// 	fn from(value: ParseFloatError) -> Self {
-// 		value.into()
-// 	}
-// }
-
-// impl From<ParseIntError> for PError {
-// 	fn from(value: ParseIntError) -> Self {
-// 		value.into()
-// 	}
-// }
-
 impl From<pixels::TextureError> for PError {
 	fn from(value: pixels::TextureError) -> Self {
 		// Wrap the inner error in the Buffer variant,
