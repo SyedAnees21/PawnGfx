@@ -113,9 +113,7 @@ pub trait VS {
 		uniforms: &uniform::GlobalUniforms,
 	) -> VertexOut;
 
-	fn perspective_divide(&self, input: Varyings, raster_in: &RasterIn) -> Varyings {
-		Varyings::default()
-	}
+	fn perspective_divide(&self, input: Varyings, raster_in: &RasterIn) -> Varyings;
 }
 
 pub trait FS {
@@ -126,7 +124,5 @@ pub trait FS {
 		uniforms: &uniform::GlobalUniforms,
 	) -> Color;
 
-	fn perspective_interpolate(&self, input: [Varyings; 3], bary: (f64, f64, f64), inv_depth: f64) -> Varyings {
-		Varyings::default()
-	}
+	fn perspective_interpolate(&self, input: [Varyings; 3], bary: (f64, f64, f64), inv_depth: f64) -> Varyings;
 }

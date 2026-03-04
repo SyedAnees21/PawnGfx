@@ -14,7 +14,7 @@ impl Default for Light {
 		Self {
 			color: Color::WHITE,
 			position: Vector3::new(1.0, 1.0, 2.0),
-			ambient: 0.1,
+			ambient: 0.5,
 		}
 	}
 }

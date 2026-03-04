@@ -1,79 +1,73 @@
 use {
-	crate::shaders::{
-		FS, FragmentShader, GlobalUniforms, VS, Varyings, VertexIn, VertexOut,
-		VertexShader,
-	},
-	pcore::{geometry::Arithmetic, math::{self, Matrix3, Vector4}},
-	pscene::{
-		color::Color,
-		texture::{Albedo, NormalMap},
-	}, std::ops::{Add, Mul},
+	crate::shaders::{FS, VS, Varyings, VertexIn, VertexOut},
+	pcore::math::{self, Matrix3, Vector4},
+	pscene::color::Color,
 };
 
 pub struct Flat;
 
-impl VertexShader for Flat {
-	fn shade(&self, input: VertexIn, u: &GlobalUniforms) -> VertexOut {
-		let world_pos =
-			(u.affine.model * Vector4::from((input.attributes.position, 1.0))).xyz();
+// impl VertexShader for Flat {
+// 	fn shade(&self, input: VertexIn, u: &GlobalUniforms) -> VertexOut {
+// 		let world_pos =
+// 			(u.affine.model * Vector4::from((input.attributes.position, 1.0))).xyz();
 
-		let normal =
-			(u.affine.normal * Vector4::from((input.face_normal, 0.0))).xyz();
-		let tangent =
-			(u.affine.normal * Vector4::from((input.attributes.tangent, 0.0))).xyz();
-		let bi_tangent = (u.affine.normal
-			* Vector4::from((input.attributes.bi_tangent, 0.0)))
-		.xyz();
+// 		let normal =
+// 			(u.affine.normal * Vector4::from((input.face_normal, 0.0))).xyz();
+// 		let tangent =
+// 			(u.affine.normal * Vector4::from((input.attributes.tangent, 0.0))).xyz();
+// 		let bi_tangent = (u.affine.normal
+// 			* Vector4::from((input.attributes.bi_tangent, 0.0)))
+// 		.xyz();
 
-		VertexOut {
-			clip: u.affine.mvp * Vector4::from((input.attributes.position, 1.0)),
-			vary: Varyings {
-				uv: input.attributes.uv,
-				normal,
-				tangent,
-				bi_tangent,
-				world_pos,
-				intensity: 0.0,
-			},
-		}
-	}
-}
+// 		VertexOut {
+// 			clip: u.affine.mvp * Vector4::from((input.attributes.position, 1.0)),
+// 			vary: Varyings {
+// 				uv: input.attributes.uv,
+// 				normal,
+// 				tangent,
+// 				bi_tangent,
+// 				world_pos,
+// 				intensity: 0.0,
+// 			},
+// 		}
+// 	}
+// }
 
-impl FragmentShader for Flat {
-	fn shade(
-		&self,
-		input: Varyings,
-		uniforms: &GlobalUniforms,
-		albedo: &Albedo,
-		normal: &NormalMap,
-	) -> Color {
-		let ng = input.normal.normalize();
-		let t = input.tangent.normalize();
-		let b = input.bi_tangent.normalize();
+// impl FragmentShader for Flat {
+// 	fn shade(
+// 		&self,
+// 		input: Varyings,
+// 		uniforms: &GlobalUniforms,
+// 		albedo: &Albedo,
+// 		normal: &NormalMap,
+// 	) -> Color {
+// 		let ng = input.normal.normalize();
+// 		let t = input.tangent.normalize();
+// 		let b = input.bi_tangent.normalize();
 
-		let u = input.uv.x;
-		let v = input.uv.y;
+// 		let u = input.uv.x;
+// 		let v = input.uv.y;
 
-		// T = normalize(T - N * dot(T, N))
-		// B = cross(N, T)
-		let t = (t - ng * t.dot(&ng)).normalize();
-		let b = (b - ng * b.dot(&ng)).normalize();
+// 		// T = normalize(T - N * dot(T, N))
+// 		// B = cross(N, T)
+// 		let t = (t - ng * t.dot(&ng)).normalize();
+// 		let b = (b - ng * b.dot(&ng)).normalize();
 
-		let tbn = Matrix3::from_tbn(t, b, ng);
-		let np = normal.bi_sample(u, v);
+// 		let tbn = Matrix3::from_tbn(t, b, ng);
+// 		let np = normal.bi_sample(u, v);
 
-		let np_world = (tbn * np).normalize();
+// 		let np_world = (tbn * np).normalize();
 
-		let l = uniforms.light.direction;
-		let i_ng = ng.dot(&l).max(0.0);
-		let i_np = np_world.dot(&l).max(0.0);
-		let diffuse = i_ng * i_np;
+// 		let l = uniforms.light.direction;
+// 		let i_ng = ng.dot(&l).max(0.0);
+// 		let i_np = np_world.dot(&l).max(0.0);
+// 		let diffuse = i_ng * i_np;
 
-		let intensity = (uniforms.light.ambient + diffuse).min(1.0);
+// 		let intensity = (uniforms.light.ambient + diffuse).min(1.0);
 
-		albedo.bi_sample(input.uv.x, input.uv.y) * intensity
-	}
-}
+// 		albedo.bi_sample(input.uv.x, input.uv.y) * intensity
+// 	}
+// }
 
 impl VS for Flat {
 	fn shade_vertex<'d>(
@@ -172,110 +166,101 @@ impl FS for Flat {
 		bary: (f64, f64, f64),
 		inv_depth: f64,
 	) -> Varyings {
-
-		#[inline(always)]
-		fn interp<T>(b:(f64, f64, f64), d: f64, e: (T, T, T)) -> T 
-		where 
-			T: Mul<f64, Output = T> + Add<Output = T> + Copy,
-		{
-			math::perspective_interpolate(b, d, e)
-		}
-
 		let uvs = (input[0].uv, input[1].uv, input[2].uv);
 		let w_pos = (input[0].world_pos, input[1].world_pos, input[2].world_pos);
 		let ints = (input[0].intensity, input[1].intensity, input[2].intensity);
-		
+
 		Varyings {
-			uv: interp(bary, inv_depth, ()),
-			normal: (),
-			tangent: (),
-			bi_tangent: (),
-			world_pos: (),
-			intensity: (),
+			uv: math::perspective_interpolate(bary, inv_depth, uvs),
+			normal: input[0].normal,
+			tangent: input[0].tangent,
+			bi_tangent: input[0].bi_tangent,
+			world_pos: math::perspective_interpolate(bary, inv_depth, w_pos),
+			intensity: math::perspective_interpolate(bary, inv_depth, ints),
 		}
 	}
 }
 
 pub struct BlinnPhong;
 
-impl VertexShader for BlinnPhong {
-	fn shade(&self, input: VertexIn, u: &GlobalUniforms) -> VertexOut {
-		let world_pos =
-			(u.affine.model * Vector4::from((input.attributes.position, 1.0))).xyz();
+// impl VertexShader for BlinnPhong {
+// 	fn shade(&self, input: VertexIn, u: &GlobalUniforms) -> VertexOut {
+// 		let world_pos =
+// 			(u.affine.model * Vector4::from((input.attributes.position, 1.0))).xyz();
 
-		let normal =
-			(u.affine.normal * Vector4::from((input.face_normal, 0.0))).xyz();
-		let tangent =
-			(u.affine.normal * Vector4::from((input.attributes.tangent, 0.0))).xyz();
-		let bi_tangent = (u.affine.normal
-			* Vector4::from((input.attributes.bi_tangent, 0.0)))
-		.xyz();
+// 		let normal =
+// 			(u.affine.normal * Vector4::from((input.face_normal, 0.0))).xyz();
+// 		let tangent =
+// 			(u.affine.normal * Vector4::from((input.attributes.tangent, 0.0))).xyz();
+// 		let bi_tangent = (u.affine.normal
+// 			* Vector4::from((input.attributes.bi_tangent, 0.0)))
+// 		.xyz();
 
-		VertexOut {
-			clip: u.affine.mvp * Vector4::from((input.attributes.position, 1.0)),
-			vary: Varyings {
-				uv: input.attributes.uv,
-				normal,
-				tangent,
-				bi_tangent,
-				world_pos,
-				intensity: 0.0,
-			},
-		}
-	}
-}
+// 		VertexOut {
+// 			clip: u.affine.mvp * Vector4::from((input.attributes.position, 1.0)),
+// 			vary: Varyings {
+// 				uv: input.attributes.uv,
+// 				normal,
+// 				tangent,
+// 				bi_tangent,
+// 				world_pos,
+// 				intensity: 0.0,
+// 			},
+// 		}
+// 	}
+// }
 
-impl FragmentShader for BlinnPhong {
-	fn shade(
-		&self,
-		input: Varyings,
-		uniforms: &GlobalUniforms,
-		albedo: &Albedo,
-		normal: &NormalMap,
-	) -> Color {
-		let ng = input.normal.normalize();
-		let t = input.tangent.normalize();
-		let b = input.bi_tangent.normalize();
+// impl FragmentShader for BlinnPhong {
+// 	fn shade(
+// 		&self,
+// 		input: Varyings,
+// 		uniforms: &GlobalUniforms,
+// 		albedo: &Albedo,
+// 		normal: &NormalMap,
+// 	) -> Color {
+// 		let ng = input.normal.normalize();
+// 		let t = input.tangent.normalize();
+// 		let b = input.bi_tangent.normalize();
 
-		let u = input.uv.x;
-		let v = input.uv.y;
+// 		let u = input.uv.x;
+// 		let v = input.uv.y;
 
-		// T = normalize(T - N * dot(T, N))
-		// B = cross(N, T)
-		let t = (t - ng * t.dot(&ng)).normalize();
-		let b = (b - ng * b.dot(&ng)).normalize();
+// 		// T = normalize(T - N * dot(T, N))
+// 		// B = cross(N, T)
+// 		let t = (t - ng * t.dot(&ng)).normalize();
+// 		let b = (b - ng * b.dot(&ng)).normalize();
 
-		let tbn = Matrix3::from_tbn(t, b, ng);
-		let np = normal.bi_sample(u, v);
+// 		let tbn = Matrix3::from_tbn(t, b, ng);
+// 		let np = normal.bi_sample(u, v);
 
-		// N (perpatuated world normal)
-		let np_world = (tbn * np).normalize();
+// 		// N (perpatuated world normal)
+// 		let np_world = (tbn * np).normalize();
 
-		// L (Light didrection)
-		let light_dir = uniforms.light.direction;
+// 		// L (Light didrection)
+// 		let light_dir = uniforms.light.direction;
 
-		// V (View direction)
-		let view_dir = (uniforms.camera_pos - input.world_pos).normalize();
+// 		// V (View direction)
+// 		let view_dir = (uniforms.camera_pos - input.world_pos).normalize();
 
-		// H = normalize(L + V)
-		let half_vec = (light_dir + view_dir).normalize();
+// 		// H = normalize(L + V)
+// 		let half_vec = (light_dir + view_dir).normalize();
 
-		// Diffuse
-		let diff = np_world.dot(&light_dir).max(0.0);
+// 		// Diffuse
+// 		let diff = np_world.dot(&light_dir).max(0.0);
 
-		// Specular factor, max(dot(N, H), 0)
-		let ndoth = np_world.dot(&half_vec).max(0.0);
+// 		// Specular factor, max(dot(N, H), 0)
+// 		let ndoth = np_world.dot(&half_vec).max(0.0);
 
-		// Specular
-		let specular = uniforms.specular_strength * ndoth.powf(uniforms.shininess);
-		// Specular Highlight
-		let highlight = Color::WHITE * specular;
-		// Final intensity
-		let intensity = uniforms.light.ambient + diff;
+// 		// Specular
+// 		let specular = uniforms.specular_strength * ndoth.powf(uniforms.shininess);
+// 		// Specular Highlight
+// 		let highlight = Color::WHITE * specular;
+// 		// Final intensity
+// 		let intensity = uniforms.light.ambient + diff;
 
-		albedo.bi_sample(input.uv.x, input.uv.y) * intensity + highlight
-	}
-}
+// 		albedo.bi_sample(input.uv.x, input.uv.y) * intensity + highlight
+// 	}
+// }
 
 impl VS for BlinnPhong {
 	fn perspective_divide(

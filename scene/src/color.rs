@@ -113,7 +113,7 @@ impl Mul<f64> for Color {
 }
 
 impl Mul for Color {
-	type Output = Self;
+	type Output = Color;
 
 	#[inline(always)]
 	fn mul(self, rhs: Self) -> Self::Output {
