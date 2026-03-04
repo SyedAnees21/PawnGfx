@@ -1,14 +1,12 @@
 use {
-	pcore::{
+	crate::raster::RasterIn, pcore::{
 		geometry::{BiTangent, Normal, Tangent, UV, VertexAttributes},
 		math::{AffineMatrices, Vector3, Vector4},
-	},
-	pscene::{
+	}, pscene::{
 		color::Color,
 		object::ObjectRef,
 		texture::{Albedo, NormalMap},
-	},
-	std::ops::{Add, Mul},
+	}, std::ops::{Add, Mul}
 };
 
 pub use effects::*;
@@ -114,6 +112,10 @@ pub trait VS {
 		object: ObjectRef<'d>,
 		uniforms: &uniform::GlobalUniforms,
 	) -> VertexOut;
+
+	fn perspective_divide(&self, input: Varyings, raster_in: &RasterIn) -> Varyings {
+		Varyings::default()
+	}
 }
 
 pub trait FS {
@@ -123,4 +125,8 @@ pub trait FS {
 		object: ObjectRef<'d>,
 		uniforms: &uniform::GlobalUniforms,
 	) -> Color;
+
+	fn perspective_interpolate(&self, input: [Varyings; 3], bary: (f64, f64, f64), inv_depth: f64) -> Varyings {
+		Varyings::default()
+	}
 }

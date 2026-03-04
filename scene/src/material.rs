@@ -5,12 +5,29 @@ use crate::{
 };
 
 pub struct Material {
+	/// This controls the size of the specular highlight.
+	/// Its the exponent on specular factor.
 	pub shininess: f32,
+
 	pub specular_strength: f32,
+
+	/// True color of an object under direct white light.
 	pub diffuse: Color,
+
+	/// Color of an object under shadows or indirect light.
 	pub ambient: Color,
+
+	/// Color of the reflected light from the surface of an object.
+	/// This gives the tint over metallic surfaces and keeps the
+	/// wooden/plastic surface matte.
 	pub specular: Color,
+
+	/// A diffuse map, this gives the color texture to the object.
+	/// If not present, the shader will use the diffuse color.
 	pub albedo: Option<AlbedoHandle>,
+
+	/// A normal map, enables the shader to mimic the surface details.
+	/// If not  present the shader will use a flat normal.
 	pub normal: Option<NormalHandle>,
 }
 

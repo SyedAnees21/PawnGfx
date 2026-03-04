@@ -95,7 +95,8 @@ pub fn consume_draw_call<'d, S>(
 		// Perspective division:
 		// uv, normal, tangents and varyings
 		for i in 0..3 {
-			varyings[i] = varyings[i] * r_vertices[i].inv_w;
+			// varyings[i] = varyings[i] * r_vertices[i].inv_w;
+			varyings[i] = shader.perspective_divide(varyings[i], &r_vertices[i]);
 		}
 
 		rasterize(buffers, object, uniforms, varyings, r_vertices, shader);
@@ -171,8 +172,9 @@ pub fn rasterize<'d, S>(
 			if z < z_buffer[depth_index] {
 				let [v0, v1, v2] = varyings;
 
-				let varying =
-					math::perspective_interpolate(bary, inv_depth, (v0, v1, v2));
+				// let varying =
+				// 	math::perspective_interpolate(bary, inv_depth, (v0, v1, v2));
+				let varying = shader.perspective_interpolate(varyings, bary, inv_depth);
 				let color = shader.shade_pixel(varying, object, uniforms);
 
 				z_buffer[depth_index] = z;
