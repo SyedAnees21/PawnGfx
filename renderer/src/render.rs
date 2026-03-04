@@ -3,7 +3,7 @@ use {
 		buffer::Buffers,
 		draw::DrawCall,
 		raster,
-		shaders::{Flat},
+		shaders::{BlinnPhong, Flat},
 	},
 	pcore::error::PResult,
 	pscene::global::Scene,
@@ -44,7 +44,7 @@ impl Renderer {
 		self.reset_buffers();
 
 		let draw_call = DrawCall::submit_draw_call(scene, self.win_size);
-		let blinn_phong = Flat;
+		let blinn_phong = BlinnPhong;
 
 		draw_call.execute(
 			&mut self.buffers,

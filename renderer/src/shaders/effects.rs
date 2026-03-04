@@ -283,7 +283,7 @@ impl VS for BlinnPhong {
 		let world_pos =
 			(m_model * Vector4::from((input.attributes.position, 1.0))).xyz();
 
-		let normal = (m_normal * Vector4::from((input.face_normal, 0.0))).xyz();
+		let normal = (m_normal * Vector4::from((input.attributes.normal, 0.0))).xyz();
 
 		let tangent =
 			(m_normal * Vector4::from((input.attributes.tangent, 0.0))).xyz();
