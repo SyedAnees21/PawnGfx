@@ -3,6 +3,7 @@ pub mod camera;
 pub mod color;
 pub mod global;
 pub mod light;
+pub mod material;
+pub mod model;
 pub mod object;
 pub mod texture;
-pub mod transform;

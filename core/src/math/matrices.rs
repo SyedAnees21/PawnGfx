@@ -354,6 +354,7 @@ pub struct AffineMatrices {
 	pub model: Matrix4,
 	pub view: Matrix4,
 	pub projection: Matrix4,
+	pub view_projection: Matrix4,
 	pub mvp: Matrix4,
 	pub normal: Matrix4,
 }
@@ -365,6 +366,7 @@ impl AffineMatrices {
 		let normal = model.inverse().transpose();
 
 		Self {
+			view_projection: projection * view,
 			model,
 			view,
 			projection,

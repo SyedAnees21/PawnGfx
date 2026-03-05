@@ -1,7 +1,20 @@
 #![allow(unused)]
 #![allow(clippy::too_many_arguments)]
 
-use pcore::math::{Matrix4, Vector3};
+use {
+	crate::{
+		buffer::Buffers,
+		render::{Renderer, WinSize},
+		shaders::{
+			FS, VS,
+			uniform::{
+				CameraUniforms, GlobalUniforms, LightUniforms, ScreenUniforms,
+			},
+		},
+	},
+	pcore::math::{Matrix4, Vector3},
+	pscene::{global::Scene, object::ObjectRef},
+};
 
 pub fn draw_line<T>(
 	mut frame: T,
@@ -59,6 +72,46 @@ pub fn draw_line<T>(
 		}
 
 		step += 1.0;
+	}
+}
+
+pub struct DrawCall<'d> {
+	objects: Vec<ObjectRef<'d>>,
+	uniforms: GlobalUniforms,
+}
+
+impl<'d> DrawCall<'d> {
+	pub fn submit_draw_call(scene: &'d Scene, window: WinSize) -> Self {
+		let objects = scene
+			.objects
+			.iter()
+			.map(|obj| obj.resolve(&scene.assets))
+			.collect::<Vec<_>>();
+
+		let aspect = window.aspect();
+		let m_view = scene.camera.get_view_matrix();
+		let m_projection = scene.camera.get_projection_matrix(aspect);
+
+		let uniforms = GlobalUniforms {
+			m_view,
+			m_projection,
+			m_view_projection: m_projection * m_view,
+			screen: ScreenUniforms::from(&window),
+			light: LightUniforms::from(&scene.light),
+			camera: CameraUniforms::from(&scene.camera),
+		};
+
+		DrawCall { objects, uniforms }
+	}
+
+	pub fn execute<F, S>(self, buffers: &mut Buffers, shader: &S, mut consumer: F)
+	where
+		F: FnMut(&mut Buffers, ObjectRef<'d>, &GlobalUniforms, &S),
+		S: VS + FS,
+	{
+		for object in self.objects.into_iter() {
+			consumer(buffers, object, &self.uniforms, shader)
+		}
 	}
 }
 

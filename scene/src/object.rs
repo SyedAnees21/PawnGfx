@@ -1,33 +1,70 @@
-// use crate::{
-//     input::{Controller, Keys},
-//     scene::{Albedo, NormalMap},
-// };
 use {
-	crate::texture::{Albedo, NormalMap},
-	pcore::{geometry::Mesh, math::Vector3},
+	crate::{
+		assets::registry::AssetRegistry,
+		material::Material,
+		model::{Model, ModelRef},
+		texture::{Albedo, NormalMap},
+	},
+	pcore::{
+		geometry::Mesh,
+		math::{Matrix4, Vector3},
+	},
 };
 
 pub struct Object {
+	pub model: Model,
 	pub mesh: Mesh,
+	pub material: Material,
 	pub albedo: Albedo,
 	pub normal: NormalMap,
 	pub transform: Transform,
 }
 
 impl Object {
-	pub fn new(mesh: Mesh) -> Self {
+	pub fn from_model(model: Model) -> Self {
 		Self {
-			mesh,
+			model,
+			mesh: Mesh::default(),
+			material: Material::default(),
 			albedo: Albedo::default(),
 			normal: NormalMap::default(),
 			transform: Transform::default(),
 		}
 	}
 
+	pub fn new(mesh: Mesh) -> Self {
+		Self {
+			model: Model::default(),
+			mesh,
+			material: Material::default(),
+			albedo: Albedo::default(),
+			normal: NormalMap::default(),
+			transform: Transform::default(),
+		}
+	}
+
+	pub fn resolve<'m>(&'m self, registry: &'m AssetRegistry) -> ObjectRef<'m> {
+		let m_model = Matrix4::from_transforms(
+			self.transform.position,
+			self.transform.scale,
+			self.transform.rotation,
+		);
+
+		let m_normal = m_model.inverse().transpose();
+
+		ObjectRef {
+			model: self.model.resolve(registry),
+			m_model,
+			m_normal,
+		}
+	}
+
 	pub fn from_mesh_texture(mesh: Mesh, texture: Albedo) -> Self {
 		Self {
+			model: Model::default(),
 			mesh,
 			albedo: texture,
+			material: Material::default(),
 			normal: NormalMap::default(),
 			transform: Transform::default(),
 		}
@@ -67,22 +104,9 @@ impl Default for Transform {
 	}
 }
 
-// impl Controller for Object {
-//     fn apply_inputs(&mut self, controller:
-// &crate::input::InputState) {         if
-// controller.is_pressed(Keys::Up) {
-// self.transform.rotation.x -= 0.9;         }
-
-//         if controller.is_pressed(Keys::Down) {
-//             self.transform.rotation.x += 0.9;
-//         }
-
-//         if controller.is_pressed(Keys::Left) {
-//             self.transform.rotation.y -= 0.9;
-//         }
-
-//         if controller.is_pressed(Keys::Right) {
-//             self.transform.rotation.y += 0.9;
-//         }
-//     }
-// }
+#[derive(Clone, Copy)]
+pub struct ObjectRef<'m> {
+	pub model: ModelRef<'m>,
+	pub m_model: Matrix4,
+	pub m_normal: Matrix4,
+}

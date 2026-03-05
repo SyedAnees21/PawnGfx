@@ -1,5 +1,6 @@
 use {
 	crate::{
+		assets::registry::AssetRegistry,
 		camera::Camera,
 		light::Light,
 		object::Object,
@@ -9,14 +10,22 @@ use {
 };
 
 pub struct Scene {
+	pub assets: AssetRegistry,
+	pub objects: Vec<Object>,
 	pub camera: Camera,
-	pub object: Object,
 	pub light: Light,
 }
 
 impl Default for Scene {
 	fn default() -> Self {
-		let camera = Camera::new(Vector3::new(0.0, 0.0, 5.0));
+		let mut scene = Scene {
+			camera: Camera::new(Vector3::new(0.0, 0.0, 5.0)),
+			light: Light::default(),
+			assets: AssetRegistry::default(),
+			objects: Vec::new(),
+		};
+
+		// let camera = Camera::new(Vector3::new(0.0, 0.0, 5.0));
 
 		let cube_mesh =
 			crate::assets::load_mesh_file("./assets/meshes/cube-local.obj").unwrap();
@@ -34,12 +43,16 @@ impl Default for Scene {
 		object.set_albedo(albedo);
 		object.set_normal_map(normal);
 
-		let light = Light::default();
+		scene.objects.push(object);
+		// let light = Light::default();
 
-		Self {
-			camera,
-			object,
-			light,
-		}
+		// Self {
+		// 	assets: AssetRegistry::default(),
+		// 	objects: vec![object],
+		// 	camera,
+		// 	light,
+		// }
+
+		scene
 	}
 }

@@ -1,16 +1,13 @@
 use {
 	crate::{
 		buffer::Buffers,
-		shaders::{
-			FragmentShader, GlobalUniforms, Varyings, VertexIn, VertexOut,
-			VertexShader,
-		},
+		shaders::{FS, VS, Varyings, VertexIn, VertexOut, uniform},
 	},
 	pcore::{
-		geometry::{Triangles, bounding_rect, edge_function},
+		geometry::{bounding_rect, edge_function},
 		math::{self, Vector2, Vector4},
 	},
-	pscene::texture::{Albedo, NormalMap},
+	pscene::object::ObjectRef,
 };
 
 #[derive(Default, Clone, Copy)]
@@ -31,22 +28,18 @@ impl From<(Vector2, f64, f64)> for RasterIn {
 	}
 }
 
-pub fn draw_call<VS, FS>(
+pub fn consume_draw_call<'d, S>(
 	buffers: &mut Buffers,
-	global_uniforms: &GlobalUniforms,
-	albedo: &Albedo,
-	normal: &NormalMap,
-	triangles: Triangles,
-	vs: &VS,
-	fs: &FS,
+	object: ObjectRef<'d>,
+	uniforms: &uniform::GlobalUniforms,
+	shader: &S,
 ) where
-	VS: VertexShader,
-	FS: FragmentShader,
+	S: VS + FS,
 {
-	let w = global_uniforms.screen.width as i32;
-	let h = global_uniforms.screen.height as i32;
+	let w = uniforms.screen.width as i32;
+	let h = uniforms.screen.height as i32;
 
-	for v in triangles {
+	for v in object.model.mesh.iter_triangles() {
 		let [v0, v1, v2] = v;
 
 		let face_normal = (v1.position - v0.position)
@@ -61,7 +54,7 @@ pub fn draw_call<VS, FS>(
 				face_normal,
 			};
 
-			v_out[i] = vs.shade(v_in, global_uniforms);
+			v_out[i] = shader.shade_vertex(v_in, object, uniforms);
 		}
 
 		let outside_clip_space = v_out.iter().any(|out| out.clip.w <= 0.0);
@@ -96,43 +89,28 @@ pub fn draw_call<VS, FS>(
 		// Perspective division:
 		// uv, normal, tangents and varyings
 		for i in 0..3 {
-			varyings[i] = varyings[i] * r_vertices[i].inv_w;
+			// varyings[i] = varyings[i] * r_vertices[i].inv_w;
+			varyings[i] = shader.perspective_divide(varyings[i], &r_vertices[i]);
 		}
 
-		draw_triangle_shaded(
-			buffers,
-			global_uniforms,
-			albedo,
-			normal,
-			fs,
-			varyings,
-			r_vertices,
-		);
+		rasterize(buffers, object, uniforms, varyings, r_vertices, shader);
 	}
 }
 
-fn draw_triangle_shaded<FS>(
-	// frame_buffer: &mut F,
-	// depth_buffer: &mut D,
+pub fn rasterize<'d, S>(
 	buffers: &mut Buffers,
-	global_uniforms: &GlobalUniforms,
-	albedo: &Albedo,
-	normal: &NormalMap,
-	fs: &FS,
+	object: ObjectRef<'d>,
+	uniforms: &uniform::GlobalUniforms,
 	varyings: [Varyings; 3],
 	raster_in: [RasterIn; 3],
+	shader: &S,
 ) where
-	// F: AsMut<[u8]> + ?Sized,
-	// D: AsMut<[f64]> + ?Sized,
-	FS: FragmentShader,
+	S: FS,
 {
-	// let z_buffer = depth_buffer.as_mut();
-	// let f_buffer = frame_buffer.as_mut();
-
 	let (f_buffer, z_buffer) = buffers.mut_buffers();
 
-	let w = global_uniforms.screen.width as i32;
-	let h = global_uniforms.screen.height as i32;
+	let w = uniforms.screen.width as i32;
+	let h = uniforms.screen.height as i32;
 
 	let [
 		RasterIn {
@@ -186,11 +164,8 @@ fn draw_triangle_shaded<FS>(
 			let pixel_index = depth_index * 4;
 
 			if z < z_buffer[depth_index] {
-				let [v0, v1, v2] = varyings;
-
-				let varying =
-					math::perspective_interpolate(bary, inv_depth, (v0, v1, v2));
-				let color = fs.shade(varying, global_uniforms, albedo, normal);
+				let varying = shader.perspective_interpolate(varyings, bary, inv_depth);
+				let color = shader.shade_pixel(varying, object, uniforms);
 
 				z_buffer[depth_index] = z;
 				f_buffer[pixel_index..pixel_index + 4]
