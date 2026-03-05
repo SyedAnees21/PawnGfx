@@ -46,10 +46,9 @@ impl Default for Material {
 }
 
 impl Material {
-	pub const MIN_SHINE: f32 = 0.0;
 	pub const MAX_SHINE: f32 = 255.0;
-
 	pub const MAX_SPECULAR: f32 = 1.0;
+	pub const MIN_SHINE: f32 = 0.0;
 	pub const MIN_SPECULAR: f32 = 0.0;
 
 	#[inline]
@@ -61,6 +60,14 @@ impl Material {
 	pub fn set_specular(&mut self, specular: f32) {
 		self.specular_strength =
 			specular.clamp(Self::MIN_SPECULAR, Self::MAX_SPECULAR);
+	}
+
+	pub fn set_albedo(&mut self, handle: AlbedoHandle) {
+		self.albedo = Some(handle)
+	}
+
+	pub fn set_normal_map(&mut self, handle: NormalHandle) {
+		self.normal = Some(handle)
 	}
 
 	pub fn resolve<'m>(&'m self, registry: &'m AssetRegistry) -> MaterialRef<'m> {

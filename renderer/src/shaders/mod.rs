@@ -2,9 +2,7 @@ use {
 	crate::raster::RasterIn,
 	pscene::{color::Color, object::ObjectRef},
 };
-
-pub use effects::*;
-pub use io::*;
+pub use {effects::*, io::*};
 
 mod effects;
 pub mod io;

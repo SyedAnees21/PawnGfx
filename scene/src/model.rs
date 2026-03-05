@@ -1,8 +1,9 @@
-use pcore::geometry::Mesh;
-
-use crate::{
-	assets::registry::{AssetRegistry, MaterialHandle, MeshHandle},
-	material::MaterialRef,
+use {
+	crate::{
+		assets::registry::{AssetRegistry, MaterialHandle, MeshHandle},
+		material::MaterialRef,
+	},
+	pcore::geometry::Mesh,
 };
 
 #[derive(Default)]

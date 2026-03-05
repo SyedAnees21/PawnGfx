@@ -1,10 +1,5 @@
 use {
-	crate::{
-		buffer::Buffers,
-		draw::DrawCall,
-		raster,
-		shaders::{BlinnPhong, Flat},
-	},
+	crate::{buffer::Buffers, draw::DrawCall, raster, shaders::BlinnPhong},
 	pcore::error::PResult,
 	pscene::global::Scene,
 };

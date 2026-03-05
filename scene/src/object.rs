@@ -31,7 +31,7 @@ impl Object {
 			transform: Transform::default(),
 		}
 	}
-	
+
 	pub fn new(mesh: Mesh) -> Self {
 		Self {
 			model: Model::default(),

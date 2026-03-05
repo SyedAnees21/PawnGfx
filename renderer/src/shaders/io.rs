@@ -1,8 +1,10 @@
-use pcore::{
-	geometry::{BiTangent, Normal, Tangent, UV, VertexAttributes},
-	math::{Vector3, Vector4},
+use {
+	pcore::{
+		geometry::{BiTangent, Normal, Tangent, UV, VertexAttributes},
+		math::{Vector3, Vector4},
+	},
+	std::ops::{Add, Mul},
 };
-use std::ops::{Add, Mul};
 
 #[derive(Debug, Clone, Copy)]
 pub struct VertexIn {

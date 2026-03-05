@@ -1,6 +1,10 @@
 use {
 	crate::{
-		assets::registry::AssetRegistry, camera::Camera, light::Light, object::Object, texture::{Albedo, NormalMap, Wrap}
+		assets::registry::AssetRegistry,
+		camera::Camera,
+		light::Light,
+		object::Object,
+		texture::{Albedo, NormalMap, Wrap},
 	},
 	pcore::math::Vector3,
 };
@@ -18,7 +22,7 @@ impl Default for Scene {
 			camera: Camera::new(Vector3::new(0.0, 0.0, 5.0)),
 			light: Light::default(),
 			assets: AssetRegistry::default(),
-			objects: Vec::new()
+			objects: Vec::new(),
 		};
 
 		// let camera = Camera::new(Vector3::new(0.0, 0.0, 5.0));
@@ -34,7 +38,6 @@ impl Default for Scene {
 			NormalMap::from_file("./assets/texture/stones-normal.png", Wrap::Repeat)
 				.unwrap();
 
-		
 		let mut object = Object::new(cube_mesh);
 
 		object.set_albedo(albedo);

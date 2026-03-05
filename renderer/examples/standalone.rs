@@ -63,8 +63,8 @@ fn main() -> PResult<()> {
 	let h_normal = scene.assets.insert_normal(normal);
 
 	let mut material = Material::default();
-	material.albedo = Some(h_albedo);
-	material.normal = Some(h_normal);
+	material.set_albedo(h_albedo);
+	material.set_normal_map(h_normal);
 
 	let h_material = scene.assets.insert_material(material);
 

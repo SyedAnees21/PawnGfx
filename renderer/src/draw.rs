@@ -1,16 +1,19 @@
 #![allow(unused)]
 #![allow(clippy::too_many_arguments)]
 
-use pcore::math::{Matrix4, Vector3};
-use pscene::{global::Scene, object::ObjectRef};
-
-use crate::{
-	buffer::Buffers,
-	render::{Renderer, WinSize},
-	shaders::{
-		FS, VS,
-		uniform::{CameraUniforms, GlobalUniforms, LightUniforms, ScreenUniforms},
+use {
+	crate::{
+		buffer::Buffers,
+		render::{Renderer, WinSize},
+		shaders::{
+			FS, VS,
+			uniform::{
+				CameraUniforms, GlobalUniforms, LightUniforms, ScreenUniforms,
+			},
+		},
 	},
+	pcore::math::{Matrix4, Vector3},
+	pscene::{global::Scene, object::ObjectRef},
 };
 
 pub fn draw_line<T>(

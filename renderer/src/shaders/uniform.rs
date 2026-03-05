@@ -1,7 +1,8 @@
-use pcore::math::{Matrix4, Vector3};
-use pscene::{camera::Camera, color::Color, light::Light};
-
-use crate::render::WinSize;
+use {
+	crate::render::WinSize,
+	pcore::math::{Matrix4, Vector3},
+	pscene::{camera::Camera, color::Color, light::Light},
+};
 
 #[derive(Clone, Copy)]
 pub struct GlobalUniforms {

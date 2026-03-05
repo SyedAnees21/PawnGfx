@@ -82,13 +82,13 @@ impl<T> AssetStore<T> {
 	}
 
 	pub fn remove(&mut self, handle: &AssetHandle<T>) -> bool {
-		if let Some(slot) = self.list.get_mut(handle.index as usize) {
-			if slot.generation == handle.generation {
-				slot.generation += 1;
-				slot.asset = None;
-				self.free.push(handle.index);
-				return true;
-			}
+		if let Some(slot) = self.list.get_mut(handle.index as usize)
+			&& slot.generation == handle.generation
+		{
+			slot.generation += 1;
+			slot.asset = None;
+			self.free.push(handle.index);
+			return true;
 		}
 		false
 	}
@@ -121,6 +121,14 @@ pub struct AssetRegistry {
 }
 
 impl AssetRegistry {
+	impl_asset_type!(mesh, Mesh, MeshHandle);
+
+	impl_asset_type!(albedo, Albedo, AlbedoHandle);
+
+	impl_asset_type!(normal, NormalMap, NormalHandle);
+
+	impl_asset_type!(material, Material, MaterialHandle);
+
 	pub fn new() -> Self {
 		Self::default()
 	}
@@ -132,9 +140,4 @@ impl AssetRegistry {
 		let mtl = self.get_material(handle).unwrap();
 		mtl.resolve(self)
 	}
-
-	impl_asset_type!(mesh, Mesh, MeshHandle);
-	impl_asset_type!(albedo, Albedo, AlbedoHandle);
-	impl_asset_type!(normal, NormalMap, NormalHandle);
-	impl_asset_type!(material, Material, MaterialHandle);
 }
