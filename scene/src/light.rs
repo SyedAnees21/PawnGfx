@@ -1,5 +1,5 @@
-use pcore::math::Vector3;
 use crate::color::Color;
+use pcore::math::Vector3;
 
 pub struct Light {
 	pub position: Vector3,

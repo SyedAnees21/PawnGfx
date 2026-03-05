@@ -44,7 +44,7 @@ impl Renderer {
 		self.reset_buffers();
 
 		let draw_call = DrawCall::submit_draw_call(scene, self.win_size);
-		let blinn_phong = BlinnPhong;
+		let blinn_phong = Flat;
 
 		draw_call.execute(
 			&mut self.buffers,

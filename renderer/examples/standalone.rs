@@ -48,7 +48,7 @@ fn main() -> PResult<()> {
 			.unwrap();
 
 	let normal =
-		NormalMap::from_file("./assets/texture/checker-normal.png", Wrap::Repeat)
+		NormalMap::from_file("./assets/texture/stones-normal.png", Wrap::Repeat)
 			.unwrap();
 
 	let mut scene = Scene {
