@@ -56,6 +56,10 @@ impl Color {
 			_ => None,
 		}
 	}
+
+	pub fn from_hex_unchecked(hex: &str) -> Color {
+		Color::from_hex(hex).unwrap()
+	}
 }
 
 impl Color {

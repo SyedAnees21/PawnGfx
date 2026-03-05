@@ -36,7 +36,7 @@ impl Default for Material {
 		Self {
 			shininess: 64.0,
 			specular_strength: 0.5,
-			diffuse: Color::new_rgb_splat(0.6),
+			diffuse: Color::from_hex_unchecked("#716f6f"),
 			ambient: Color::new_rgb_splat(0.3),
 			specular: Color::new_rgb_splat(0.5),
 			albedo: None,

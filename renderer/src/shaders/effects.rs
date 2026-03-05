@@ -6,69 +6,6 @@ use {
 
 pub struct Flat;
 
-// impl VertexShader for Flat {
-// 	fn shade(&self, input: VertexIn, u: &GlobalUniforms) -> VertexOut {
-// 		let world_pos =
-// 			(u.affine.model * Vector4::from((input.attributes.position, 1.0))).xyz();
-
-// 		let normal =
-// 			(u.affine.normal * Vector4::from((input.face_normal, 0.0))).xyz();
-// 		let tangent =
-// 			(u.affine.normal * Vector4::from((input.attributes.tangent, 0.0))).xyz();
-// 		let bi_tangent = (u.affine.normal
-// 			* Vector4::from((input.attributes.bi_tangent, 0.0)))
-// 		.xyz();
-
-// 		VertexOut {
-// 			clip: u.affine.mvp * Vector4::from((input.attributes.position, 1.0)),
-// 			vary: Varyings {
-// 				uv: input.attributes.uv,
-// 				normal,
-// 				tangent,
-// 				bi_tangent,
-// 				world_pos,
-// 				intensity: 0.0,
-// 			},
-// 		}
-// 	}
-// }
-
-// impl FragmentShader for Flat {
-// 	fn shade(
-// 		&self,
-// 		input: Varyings,
-// 		uniforms: &GlobalUniforms,
-// 		albedo: &Albedo,
-// 		normal: &NormalMap,
-// 	) -> Color {
-// 		let ng = input.normal.normalize();
-// 		let t = input.tangent.normalize();
-// 		let b = input.bi_tangent.normalize();
-
-// 		let u = input.uv.x;
-// 		let v = input.uv.y;
-
-// 		// T = normalize(T - N * dot(T, N))
-// 		// B = cross(N, T)
-// 		let t = (t - ng * t.dot(&ng)).normalize();
-// 		let b = (b - ng * b.dot(&ng)).normalize();
-
-// 		let tbn = Matrix3::from_tbn(t, b, ng);
-// 		let np = normal.bi_sample(u, v);
-
-// 		let np_world = (tbn * np).normalize();
-
-// 		let l = uniforms.light.direction;
-// 		let i_ng = ng.dot(&l).max(0.0);
-// 		let i_np = np_world.dot(&l).max(0.0);
-// 		let diffuse = i_ng * i_np;
-
-// 		let intensity = (uniforms.light.ambient + diffuse).min(1.0);
-
-// 		albedo.bi_sample(input.uv.x, input.uv.y) * intensity
-// 	}
-// }
-
 impl VS for Flat {
 	fn shade_vertex<'d>(
 		&self,
@@ -128,29 +65,41 @@ impl FS for Flat {
 		let material = object.model.material;
 
 		let ng = input.normal.normalize();
-		let t = input.tangent.normalize();
-		let b = input.bi_tangent.normalize();
 
 		let u = input.uv.x;
 		let v = input.uv.y;
 
-		// T = normalize(T - N * dot(T, N))
-		// B = cross(N, T)
-		let t = (t - ng * t.dot(&ng)).normalize();
-		let b = (b - ng * b.dot(&ng)).normalize();
+		let np_world = if let Some(n_map) = material.normal {
+			let t = input.tangent.normalize();
+			let b = input.bi_tangent.normalize();
 
-		let tbn = Matrix3::from_tbn(t, b, ng);
-		let np = material.normal.unwrap().bi_sample(u, v);
+			// T = normalize(T - N * dot(T, N))
+			// B = cross(N, T)
+			let t = (t - ng * t.dot(&ng)).normalize();
+			let b = (b - ng * b.dot(&ng)).normalize();
 
-		let np_world = (tbn * np).normalize();
+			let tbn = Matrix3::from_tbn(t, b, ng);
 
-		let color = material.albedo.unwrap().bi_sample(u, v);
+			// N perpatuated world normal
+			let n_world = tbn * n_map.bi_sample(u, v);
+
+			n_world.normalize()
+		} else {
+			// Geometric normal transformed into world in vertex stage
+			ng
+		};
+
+		// Albedo base color
+		let color = if let Some(albedo) = material.albedo {
+			albedo.bi_sample(u, v)
+		} else {
+			material.diffuse
+		};
 
 		let light_dir = uniforms.light.direction.normalize();
 
 		let ambient = color * material.ambient * uniforms.light.ambient;
 
-		// let l = uniforms.light.direction;
 		let i_ng = ng.dot(&light_dir).max(0.0);
 		let i_np = np_world.dot(&light_dir).max(0.0);
 		let diffuse_factor = i_ng * i_np;
@@ -183,85 +132,6 @@ impl FS for Flat {
 
 pub struct BlinnPhong;
 
-// impl VertexShader for BlinnPhong {
-// 	fn shade(&self, input: VertexIn, u: &GlobalUniforms) -> VertexOut {
-// 		let world_pos =
-// 			(u.affine.model * Vector4::from((input.attributes.position, 1.0))).xyz();
-
-// 		let normal =
-// 			(u.affine.normal * Vector4::from((input.face_normal, 0.0))).xyz();
-// 		let tangent =
-// 			(u.affine.normal * Vector4::from((input.attributes.tangent, 0.0))).xyz();
-// 		let bi_tangent = (u.affine.normal
-// 			* Vector4::from((input.attributes.bi_tangent, 0.0)))
-// 		.xyz();
-
-// 		VertexOut {
-// 			clip: u.affine.mvp * Vector4::from((input.attributes.position, 1.0)),
-// 			vary: Varyings {
-// 				uv: input.attributes.uv,
-// 				normal,
-// 				tangent,
-// 				bi_tangent,
-// 				world_pos,
-// 				intensity: 0.0,
-// 			},
-// 		}
-// 	}
-// }
-
-// impl FragmentShader for BlinnPhong {
-// 	fn shade(
-// 		&self,
-// 		input: Varyings,
-// 		uniforms: &GlobalUniforms,
-// 		albedo: &Albedo,
-// 		normal: &NormalMap,
-// 	) -> Color {
-// 		let ng = input.normal.normalize();
-// 		let t = input.tangent.normalize();
-// 		let b = input.bi_tangent.normalize();
-
-// 		let u = input.uv.x;
-// 		let v = input.uv.y;
-
-// 		// T = normalize(T - N * dot(T, N))
-// 		// B = cross(N, T)
-// 		let t = (t - ng * t.dot(&ng)).normalize();
-// 		let b = (b - ng * b.dot(&ng)).normalize();
-
-// 		let tbn = Matrix3::from_tbn(t, b, ng);
-// 		let np = normal.bi_sample(u, v);
-
-// 		// N (perpatuated world normal)
-// 		let np_world = (tbn * np).normalize();
-
-// 		// L (Light didrection)
-// 		let light_dir = uniforms.light.direction;
-
-// 		// V (View direction)
-// 		let view_dir = (uniforms.camera_pos - input.world_pos).normalize();
-
-// 		// H = normalize(L + V)
-// 		let half_vec = (light_dir + view_dir).normalize();
-
-// 		// Diffuse
-// 		let diff = np_world.dot(&light_dir).max(0.0);
-
-// 		// Specular factor, max(dot(N, H), 0)
-// 		let ndoth = np_world.dot(&half_vec).max(0.0);
-
-// 		// Specular
-// 		let specular = uniforms.specular_strength * ndoth.powf(uniforms.shininess);
-// 		// Specular Highlight
-// 		let highlight = Color::WHITE * specular;
-// 		// Final intensity
-// 		let intensity = uniforms.light.ambient + diff;
-
-// 		albedo.bi_sample(input.uv.x, input.uv.y) * intensity + highlight
-// 	}
-// }
-
 impl VS for BlinnPhong {
 	fn perspective_divide(
 		&self,
@@ -283,7 +153,8 @@ impl VS for BlinnPhong {
 		let world_pos =
 			(m_model * Vector4::from((input.attributes.position, 1.0))).xyz();
 
-		let normal = (m_normal * Vector4::from((input.attributes.normal, 0.0))).xyz();
+		let normal =
+			(m_normal * Vector4::from((input.attributes.normal, 0.0))).xyz();
 
 		let tangent =
 			(m_normal * Vector4::from((input.attributes.tangent, 0.0))).xyz();
@@ -316,25 +187,35 @@ impl FS for BlinnPhong {
 		let material = object.model.material;
 
 		let ng = input.normal.normalize();
-		let t = input.tangent.normalize();
-		let b = input.bi_tangent.normalize();
 
 		let u = input.uv.x;
 		let v = input.uv.y;
 
-		// Albedo Color
-		let color = material.albedo.unwrap().bi_sample(u, v);
+		let np_world = if let Some(n_map) = material.normal {
+			let t = input.tangent.normalize();
+			let b = input.bi_tangent.normalize();
 
-		// T = normalize(T - N * dot(T, N))
-		// B = cross(N, T)
-		let t = (t - ng * t.dot(&ng)).normalize();
-		let b = (b - ng * b.dot(&ng)).normalize();
+			// T = normalize(T - N * dot(T, N))
+			// B = cross(N, T)
+			let t = (t - ng * t.dot(&ng)).normalize();
+			let b = (b - ng * b.dot(&ng)).normalize();
 
-		let tbn = Matrix3::from_tbn(t, b, ng);
-		let np = material.normal.unwrap().bi_sample(u, v);
+			let tbn = Matrix3::from_tbn(t, b, ng);
 
-		// N (perpatuated world normal)
-		let np_world = (tbn * np).normalize();
+			// N (perpatuated world normal)
+			let n_world = tbn * n_map.bi_sample(u, v);
+
+			n_world.normalize()
+		} else {
+			// N (Geometric normal already transformed into world in vertex stage)
+			ng
+		};
+
+		let color = if let Some(albedo) = material.albedo {
+			albedo.bi_sample(u, v)
+		} else {
+			material.diffuse
+		};
 
 		// L (Light didrection)
 		let light_dir = uniforms.light.direction;
