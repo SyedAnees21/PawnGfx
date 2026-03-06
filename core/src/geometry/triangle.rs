@@ -62,7 +62,7 @@ impl IncEdge {
 		v0: Vector2,
 		v1: Vector2,
 		v2: Vector2,
-		inv_det: Option<f64>,
+		inv_det: Option<f32>,
 	) -> Self {
 		Self {
 			e0: Edge::new(v1, v2, inv_det),
@@ -72,30 +72,30 @@ impl IncEdge {
 	}
 
 	#[inline(always)]
-	pub fn weights(&self, x: f64, y: f64) -> (f64, f64, f64) {
+	pub fn weights(&self, x: f32, y: f32) -> (f32, f32, f32) {
 		(self.e0.eval(x, y), self.e1.eval(x, y), self.e2.eval(x, y))
 	}
 
 	#[inline(always)]
-	pub fn step_x(&self, w0: f64, w1: f64, w2: f64) -> (f64, f64, f64) {
+	pub fn step_x(&self, w0: f32, w1: f32, w2: f32) -> (f32, f32, f32) {
 		(self.e0.step_x(w0), self.e1.step_x(w1), self.e2.step_x(w2))
 	}
 
 	#[inline(always)]
-	pub fn step_y(&self, w0: f64, w1: f64, w2: f64) -> (f64, f64, f64) {
+	pub fn step_y(&self, w0: f32, w1: f32, w2: f32) -> (f32, f32, f32) {
 		(self.e0.step_y(w0), self.e1.step_y(w1), self.e2.step_y(w2))
 	}
 }
 
 pub struct Edge {
-	pub a: f64,
-	pub b: f64,
-	pub c: f64,
+	pub a: f32,
+	pub b: f32,
+	pub c: f32,
 }
 
 impl Edge {
 	#[inline(always)]
-	pub fn new(v0: Vector2, v1: Vector2, inv_det: Option<f64>) -> Self {
+	pub fn new(v0: Vector2, v1: Vector2, inv_det: Option<f32>) -> Self {
 		let det = inv_det.unwrap_or(1.0);
 		Self {
 			a: (v1.y - v0.y) * det,
@@ -105,17 +105,17 @@ impl Edge {
 	}
 
 	#[inline(always)]
-	pub fn eval(&self, x: f64, y: f64) -> f64 {
+	pub fn eval(&self, x: f32, y: f32) -> f32 {
 		self.a * x + self.b * y + self.c
 	}
 
 	#[inline(always)]
-	pub fn step_x(&self, val: f64) -> f64 {
+	pub fn step_x(&self, val: f32) -> f32 {
 		val + self.a
 	}
 
 	#[inline(always)]
-	pub fn step_y(&self, val: f64) -> f64 {
+	pub fn step_y(&self, val: f32) -> f32 {
 		val + self.b
 	}
 }

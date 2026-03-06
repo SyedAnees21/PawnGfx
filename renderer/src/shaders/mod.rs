@@ -34,7 +34,7 @@ pub trait FS {
 	fn perspective_interpolate(
 		&self,
 		input: [Varyings; 3],
-		bary: (f64, f64, f64),
-		inv_depth: f64,
+		bary: (f32, f32, f32),
+		inv_depth: f32,
 	) -> Varyings;
 }

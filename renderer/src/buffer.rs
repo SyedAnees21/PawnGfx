@@ -1,8 +1,8 @@
 const DEFAULT_BG_COLOR: u8 = 77;
-const DEFAULT_DEPTH: f64 = f64::INFINITY;
+const DEFAULT_DEPTH: f32 = f32::INFINITY;
 
 pub type FrameBuffer = Vec<u8>;
-pub type DepthBuffer = Vec<f64>;
+pub type DepthBuffer = Vec<f32>;
 
 #[derive(Default)]
 pub struct Buffers {

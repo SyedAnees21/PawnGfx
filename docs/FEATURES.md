@@ -81,6 +81,19 @@
 - [ ] Level-of-detail (LOD)
 - [ ] Multi-threading support
 
+### Profiling Checklist (CPU Renderer)
+
+- [ ] Build in `--release` with LTO enabled
+- [ ] Profile with `cargo flamegraph` or platform profiler (Windows Performance Analyzer)
+- [ ] Measure time split: raster loop vs fragment shading vs texture sampling
+- [ ] Check `powf`/`sqrt` hot spots in fragment shaders
+- [ ] Validate math precision (`f32` vs `f32`) in hot loops
+- [ ] Minimize allocations in per-frame code paths
+- [ ] Confirm early‑exit logic (backface cull, depth test) triggers as expected
+- [ ] Measure texture sampling cost (bi‑linear, normal maps)
+- [ ] Evaluate gradient interpolation vs barycentric cost
+- [ ] Check cache behavior: stride in framebuffer and depth buffer
+
 ## Lighting & Effects
 
 - [x] Ambient lighting

@@ -13,12 +13,12 @@ use {
 #[derive(Default, Clone, Copy)]
 pub struct RasterIn {
 	pub s: Vector2,
-	pub z: f64,
-	pub inv_w: f64,
+	pub z: f32,
+	pub inv_w: f32,
 }
 
-impl From<(Vector2, f64, f64)> for RasterIn {
-	fn from(value: (Vector2, f64, f64)) -> Self {
+impl From<(Vector2, f32, f32)> for RasterIn {
+	fn from(value: (Vector2, f32, f32)) -> Self {
 		let (screen, z, inv_w) = value;
 		Self {
 			s: screen,
@@ -77,7 +77,7 @@ pub fn consume_draw_call<'d, S>(
 			let mut v_ndc = v_clip * inv_w;
 			v_ndc.w = inv_w;
 
-			r_vertices[i] = clip_to_screen(&v_ndc, w as f64, h as f64);
+			r_vertices[i] = clip_to_screen(&v_ndc, w as f32, h as f32);
 			varyings[i] = v_out[i].vary;
 		}
 
@@ -137,13 +137,13 @@ pub fn rasterize<'d, S>(
 
 	let min_x = min.x.max(0.0) as i32;
 	let min_y = min.y.max(0.0) as i32;
-	let max_x = max.x.min((w - 1) as f64) as i32;
-	let max_y = max.y.min((h - 1) as f64) as i32;
+	let max_x = max.x.min((w - 1) as f32) as i32;
+	let max_y = max.y.min((h - 1) as f32) as i32;
 
 	// Incremental edge function already normalized to screen
 	// space triangle.
 	let inc_edge = IncEdge::new(s0, s1, s2, Some(inv_area));
-	let mut init_w = inc_edge.weights(min_x as f64 + 0.5, min_y as f64 + 0.5);
+	let mut init_w = inc_edge.weights(min_x as f32 + 0.5, min_y as f32 + 0.5);
 
 	for y in min_y..=max_y {
 		let (mut w0, mut w1, mut w2) = init_w;
@@ -181,7 +181,7 @@ pub fn rasterize<'d, S>(
 	}
 }
 
-pub fn clip_to_screen(v_ndc: &Vector4, width: f64, height: f64) -> RasterIn {
+pub fn clip_to_screen(v_ndc: &Vector4, width: f32, height: f32) -> RasterIn {
 	let screen_x = (v_ndc.x + 1.0) * 0.5 * width;
 	let screen_y = (1.0 - (v_ndc.y + 1.0) * 0.5) * height;
 

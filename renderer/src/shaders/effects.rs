@@ -112,8 +112,8 @@ impl FS for Flat {
 	fn perspective_interpolate(
 		&self,
 		input: [Varyings; 3],
-		bary: (f64, f64, f64),
-		inv_depth: f64,
+		bary: (f32, f32, f32),
+		inv_depth: f32,
 	) -> Varyings {
 		let uvs = (input[0].uv, input[1].uv, input[2].uv);
 		let w_pos = (input[0].world_pos, input[1].world_pos, input[2].world_pos);
@@ -233,7 +233,7 @@ impl FS for BlinnPhong {
 
 		// Specular factor, pow(max(dot(N, H), 0), shininess)
 		let ndoth = np_world.dot(&half_vec).max(0.0);
-		let spec_factor = ndoth.powf(material.shininess as f64);
+		let spec_factor = ndoth.powf(material.shininess);
 
 		// Specular
 		let specular = material.specular * uniforms.light.color * spec_factor;
@@ -244,8 +244,8 @@ impl FS for BlinnPhong {
 	fn perspective_interpolate(
 		&self,
 		input: [Varyings; 3],
-		bary: (f64, f64, f64),
-		inv_depth: f64,
+		bary: (f32, f32, f32),
+		inv_depth: f32,
 	) -> Varyings {
 		math::perspective_interpolate(
 			bary,

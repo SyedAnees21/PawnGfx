@@ -4,8 +4,8 @@ pub struct FPSCounter {
     interval: Duration,
     last_sampled_instant: Instant,
     frames: u32,
-    fps: f64,
-    ms_per_frame: f64,
+    fps: f32,
+    ms_per_frame: f32,
 }
 
 impl Default for FPSCounter {
@@ -30,8 +30,8 @@ impl FPSCounter {
         let elapsed = self.last_sampled_instant.elapsed();
 
         if elapsed >= self.interval {
-            self.fps = self.frames as f64 / elapsed.as_secs_f64();
-            self.ms_per_frame = elapsed.as_secs_f64() * 1000.0 / self.frames as f64;
+            self.fps = self.frames as f32 / elapsed.as_secs_f32();
+            self.ms_per_frame = elapsed.as_secs_f32() * 1000.0 / self.frames as f32;
 
             self.print_stats();
 

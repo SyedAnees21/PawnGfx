@@ -19,14 +19,14 @@ pub struct Varyings {
 	pub tangent: Tangent,
 	pub bi_tangent: BiTangent,
 	pub world_pos: Vector3,
-	pub intensity: f64,
+	pub intensity: f32,
 }
 
-impl Mul<f64> for Varyings {
+impl Mul<f32> for Varyings {
 	type Output = Self;
 
 	#[inline(always)]
-	fn mul(self, rhs: f64) -> Self::Output {
+	fn mul(self, rhs: f32) -> Self::Output {
 		Self {
 			uv: self.uv * rhs,
 			normal: self.normal * rhs,
