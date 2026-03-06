@@ -4,7 +4,7 @@ use {
 		shaders::{FS, VS, Varyings, VertexIn, VertexOut, uniform},
 	},
 	pcore::{
-		geometry::{bounding_rect, edge_function},
+		geometry::{IncEdge, bounding_rect, edge_function},
 		math::{self, Vector2, Vector4},
 	},
 	pscene::object::ObjectRef,
@@ -140,17 +140,19 @@ pub fn rasterize<'d, S>(
 	let max_x = max.x.min((w - 1) as f64) as i32;
 	let max_y = max.y.min((h - 1) as f64) as i32;
 
+	// Incremental edge function already normalized to screen
+	// space triangle.
+	let inc_edge = IncEdge::new(s0, s1, s2, Some(inv_area));
+	let mut init_w = inc_edge.weights(min_x as f64 + 0.5, min_y as f64 + 0.5);
+
 	for y in min_y..=max_y {
+		let (mut w0, mut w1, mut w2) = init_w;
+
 		for x in min_x..=max_x {
-			let p = Vector2::new(x as f64 + 0.5, y as f64 + 0.5);
-
-			let w0 = edge_function(s1, s2, p) * inv_area;
-			let w1 = edge_function(s2, s0, p) * inv_area;
-			let w2 = edge_function(s0, s1, p) * inv_area;
-
 			let is_outside = w0 < 0.0 || w1 < 0.0 || w2 < 0.0;
 
 			if is_outside {
+				(w0, w1, w2) = inc_edge.step_x(w0, w1, w2);
 				continue;
 			}
 
@@ -171,7 +173,11 @@ pub fn rasterize<'d, S>(
 				f_buffer[pixel_index..pixel_index + 4]
 					.copy_from_slice(&color.to_rgba8());
 			}
+
+			(w0, w1, w2) = inc_edge.step_x(w0, w1, w2);
 		}
+
+		init_w = inc_edge.step_y(init_w.0, init_w.1, init_w.2);
 	}
 }
 
