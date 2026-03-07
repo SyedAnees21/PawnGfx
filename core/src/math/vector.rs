@@ -70,6 +70,17 @@ impl Mul<f32> for Vector2 {
 	}
 }
 
+impl Mul for Vector2 {
+	type Output = Self;
+
+	fn mul(self, rhs: Self) -> Self::Output {
+		Vector2 {
+			x: self.x * rhs.x,
+			y: self.y * rhs.y,
+		}
+	}
+}
+
 impl Add for Vector2 {
 	type Output = Self;
 

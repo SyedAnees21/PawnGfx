@@ -5,7 +5,7 @@ mod interpolate;
 mod matrices;
 mod vector;
 
-pub use {interpolate::*, matrices::*, vector::*};
+pub use {interpolate::*, matrices::*, vector::*, gradient::*};
 
 pub trait Arithmetic:
 	Add<Output = Self>
