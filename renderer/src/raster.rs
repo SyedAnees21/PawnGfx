@@ -89,7 +89,6 @@ pub fn consume_draw_call<'d, S>(
 		// Perspective division:
 		// uv, normal, tangents and varyings
 		for i in 0..3 {
-			// varyings[i] = varyings[i] * r_vertices[i].inv_w;
 			varyings[i] = shader.perspective_divide(varyings[i], &r_vertices[i]);
 		}
 
@@ -140,15 +139,16 @@ pub fn rasterize<'d, S>(
 
 	let screen = [s0, s1, s2];
 
-	let g_varyings = Gradient::new(varyings, screen, inv_area);
-	let g_inv_w = Gradient::new([inv_w0, inv_w1, inv_w2], screen, inv_area);
-	let g_z = Gradient::new([z0, z1, z2], screen, inv_area);
-
 	let dx = (min_x as f32 + 0.5) - s0.x;
 	let dy = (min_y as f32 + 0.5) - s0.y;
 
-	let mut init_varying = g_varyings.sample_at(dx, dy);
+	let g_varyings = shader.compute_gradients(varyings, screen, inv_area);
+	let mut init_varying = shader.sample_gradients(&g_varyings, dx, dy);
+
+	let g_inv_w = Gradient::new([inv_w0, inv_w1, inv_w2], screen, inv_area);
 	let mut init_inv_w = g_inv_w.sample_at(dx, dy);
+
+	let g_z = Gradient::new([z0, z1, z2], screen, inv_area);
 	let mut init_z = g_z.sample_at(dx, dy);
 
 	// Incremental edge function already normalized to screen
@@ -172,7 +172,7 @@ pub fn rasterize<'d, S>(
 			if is_outside {
 				(w0, w1, w2) = inc_edge.step_x(w0, w1, w2);
 
-				g_varyings.step_x(&mut c_varyings);
+				shader.step_horizontal(&g_varyings, &mut c_varyings);
 				g_inv_w.step_x(&mut c_inv_w);
 				g_z.step_x(&mut c_z);
 
@@ -182,10 +182,8 @@ pub fn rasterize<'d, S>(
 
 			if c_z < buf_cursor.get_depth() {
 				let inv_w_lerped = 1.0 / c_inv_w;
-				let varyings = c_varyings * inv_w_lerped;
 
-				// let varying = shader.perspective_interpolate(varyings, bary,
-				// inv_depth);
+				let varyings = shader.recover_value(&mut c_varyings, inv_w_lerped);
 				let color = shader.shade_pixel(varyings, object, uniforms);
 
 				buf_cursor.put_depth(c_z);
@@ -194,7 +192,7 @@ pub fn rasterize<'d, S>(
 
 			(w0, w1, w2) = inc_edge.step_x(w0, w1, w2);
 
-			g_varyings.step_x(&mut c_varyings);
+			shader.step_horizontal(&g_varyings, &mut c_varyings);
 			g_inv_w.step_x(&mut c_inv_w);
 			g_z.step_x(&mut c_z);
 
@@ -203,7 +201,7 @@ pub fn rasterize<'d, S>(
 
 		init_w = inc_edge.step_y(init_w.0, init_w.1, init_w.2);
 
-		g_varyings.step_y(&mut init_varying);
+		shader.step_vertical(&g_varyings, &mut init_varying);
 		g_inv_w.step_y(&mut init_inv_w);
 		g_z.step_y(&mut init_z);
 	}

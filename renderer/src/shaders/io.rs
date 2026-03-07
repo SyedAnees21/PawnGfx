@@ -130,4 +130,34 @@ impl GVaryings {
 			),
 		}
 	}
+
+	#[inline(always)]
+	pub fn step_horizontal_all(&self, varyings: &mut Varyings) {
+		self.uv.step_x(&mut varyings.uv);
+		self.normal.step_x(&mut varyings.normal);
+		self.tangent.step_x(&mut varyings.tangent);
+		self.bi_tangent.step_x(&mut varyings.bi_tangent);
+		self.world_pos.step_x(&mut varyings.world_pos);
+	}
+
+	#[inline(always)]
+	pub fn step_vertical_all(&self, varyings: &mut Varyings) {
+		self.uv.step_y(&mut varyings.uv);
+		self.normal.step_y(&mut varyings.normal);
+		self.tangent.step_y(&mut varyings.tangent);
+		self.bi_tangent.step_y(&mut varyings.bi_tangent);
+		self.world_pos.step_y(&mut varyings.world_pos);
+	}
+
+	
+	pub fn sample_all(&self, dx: f32, dy: f32) -> Varyings {
+		Varyings {
+			uv: self.uv.sample_at(dx, dy),
+			normal: self.normal.sample_at(dx, dy),
+			tangent: self.tangent.sample_at(dx, dy),
+			bi_tangent: self.bi_tangent.sample_at(dx, dy),
+			world_pos: self.world_pos.sample_at(dx, dy),
+			intensity: 0.0,
+		}
+	}
 }
