@@ -107,12 +107,7 @@ impl Mul<f32> for Color {
 
 	#[inline(always)]
 	fn mul(self, scalar: f32) -> Color {
-		Color(
-			self.0 * scalar,
-			self.1 * scalar,
-			self.2 * scalar,
-			self.3,
-		)
+		Color(self.0 * scalar, self.1 * scalar, self.2 * scalar, self.3)
 	}
 }
 

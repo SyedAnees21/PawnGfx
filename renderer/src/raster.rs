@@ -5,7 +5,7 @@ use {
 	},
 	pcore::{
 		geometry::{IncEdge, bounding_rect, edge_function},
-		math::{self, Vector2, Vector4},
+		math::{Gradient, Vector2, Vector4},
 	},
 	pscene::object::ObjectRef,
 };
@@ -107,8 +107,6 @@ pub fn rasterize<'d, S>(
 ) where
 	S: FS,
 {
-	let (f_buffer, z_buffer) = buffers.mut_buffers();
-
 	let w = uniforms.screen.width as i32;
 	let h = uniforms.screen.height as i32;
 
@@ -140,6 +138,19 @@ pub fn rasterize<'d, S>(
 	let max_x = max.x.min((w - 1) as f32) as i32;
 	let max_y = max.y.min((h - 1) as f32) as i32;
 
+	let screen = [s0, s1, s2];
+
+	let g_varyings = Gradient::new(varyings, screen, inv_area);
+	let g_inv_w = Gradient::new([inv_w0, inv_w1, inv_w2], screen, inv_area);
+	let g_z = Gradient::new([z0, z1, z2], screen, inv_area);
+
+	let dx = (min_x as f32 + 0.5) - s0.x;
+	let dy = (min_y as f32 + 0.5) - s0.y;
+
+	let mut init_varying = g_varyings.sample_at(dx, dy);
+	let mut init_inv_w = g_inv_w.sample_at(dx, dy);
+	let mut init_z = g_z.sample_at(dx, dy);
+
 	// Incremental edge function already normalized to screen
 	// space triangle.
 	let inc_edge = IncEdge::new(s0, s1, s2, Some(inv_area));
@@ -148,36 +159,53 @@ pub fn rasterize<'d, S>(
 	for y in min_y..=max_y {
 		let (mut w0, mut w1, mut w2) = init_w;
 
-		for x in min_x..=max_x {
+		let mut c_varyings = init_varying;
+		let mut c_inv_w = init_inv_w;
+		let mut c_z = init_z;
+
+		let offset = (y * w + min_x) as usize;
+		let mut buf_cursor = buffers.get_cursor(offset);
+
+		for _ in min_x..=max_x {
 			let is_outside = w0 < 0.0 || w1 < 0.0 || w2 < 0.0;
 
 			if is_outside {
 				(w0, w1, w2) = inc_edge.step_x(w0, w1, w2);
+
+				g_varyings.step_x(&mut c_varyings);
+				g_inv_w.step_x(&mut c_inv_w);
+				g_z.step_x(&mut c_z);
+
+				buf_cursor.step();
 				continue;
 			}
 
-			let bary = (w0, w1, w2);
+			if c_z < buf_cursor.get_depth() {
+				let inv_w_lerped = 1.0 / c_inv_w;
+				let varyings = c_varyings * inv_w_lerped;
 
-			let inv_depth =
-				math::barycentric_interpolate(w0, w1, w2, inv_w0, inv_w1, inv_w2);
-			let z = math::perspective_interpolate(bary, inv_depth, (z0, z1, z2));
+				// let varying = shader.perspective_interpolate(varyings, bary,
+				// inv_depth);
+				let color = shader.shade_pixel(varyings, object, uniforms);
 
-			let depth_index = (y * w + x) as usize;
-			let pixel_index = depth_index * 4;
-
-			if z < z_buffer[depth_index] {
-				let varying = shader.perspective_interpolate(varyings, bary, inv_depth);
-				let color = shader.shade_pixel(varying, object, uniforms);
-
-				z_buffer[depth_index] = z;
-				f_buffer[pixel_index..pixel_index + 4]
-					.copy_from_slice(&color.to_rgba8());
+				buf_cursor.put_depth(c_z);
+				buf_cursor.put_pixel(color);
 			}
 
 			(w0, w1, w2) = inc_edge.step_x(w0, w1, w2);
+
+			g_varyings.step_x(&mut c_varyings);
+			g_inv_w.step_x(&mut c_inv_w);
+			g_z.step_x(&mut c_z);
+
+			buf_cursor.step();
 		}
 
 		init_w = inc_edge.step_y(init_w.0, init_w.1, init_w.2);
+
+		g_varyings.step_y(&mut init_varying);
+		g_inv_w.step_y(&mut init_inv_w);
+		g_z.step_y(&mut init_z);
 	}
 }
 

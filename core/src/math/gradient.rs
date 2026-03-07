@@ -11,7 +11,7 @@ impl<T> Gradient<T>
 where
 	T: Arithmetic,
 {
-    #[inline(always)]
+	#[inline(always)]
 	pub fn new(v: [T; 3], screen: [Vector2; 3], inv_det: f32) -> Self {
 		// Edge-function aligned basis (pivot at v0).
 		// This aligns with area = edge(v0, v1, v2):
@@ -24,7 +24,8 @@ where
 		let a10 = v[1] - v[0];
 		let a20 = v[2] - v[0];
 
-		// The partial derivatives (Step values), using inv_det = 1 / edge(v0, v1, v2)
+		// The partial derivatives (Step values), using inv_det = 1 / edge(v0, v1,
+		// v2)
 		let step_x = (a20 * dy10 - a10 * dy20) * inv_det;
 		let step_y = (a10 * dx20 - a20 * dx10) * inv_det;
 
@@ -36,8 +37,18 @@ where
 	}
 
 	/// Calculate the value at a specific screen offset from V0
-    #[inline(always)]
+	#[inline(always)]
 	pub fn sample_at(&self, dx: f32, dy: f32) -> T {
 		self.a + (self.da_dx * dx) + (self.da_dy * dy)
+	}
+
+	#[inline(always)]
+	pub fn step_x(&self, val: &mut T) {
+		*val = *val + self.da_dx;
+	}
+
+	#[inline(always)]
+	pub fn step_y(&self, val: &mut T) {
+		*val = *val + self.da_dy;
 	}
 }
