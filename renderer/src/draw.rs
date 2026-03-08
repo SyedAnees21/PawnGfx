@@ -8,7 +8,7 @@ use {
 		shaders::{
 			FS, VS,
 			uniform::{
-				CameraUniforms, GlobalUniforms, LightUniforms, ScreenUniforms,
+				CameraUniforms, GlobalUniforms, LOD, LightUniforms, ScreenUniforms
 			},
 		},
 	},
@@ -99,18 +99,19 @@ impl<'d> DrawCall<'d> {
 			screen: ScreenUniforms::from(&window),
 			light: LightUniforms::from(&scene.light),
 			camera: CameraUniforms::from(&scene.camera),
+			lods: LOD::default()
 		};
 
 		DrawCall { objects, uniforms }
 	}
 
-	pub fn execute<F, S>(self, buffers: &mut Buffers, shader: &S, mut consumer: F)
+	pub fn execute<F, S>(mut self, buffers: &mut Buffers, shader: &S, mut consumer: F)
 	where
-		F: FnMut(&mut Buffers, ObjectRef<'d>, &GlobalUniforms, &S),
+		F: FnMut(&mut Buffers, ObjectRef<'d>, &mut GlobalUniforms, &S),
 		S: VS + FS,
 	{
 		for object in self.objects.into_iter() {
-			consumer(buffers, object, &self.uniforms, shader)
+			consumer(buffers, object, &mut self.uniforms, shader)
 		}
 	}
 }

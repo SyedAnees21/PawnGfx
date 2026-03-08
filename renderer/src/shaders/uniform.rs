@@ -12,6 +12,22 @@ pub struct GlobalUniforms {
 	pub screen: ScreenUniforms,
 	pub light: LightUniforms,
 	pub camera: CameraUniforms,
+	pub lods: LOD,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct LOD {
+	pub albedo: Option<f32>,
+	pub normal: Option<f32>,
+}
+
+impl Default for LOD {
+	fn default() -> Self {
+		Self {
+			albedo: None,
+			normal: None
+		}
+	}
 }
 
 #[derive(Clone, Copy)]

@@ -1,7 +1,10 @@
 use {
 	crate::{
 		buffer::Buffers,
-		shaders::{FS, VS, Varyings, VertexIn, VertexOut, uniform},
+		shaders::{
+			self, FS, GVaryings, VS, Varyings, VertexIn, VertexOut, compute_lod,
+			uniform::{self, GlobalUniforms},
+		},
 	},
 	pcore::{
 		geometry::{IncEdge, bounding_rect, edge_function},
@@ -31,7 +34,7 @@ impl From<(Vector2, f32, f32)> for RasterIn {
 pub fn consume_draw_call<'d, S>(
 	buffers: &mut Buffers,
 	object: ObjectRef<'d>,
-	uniforms: &uniform::GlobalUniforms,
+	uniforms: &mut GlobalUniforms,
 	shader: &S,
 ) where
 	S: VS + FS,
@@ -99,7 +102,7 @@ pub fn consume_draw_call<'d, S>(
 pub fn rasterize<'d, S>(
 	buffers: &mut Buffers,
 	object: ObjectRef<'d>,
-	uniforms: &uniform::GlobalUniforms,
+	uniforms: &mut GlobalUniforms,
 	varyings: [Varyings; 3],
 	raster_in: [RasterIn; 3],
 	shader: &S,
@@ -187,6 +190,15 @@ pub fn rasterize<'d, S>(
 			if c_z < buf_cursor.get_depth() {
 				let inv_w_lerped = 1.0 / c_inv_w;
 
+				compute_lods(
+					object,
+					&g_varyings,
+					&c_varyings,
+					&g_inv_w,
+					c_inv_w,
+					uniforms,
+				);
+
 				let varyings = shader.recover_value(&c_varyings, inv_w_lerped);
 				let color = shader.shade_pixel(varyings, object, uniforms);
 
@@ -208,6 +220,27 @@ pub fn rasterize<'d, S>(
 		shader.step_vertical(&g_varyings, &mut init_varying);
 		g_inv_w.step_y(&mut init_inv_w);
 		g_z.step_y(&mut init_z);
+	}
+}
+
+fn compute_lods<'d>(
+	object: ObjectRef<'d>,
+	g_varyings: &GVaryings,
+	c_varyings: &Varyings,
+	g_inv_w: &Gradient<f32>,
+	c_inv_w: f32,
+	uniforms: &mut GlobalUniforms,
+) {
+	let material = object.model.material;
+
+	if let Some(albedo) = material.albedo {
+		let lod = compute_lod(c_inv_w, g_inv_w, c_varyings, g_varyings, albedo);
+		uniforms.lods.albedo = Some(lod)
+	}
+
+	if let Some(n_map) = material.normal {
+		let lod = compute_lod(c_inv_w, g_inv_w, c_varyings, g_varyings, n_map);
+		uniforms.lods.normal = Some(lod)
 	}
 }
 

@@ -80,8 +80,9 @@ impl FS for Flat {
 
 			let tbn = Matrix3::from_tbn(t, b, ng);
 
+			let lod = uniforms.lods.normal.unwrap_or(0.0);
 			// N perpatuated world normal
-			let n_world = tbn * n_map.bi_sample(u, v);
+			let n_world = tbn * n_map.sample(u, v, lod as usize);
 
 			n_world.normalize()
 		} else {
@@ -91,7 +92,8 @@ impl FS for Flat {
 
 		// Albedo base color
 		let color = if let Some(albedo) = material.albedo {
-			albedo.bi_sample(u, v)
+			let lod = uniforms.lods.albedo.unwrap_or(0.0);
+			albedo.bi_sample(u, v, lod as usize)
 		} else {
 			material.diffuse
 		};
@@ -239,8 +241,10 @@ impl FS for BlinnPhong {
 
 			let tbn = Matrix3::from_tbn(t, b, ng);
 
+			let lod = uniforms.lods.normal.unwrap_or(0.0);
+
 			// N (perpatuated world normal)
-			let n_world = tbn * n_map.bi_sample(u, v);
+			let n_world = tbn * n_map.bi_sample(u, v, lod as usize).normalize();
 
 			n_world.normalize()
 		} else {
@@ -249,7 +253,8 @@ impl FS for BlinnPhong {
 		};
 
 		let color = if let Some(albedo) = material.albedo {
-			albedo.bi_sample(u, v)
+			let lod = uniforms.lods.albedo.unwrap_or(0.0);
+			albedo.tri_sample(u, v, lod)
 		} else {
 			material.diffuse
 		};

@@ -26,4 +26,8 @@ standalone = ["pixels", "winit"]
 [[example]]
 name = "standalone"
 path = "examples/standalone.rs"
+
+[[example]]
+name = "standalone_two_models"
+path = "examples/standalone_two_models.rs"
 required-features = ["standalone"]

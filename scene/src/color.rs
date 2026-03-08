@@ -3,6 +3,12 @@ use std::ops::{Add, Mul, Sub};
 #[derive(Clone, Copy)]
 pub struct Color(f32, f32, f32, f32);
 
+impl Default for Color {
+	fn default() -> Self {
+		Color::WHITE
+	}
+}
+
 #[allow(unused)]
 impl Color {
 	pub const BLACK: Color = Color(0.0, 0.0, 0.0, 1.0);
@@ -72,6 +78,16 @@ impl Color {
 			(self.3.clamp(0.0, 1.0) * 255.0) as u8,
 		]
 	}
+
+	#[inline(always)]
+	pub fn add_raw(self, other: Color) -> Color {
+        Color(
+            self.0 + other.0,
+            self.1 + other.1,
+            self.2 + other.2,
+            self.3 + other.3,
+        )
+    }
 }
 
 impl Add for Color {
