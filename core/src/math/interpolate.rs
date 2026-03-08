@@ -4,7 +4,7 @@ use {
 };
 
 #[inline(always)]
-pub fn lerp<T>(a: T, b: T, t: f64) -> T
+pub fn lerp<T>(a: T, b: T, t: f32) -> T
 where
 	T: Copy + Arithmetic,
 {
@@ -12,7 +12,7 @@ where
 }
 
 #[inline(always)]
-pub fn bi_lerp<T>(c00: T, c01: T, c10: T, c11: T, dx: f64, dy: f64) -> T
+pub fn bi_lerp<T>(c00: T, c01: T, c10: T, c11: T, dx: f32, dy: f32) -> T
 where
 	T: Copy + Arithmetic,
 {
@@ -24,27 +24,27 @@ where
 
 #[inline(always)]
 pub fn barycentric_interpolate<T>(
-	w0: f64,
-	w1: f64,
-	w2: f64,
+	w0: f32,
+	w1: f32,
+	w2: f32,
 	v0: T,
 	v1: T,
 	v2: T,
 ) -> T
 where
-	T: Mul<f64, Output = T> + Add<Output = T>,
+	T: Mul<f32, Output = T> + Add<Output = T>,
 {
 	v0 * w0 + v1 * w1 + v2 * w2
 }
 
 #[inline(always)]
 pub fn perspective_interpolate<T>(
-	bary: (f64, f64, f64),
-	inv_d_lerped: f64,
+	bary: (f32, f32, f32),
+	inv_d_lerped: f32,
 	elements: (T, T, T),
 ) -> T
 where
-	T: Mul<f64, Output = T> + Add<Output = T> + Copy,
+	T: Mul<f32, Output = T> + Add<Output = T> + Copy,
 {
 	let (w0, w1, w2) = bary;
 	let (v0, v1, v2) = elements;

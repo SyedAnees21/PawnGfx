@@ -1,9 +1,9 @@
 use {
 	pcore::{
 		geometry::{BiTangent, Normal, Tangent, UV, VertexAttributes},
-		math::{Vector3, Vector4},
+		math::{Gradient, Vector2, Vector3, Vector4},
 	},
-	std::ops::{Add, Mul},
+	std::ops::{Add, Mul, Sub},
 };
 
 #[derive(Debug, Clone, Copy)]
@@ -19,14 +19,14 @@ pub struct Varyings {
 	pub tangent: Tangent,
 	pub bi_tangent: BiTangent,
 	pub world_pos: Vector3,
-	pub intensity: f64,
+	pub intensity: f32,
 }
 
-impl Mul<f64> for Varyings {
+impl Mul<f32> for Varyings {
 	type Output = Self;
 
 	#[inline(always)]
-	fn mul(self, rhs: f64) -> Self::Output {
+	fn mul(self, rhs: f32) -> Self::Output {
 		Self {
 			uv: self.uv * rhs,
 			normal: self.normal * rhs,
@@ -34,6 +34,21 @@ impl Mul<f64> for Varyings {
 			bi_tangent: self.bi_tangent * rhs,
 			world_pos: self.world_pos * rhs,
 			intensity: self.intensity * rhs,
+		}
+	}
+}
+
+impl Mul for Varyings {
+	type Output = Self;
+
+	fn mul(self, rhs: Self) -> Self::Output {
+		Varyings {
+			uv: self.uv * rhs.uv,
+			normal: self.normal * rhs.normal,
+			tangent: self.tangent * rhs.tangent,
+			bi_tangent: self.bi_tangent * rhs.bi_tangent,
+			world_pos: self.world_pos * rhs.world_pos,
+			intensity: self.intensity * rhs.intensity,
 		}
 	}
 }
@@ -54,8 +69,94 @@ impl Add for Varyings {
 	}
 }
 
+impl Sub for Varyings {
+	type Output = Self;
+
+	#[inline(always)]
+	fn sub(self, rhs: Self) -> Self::Output {
+		Self {
+			uv: self.uv - rhs.uv,
+			normal: self.normal - rhs.normal,
+			tangent: self.tangent - rhs.tangent,
+			bi_tangent: self.bi_tangent - rhs.bi_tangent,
+			world_pos: self.world_pos - rhs.world_pos,
+			intensity: self.intensity - rhs.intensity,
+		}
+	}
+}
+
 #[derive(Default, Debug, Clone, Copy)]
 pub struct VertexOut {
 	pub clip: Vector4,
 	pub vary: Varyings,
+}
+
+#[derive(Default, Debug, Clone, Copy)]
+pub struct GVaryings {
+	pub uv: Gradient<UV>,
+	pub normal: Gradient<Normal>,
+	pub tangent: Gradient<Tangent>,
+	pub bi_tangent: Gradient<BiTangent>,
+	pub world_pos: Gradient<Vector3>,
+}
+
+impl GVaryings {
+	pub fn from_varyings(
+		v: [Varyings; 3],
+		s: [Vector2; 3],
+		inv_det: f32,
+	) -> Self {
+		Self {
+			uv: Gradient::new([v[0].uv, v[1].uv, v[2].uv], s, inv_det),
+			normal: Gradient::new(
+				[v[0].normal, v[1].normal, v[2].normal],
+				s,
+				inv_det,
+			),
+			tangent: Gradient::new(
+				[v[0].tangent, v[1].tangent, v[2].tangent],
+				s,
+				inv_det,
+			),
+			bi_tangent: Gradient::new(
+				[v[0].bi_tangent, v[1].bi_tangent, v[2].bi_tangent],
+				s,
+				inv_det,
+			),
+			world_pos: Gradient::new(
+				[v[0].world_pos, v[1].world_pos, v[2].world_pos],
+				s,
+				inv_det,
+			),
+		}
+	}
+
+	#[inline(always)]
+	pub fn step_horizontal_all(&self, varyings: &mut Varyings) {
+		self.uv.step_x(&mut varyings.uv);
+		self.normal.step_x(&mut varyings.normal);
+		self.tangent.step_x(&mut varyings.tangent);
+		self.bi_tangent.step_x(&mut varyings.bi_tangent);
+		self.world_pos.step_x(&mut varyings.world_pos);
+	}
+
+	#[inline(always)]
+	pub fn step_vertical_all(&self, varyings: &mut Varyings) {
+		self.uv.step_y(&mut varyings.uv);
+		self.normal.step_y(&mut varyings.normal);
+		self.tangent.step_y(&mut varyings.tangent);
+		self.bi_tangent.step_y(&mut varyings.bi_tangent);
+		self.world_pos.step_y(&mut varyings.world_pos);
+	}
+
+	pub fn sample_all(&self, dx: f32, dy: f32) -> Varyings {
+		Varyings {
+			uv: self.uv.sample_at(dx, dy),
+			normal: self.normal.sample_at(dx, dy),
+			tangent: self.tangent.sample_at(dx, dy),
+			bi_tangent: self.bi_tangent.sample_at(dx, dy),
+			world_pos: self.world_pos.sample_at(dx, dy),
+			intensity: 0.0,
+		}
+	}
 }

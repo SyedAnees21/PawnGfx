@@ -18,7 +18,9 @@ image.workspace = true
 pcore = { path = "../core" }
 pscene = { path = "../scene" }
 
+
 [features]
+default = ["standalone"]
 standalone = ["pixels", "winit"]
 
 [[example]]

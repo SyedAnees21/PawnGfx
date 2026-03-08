@@ -19,7 +19,7 @@ pub struct LightUniforms {
 	pub position: Vector3,
 	pub direction: Vector3,
 	pub color: Color,
-	pub ambient: f64,
+	pub ambient: f32,
 }
 
 impl From<&Light> for LightUniforms {
@@ -36,9 +36,9 @@ impl From<&Light> for LightUniforms {
 #[derive(Debug, Clone, Copy)]
 pub struct CameraUniforms {
 	pub position: Vector3,
-	pub fov: f64,
-	pub near: f64,
-	pub far: f64,
+	pub fov: f32,
+	pub near: f32,
+	pub far: f32,
 }
 
 impl From<&Camera> for CameraUniforms {
@@ -54,17 +54,17 @@ impl From<&Camera> for CameraUniforms {
 
 #[derive(Debug, Clone, Copy)]
 pub struct ScreenUniforms {
-	pub aspect: f64,
-	pub width: f64,
-	pub height: f64,
+	pub aspect: f32,
+	pub width: f32,
+	pub height: f32,
 }
 
 impl From<&WinSize> for ScreenUniforms {
 	fn from(value: &WinSize) -> Self {
 		Self {
 			aspect: value.aspect(),
-			width: value.width as f64,
-			height: value.height as f64,
+			width: value.width as f32,
+			height: value.height as f32,
 		}
 	}
 }

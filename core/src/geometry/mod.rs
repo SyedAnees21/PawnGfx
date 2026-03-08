@@ -39,7 +39,7 @@ impl<T> Arithmetic for T where
 {
 }
 
-pub fn edge_function(v0: Vector2, v1: Vector2, p: Vector2) -> f64 {
+pub fn edge_function(v0: Vector2, v1: Vector2, p: Vector2) -> f32 {
 	(p.x - v0.x) * (v1.y - v0.y) - (p.y - v0.y) * (v1.x - v0.x)
 }
 
@@ -59,9 +59,9 @@ pub fn bounding_rect(
 impl From<Rgb<u8>> for Normal {
 	fn from(value: Rgb<u8>) -> Self {
 		Normal::new(
-			value[0] as f64 / 255.0 * 2.0 - 1.0,
-			value[1] as f64 / 255.0 * 2.0 - 1.0,
-			value[2] as f64 / 255.0 * 2.0 - 1.0,
+			value[0] as f32 / 255.0 * 2.0 - 1.0,
+			value[1] as f32 / 255.0 * 2.0 - 1.0,
+			value[2] as f32 / 255.0 * 2.0 - 1.0,
 		)
 	}
 }

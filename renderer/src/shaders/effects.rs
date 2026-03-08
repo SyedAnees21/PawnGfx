@@ -1,5 +1,5 @@
 use {
-	crate::shaders::{FS, VS, Varyings, VertexIn, VertexOut},
+	crate::shaders::{FS, GVaryings, VS, Varyings, VertexIn, VertexOut},
 	pcore::math::{self, Matrix3, Vector4},
 	pscene::color::Color,
 };
@@ -112,8 +112,8 @@ impl FS for Flat {
 	fn perspective_interpolate(
 		&self,
 		input: [Varyings; 3],
-		bary: (f64, f64, f64),
-		inv_depth: f64,
+		bary: (f32, f32, f32),
+		inv_depth: f32,
 	) -> Varyings {
 		let uvs = (input[0].uv, input[1].uv, input[2].uv);
 		let w_pos = (input[0].world_pos, input[1].world_pos, input[2].world_pos);
@@ -126,6 +126,43 @@ impl FS for Flat {
 			bi_tangent: input[0].bi_tangent,
 			world_pos: math::perspective_interpolate(bary, inv_depth, w_pos),
 			intensity: math::perspective_interpolate(bary, inv_depth, ints),
+		}
+	}
+
+	fn sample_gradients(
+		&self,
+		g_varyings: &super::GVaryings,
+		dx: f32,
+		dy: f32,
+	) -> Varyings {
+		Varyings {
+			uv: g_varyings.uv.sample_at(dx, dy),
+			world_pos: g_varyings.world_pos.sample_at(dx, dy),
+			normal: g_varyings.normal.a,
+			tangent: g_varyings.tangent.a,
+			bi_tangent: g_varyings.bi_tangent.a,
+			intensity: 0.0,
+		}
+	}
+
+	fn step_horizontal(&self, g_varyings: &GVaryings, varyings: &mut Varyings) {
+		g_varyings.uv.step_x(&mut varyings.uv);
+		g_varyings.world_pos.step_x(&mut varyings.world_pos);
+	}
+
+	fn step_vertical(&self, g_varyings: &GVaryings, varyings: &mut Varyings) {
+		g_varyings.uv.step_y(&mut varyings.uv);
+		g_varyings.world_pos.step_y(&mut varyings.world_pos);
+	}
+
+	fn recover_value(&self, varyings: &Varyings, inv_w: f32) -> Varyings {
+		Varyings {
+			uv: varyings.uv * inv_w,
+			world_pos: varyings.world_pos * inv_w,
+			normal: varyings.normal,
+			tangent: varyings.tangent,
+			bi_tangent: varyings.bi_tangent,
+			intensity: varyings.intensity * inv_w,
 		}
 	}
 }
@@ -232,8 +269,12 @@ impl FS for BlinnPhong {
 		let ambient = color * material.ambient * uniforms.light.ambient;
 
 		// Specular factor, pow(max(dot(N, H), 0), shininess)
+		// The specular factor here is calculated uisng modified
+		// Schlick approximation to avoid the powf in this hot
+		// pixel loop.
+		let s = material.shininess;
 		let ndoth = np_world.dot(&half_vec).max(0.0);
-		let spec_factor = ndoth.powf(material.shininess as f64);
+		let spec_factor = ndoth / (s - s * ndoth + ndoth);
 
 		// Specular
 		let specular = material.specular * uniforms.light.color * spec_factor;
@@ -244,14 +285,35 @@ impl FS for BlinnPhong {
 	fn perspective_interpolate(
 		&self,
 		input: [Varyings; 3],
-		bary: (f64, f64, f64),
-		inv_depth: f64,
+		bary: (f32, f32, f32),
+		inv_depth: f32,
 	) -> Varyings {
 		math::perspective_interpolate(
 			bary,
 			inv_depth,
 			(input[0], input[1], input[2]),
 		)
+	}
+
+	fn sample_gradients(
+		&self,
+		g_varyings: &GVaryings,
+		dx: f32,
+		dy: f32,
+	) -> Varyings {
+		g_varyings.sample_all(dx, dy)
+	}
+
+	fn recover_value(&self, varyings: &Varyings, inv_w: f32) -> Varyings {
+		*varyings * inv_w
+	}
+
+	fn step_horizontal(&self, g_varyings: &GVaryings, varyings: &mut Varyings) {
+		g_varyings.step_horizontal_all(varyings);
+	}
+
+	fn step_vertical(&self, g_varyings: &GVaryings, varyings: &mut Varyings) {
+		g_varyings.step_vertical_all(varyings);
 	}
 }
 // pub struct Gouraud;

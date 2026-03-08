@@ -7,12 +7,20 @@ use {
 	std::marker::PhantomData,
 };
 
-#[derive(Default, Clone, Copy)]
+#[derive(Default)]
 pub struct AssetHandle<T> {
 	index: u32,
 	generation: u32,
 	_marker: PhantomData<T>,
 }
+
+impl<T> Clone for AssetHandle<T> {
+	fn clone(&self) -> Self {
+		*self
+	}
+}
+
+impl<T> Copy for AssetHandle<T> {}
 
 impl<T> AssetHandle<T> {
 	pub fn new(index: u32, generation: u32) -> Self {

@@ -5,7 +5,7 @@ use {
 
 #[derive(Debug, Clone, Copy)]
 pub struct Matrix4 {
-	pub data: [[f64; 4]; 4],
+	pub data: [[f32; 4]; 4],
 }
 
 impl Matrix4 {
@@ -110,7 +110,7 @@ impl Matrix4 {
 	}
 
 	#[inline(always)]
-	pub fn scale_matrix(sx: f64, sy: f64, sz: f64) -> Matrix4 {
+	pub fn scale_matrix(sx: f32, sy: f32, sz: f32) -> Matrix4 {
 		Matrix4 {
 			data: [
 				[sx, 0.0, 0.0, 0.0],
@@ -122,7 +122,7 @@ impl Matrix4 {
 	}
 
 	#[inline(always)]
-	pub fn translation_matrix(tx: f64, ty: f64, tz: f64) -> Matrix4 {
+	pub fn translation_matrix(tx: f32, ty: f32, tz: f32) -> Matrix4 {
 		Matrix4 {
 			data: [
 				[1.0, 0.0, 0.0, tx],
@@ -134,7 +134,7 @@ impl Matrix4 {
 	}
 
 	#[inline(always)]
-	pub fn rotation_y(angle_rad: f64) -> Matrix4 {
+	pub fn rotation_y(angle_rad: f32) -> Matrix4 {
 		let c = angle_rad.cos();
 		let s = angle_rad.sin();
 
@@ -149,7 +149,7 @@ impl Matrix4 {
 	}
 
 	#[inline(always)]
-	pub fn rotation_x(angle_rad: f64) -> Matrix4 {
+	pub fn rotation_x(angle_rad: f32) -> Matrix4 {
 		let c = angle_rad.cos();
 		let s = angle_rad.sin();
 
@@ -164,7 +164,7 @@ impl Matrix4 {
 	}
 
 	#[inline(always)]
-	pub fn rotation_z(angle_rad: f64) -> Matrix4 {
+	pub fn rotation_z(angle_rad: f32) -> Matrix4 {
 		let c = angle_rad.cos();
 		let s = angle_rad.sin();
 
@@ -189,10 +189,10 @@ impl Matrix4 {
 
 	#[inline(always)]
 	pub fn projection_matrix(
-		fov_rad: f64,
-		aspect: f64,
-		near: f64,
-		far: f64,
+		fov_rad: f32,
+		aspect: f32,
+		near: f32,
+		far: f32,
 	) -> Matrix4 {
 		let f = 1.0 / (fov_rad / 2.0).tan();
 		let nf = 1.0 / (near - far);
@@ -209,10 +209,10 @@ impl Matrix4 {
 
 	#[inline(always)]
 	pub fn perspective_matrix(
-		fov_rad: f64,
-		aspect: f64,
-		near: f64,
-		far: f64,
+		fov_rad: f32,
+		aspect: f32,
+		near: f32,
+		far: f32,
 	) -> Matrix4 {
 		Self::projection_matrix(fov_rad, aspect, near, far)
 	}
@@ -267,7 +267,7 @@ impl Mul<Vector4> for Matrix4 {
 
 #[derive(Debug, Clone, Copy)]
 pub struct Matrix3 {
-	pub data: [[f64; 3]; 3],
+	pub data: [[f32; 3]; 3],
 }
 
 impl Matrix3 {
@@ -304,7 +304,7 @@ impl Matrix3 {
 	}
 
 	#[inline(always)]
-	pub fn determinant(&self) -> f64 {
+	pub fn determinant(&self) -> f32 {
 		let m = self.data;
 		m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1])
 			- m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0])

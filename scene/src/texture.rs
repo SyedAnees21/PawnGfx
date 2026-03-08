@@ -74,7 +74,7 @@ impl<T> Texture<T> {
 	}
 
 	#[inline(always)]
-	pub fn wrap_uv(&self, mut p: f64) -> f64 {
+	pub fn wrap_uv(&self, mut p: f32) -> f32 {
 		match self.wrap {
 			Wrap::Clamp => p.clamp(0.0, 1.0),
 			Wrap::Repeat => {
@@ -95,7 +95,7 @@ impl<T> Texture<T> {
 
 	#[inline(always)]
 	#[allow(unused)]
-	pub fn sample(&self, mut u: f64, mut v: f64) -> T
+	pub fn sample(&self, mut u: f32, mut v: f32) -> T
 	where
 		T: Copy,
 	{
@@ -106,15 +106,15 @@ impl<T> Texture<T> {
 		v = 1.0 - v;
 
 		// convert to pixel space
-		let x = (u * (self.width as f64 - 1.0)) as usize;
-		let y = (v * (self.height as f64 - 1.0)) as usize;
+		let x = (u * (self.width as f32 - 1.0)) as usize;
+		let y = (v * (self.height as f32 - 1.0)) as usize;
 
 		// self.data[y * self.width + x]
 		self.texel(x, y)
 	}
 
 	#[inline(always)]
-	pub fn bi_sample(&self, mut u: f64, mut v: f64) -> T
+	pub fn bi_sample(&self, mut u: f32, mut v: f32) -> T
 	where
 		T: Copy + Arithmetic,
 	{
@@ -124,8 +124,8 @@ impl<T> Texture<T> {
 		// Flipping image space
 		v = 1.0 - v;
 
-		let x = u * (self.width as f64 - 1.0);
-		let y = v * (self.height as f64 - 1.0);
+		let x = u * (self.width as f32 - 1.0);
+		let y = v * (self.height as f32 - 1.0);
 
 		let x0 = x.floor() as usize;
 		let y0 = y.floor() as usize;
@@ -187,9 +187,9 @@ pub type NormalMap = Texture<Normal>;
 // impl From<Rgb<u8>> for Normal {
 //     fn from(value: Rgb<u8>) -> Self {
 //         Normal::new(
-//             value[0] as f64 / 255.0 * 2.0 -
-// 1.0,             value[1] as f64 / 255.0 * 2.0
-// - 1.0,             value[2] as f64 / 255.0 *
+//             value[0] as f32 / 255.0 * 2.0 -
+// 1.0,             value[1] as f32 / 255.0 * 2.0
+// - 1.0,             value[2] as f32 / 255.0 *
 // 2.0 - 1.0,         )
 //     }
 // }

@@ -36,8 +36,8 @@ impl<'f> Engine<'f> {
 				event: DeviceEvent::MouseMotion { delta },
 				..
 			} => {
-				self.input.mouse_delta.0 += delta.0;
-				self.input.mouse_delta.1 += delta.1;
+				self.input.mouse_delta.0 += delta.0 as f32;
+				self.input.mouse_delta.1 += delta.1 as f32;
 			}
 			_ => {}
 		}

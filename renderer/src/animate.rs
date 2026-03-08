@@ -3,7 +3,7 @@ use pcore::math::{Vector3, lerp};
 pub struct ProceduralAnimator {
 	pub start: Vector3,
 	pub end: Vector3,
-	pub progress: f64,
+	pub progress: f32,
 }
 
 impl ProceduralAnimator {
@@ -19,7 +19,7 @@ impl ProceduralAnimator {
 		self.progress >= 1.0
 	}
 
-	pub fn step(&mut self, delta: f64) -> Vector3 {
+	pub fn step(&mut self, delta: f32) -> Vector3 {
 		self.progress += delta;
 		let t = 1.0 - (1.0 - self.progress).powi(3);
 

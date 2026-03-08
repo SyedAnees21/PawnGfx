@@ -2,8 +2,8 @@ use std::ops::{Add, AddAssign, Div, Mul, Sub};
 
 #[derive(Default, Debug, Clone, Copy)]
 pub struct Vector2 {
-	pub x: f64,
-	pub y: f64,
+	pub x: f32,
+	pub y: f32,
 }
 
 impl From<Vector3> for Vector2 {
@@ -19,12 +19,12 @@ impl Vector2 {
 	pub const ZERO: Vector2 = Vector2 { x: 0.0, y: 0.0 };
 
 	#[inline(always)]
-	pub const fn new(x: f64, y: f64) -> Self {
+	pub const fn new(x: f32, y: f32) -> Self {
 		Vector2 { x, y }
 	}
 
 	#[inline(always)]
-	pub fn magnitude(&self) -> f64 {
+	pub fn magnitude(&self) -> f32 {
 		(self.x * self.x + self.y * self.y).sqrt()
 	}
 
@@ -40,17 +40,17 @@ impl Vector2 {
 	#[inline(always)]
 	pub fn xy<T>(&self) -> (T, T)
 	where
-		T: From<f64>,
+		T: From<f32>,
 	{
 		(T::from(self.x), T::from(self.y))
 	}
 }
 
-impl Div<f64> for Vector2 {
+impl Div<f32> for Vector2 {
 	type Output = Self;
 
 	#[inline(always)]
-	fn div(self, rhs: f64) -> Self::Output {
+	fn div(self, rhs: f32) -> Self::Output {
 		Self {
 			x: self.x / rhs,
 			y: self.y / rhs,
@@ -58,14 +58,25 @@ impl Div<f64> for Vector2 {
 	}
 }
 
-impl Mul<f64> for Vector2 {
+impl Mul<f32> for Vector2 {
 	type Output = Self;
 
 	#[inline(always)]
-	fn mul(self, rhs: f64) -> Self::Output {
+	fn mul(self, rhs: f32) -> Self::Output {
 		Self {
 			x: self.x * rhs,
 			y: self.y * rhs,
+		}
+	}
+}
+
+impl Mul for Vector2 {
+	type Output = Self;
+
+	fn mul(self, rhs: Self) -> Self::Output {
+		Vector2 {
+			x: self.x * rhs.x,
+			y: self.y * rhs.y,
 		}
 	}
 }
@@ -96,9 +107,9 @@ impl Sub for Vector2 {
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Vector3 {
-	pub x: f64,
-	pub y: f64,
-	pub z: f64,
+	pub x: f32,
+	pub y: f32,
+	pub z: f32,
 }
 
 impl Vector3 {
@@ -124,17 +135,17 @@ impl Vector3 {
 	};
 
 	#[inline(always)]
-	pub const fn splat(n: f64) -> Self {
+	pub const fn splat(n: f32) -> Self {
 		Self { x: n, y: n, z: n }
 	}
 
 	#[inline(always)]
-	pub const fn new(x: f64, y: f64, z: f64) -> Self {
+	pub const fn new(x: f32, y: f32, z: f32) -> Self {
 		Vector3 { x, y, z }
 	}
 
 	#[inline(always)]
-	pub fn magnitude(&self) -> f64 {
+	pub fn magnitude(&self) -> f32 {
 		(self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
 	}
 
@@ -157,7 +168,7 @@ impl Vector3 {
 	}
 
 	#[inline(always)]
-	pub fn dot(&self, other: &Vector3) -> f64 {
+	pub fn dot(&self, other: &Vector3) -> f32 {
 		self.x * other.x + self.y * other.y + self.z * other.z
 	}
 
@@ -188,11 +199,11 @@ impl Mul for Vector3 {
 	}
 }
 
-impl Mul<f64> for Vector3 {
+impl Mul<f32> for Vector3 {
 	type Output = Vector3;
 
 	#[inline(always)]
-	fn mul(self, scalar: f64) -> Vector3 {
+	fn mul(self, scalar: f32) -> Vector3 {
 		Vector3 {
 			x: self.x * scalar,
 			y: self.y * scalar,
@@ -238,10 +249,10 @@ impl AddAssign for Vector3 {
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Vector4 {
-	pub x: f64,
-	pub y: f64,
-	pub z: f64,
-	pub w: f64,
+	pub x: f32,
+	pub y: f32,
+	pub z: f32,
+	pub w: f32,
 }
 
 impl Vector4 {
@@ -254,11 +265,11 @@ impl Vector4 {
 		}
 	}
 }
-impl Div<f64> for Vector4 {
+impl Div<f32> for Vector4 {
 	type Output = Vector4;
 
 	#[inline(always)]
-	fn div(self, scalar: f64) -> Vector4 {
+	fn div(self, scalar: f32) -> Vector4 {
 		Vector4 {
 			x: self.x / scalar,
 			y: self.y / scalar,
@@ -268,11 +279,11 @@ impl Div<f64> for Vector4 {
 	}
 }
 
-impl Mul<f64> for Vector4 {
+impl Mul<f32> for Vector4 {
 	type Output = Vector4;
 
 	#[inline(always)]
-	fn mul(self, rhs: f64) -> Self::Output {
+	fn mul(self, rhs: f32) -> Self::Output {
 		Vector4 {
 			x: self.x * rhs,
 			y: self.y * rhs,
@@ -284,14 +295,14 @@ impl Mul<f64> for Vector4 {
 
 impl Vector4 {
 	#[inline(always)]
-	pub fn new(x: f64, y: f64, z: f64, w: f64) -> Self {
+	pub fn new(x: f32, y: f32, z: f32, w: f32) -> Self {
 		Vector4 { x, y, z, w }
 	}
 }
 
-impl From<(Vector3, f64)> for Vector4 {
+impl From<(Vector3, f32)> for Vector4 {
 	#[inline(always)]
-	fn from((v3, w): (Vector3, f64)) -> Self {
+	fn from((v3, w): (Vector3, f32)) -> Self {
 		Vector4 {
 			x: v3.x,
 			y: v3.y,

@@ -89,10 +89,10 @@ impl Sub for Color {
     }
 }
 
-impl Mul<f64> for Color {
+impl Mul<f32> for Color {
     type Output = Color;
 
-    fn mul(self, scalar: f64) -> Color {
+    fn mul(self, scalar: f32) -> Color {
         Color(
             self.0 * scalar as f32,
             self.1 * scalar as f32,

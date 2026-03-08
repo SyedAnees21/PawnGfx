@@ -8,21 +8,21 @@ const RIGHT: usize = 1;
 const FORWARD: usize = 2;
 
 pub struct Camera {
-	pub fov: f64,
-	pub near: f64,
-	pub far: f64,
+	pub fov: f32,
+	pub near: f32,
+	pub far: f32,
 	pub position: Vector3,
-	pub speed: f64,
-	pub sensitivity: f64,
-	pub yaw: f64,
-	pub pitch: f64,
+	pub speed: f32,
+	pub sensitivity: f32,
+	pub yaw: f32,
+	pub pitch: f32,
 	pub basis: [Vector3; 3],
 }
 
 impl Camera {
 	pub fn new(position: Vector3) -> Self {
 		let mut cam = Camera {
-			fov: 60.0f64.to_radians(),
+			fov: 60.0f32.to_radians(),
 			near: 0.1,
 			far: 100.0,
 			position,
@@ -37,19 +37,19 @@ impl Camera {
 		cam
 	}
 
-	pub fn move_forward(&mut self, delta: f64) {
+	pub fn move_forward(&mut self, delta: f32) {
 		self.position += self.basis[FORWARD] * delta;
 	}
 
-	pub fn move_right(&mut self, delta: f64) {
+	pub fn move_right(&mut self, delta: f32) {
 		self.position += self.basis[RIGHT] * delta;
 	}
 
-	pub fn move_up(&mut self, delta: f64) {
+	pub fn move_up(&mut self, delta: f32) {
 		self.position.y += delta;
 	}
 
-	pub fn rotate(&mut self, delta_yaw: f64, delta_pitch: f64) {
+	pub fn rotate(&mut self, delta_yaw: f32, delta_pitch: f32) {
 		self.yaw += delta_yaw;
 		self.pitch += delta_pitch;
 
@@ -90,7 +90,7 @@ impl Camera {
 		}
 	}
 
-	pub fn get_projection_matrix(&self, aspect: f64) -> Matrix4 {
+	pub fn get_projection_matrix(&self, aspect: f32) -> Matrix4 {
 		Matrix4::perspective_matrix(self.fov, aspect, self.near, self.far)
 	}
 }

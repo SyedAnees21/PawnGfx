@@ -18,15 +18,15 @@ use {
 
 pub fn draw_line<T>(
 	mut frame: T,
-	depth_buffer: &mut [f64],
+	depth_buffer: &mut [f32],
 	w: i32,
 	h: i32,
 	x0: i32,
 	y0: i32,
-	z0: f64,
+	z0: f32,
 	x1: i32,
 	y1: i32,
-	z1: f64,
+	z1: f32,
 ) where
 	T: AsMut<[u8]>,
 {
@@ -39,7 +39,7 @@ pub fn draw_line<T>(
 	let mut x = x0;
 	let mut y = y0;
 
-	let length = ((x1 - x0).abs().max((y1 - y0).abs())) as f64;
+	let length = ((x1 - x0).abs().max((y1 - y0).abs())) as f32;
 	let mut step = 0.0;
 
 	loop {
@@ -161,11 +161,11 @@ pub const FACE_NORMALS: [Vector3; 6] = [
 ];
 
 // pub fn draw_cube<T>(mut frame: T, mvp: Matrix4,
-// width: f64, height: f64) where
+// width: f32, height: f32) where
 //     T: AsMut<[u8]>,
 // {
 //     let frame = frame.as_mut();
-//     let mut depth_buffer = vec![f64::INFINITY;
+//     let mut depth_buffer = vec![f32::INFINITY;
 // (width * height) as usize];
 
 //     for edge in &EDGES {
@@ -217,7 +217,7 @@ pub const FACE_NORMALS: [Vector3; 6] = [
 //     triangles: Triangles,
 // ) where
 //     F: AsMut<[u8]> + ?Sized,
-//     D: AsMut<[f64]> + ?Sized,
+//     D: AsMut<[f32]> + ?Sized,
 // {
 //     let frame = frame_buffer.as_mut();
 //     let depth = depth_buffer.as_mut();
@@ -261,10 +261,10 @@ pub const FACE_NORMALS: [Vector3; 6] = [
 //         v2_ndc.w = inv_w2;
 
 //         let v0 = clip_to_screen(&v0_ndc, w as
-// f64, h as f64);         let v1 =
-// clip_to_screen(&v1_ndc, w as f64, h as f64);
+// f32, h as f32);         let v1 =
+// clip_to_screen(&v1_ndc, w as f32, h as f32);
 //         let v2 = clip_to_screen(&v2_ndc, w as
-// f64, h as f64);
+// f32, h as f32);
 
 //         draw_triangle(
 //             frame,
@@ -284,16 +284,16 @@ pub const FACE_NORMALS: [Vector3; 6] = [
 
 // pub fn draw_triangle(
 //     frame_buffer: &mut [u8],
-//     depth_buffer: &mut [f64],
+//     depth_buffer: &mut [f32],
 //     w: i32,
 //     h: i32,
 //     light: Vector3,
 //     face_normal: Vector3,
 //     texture: &Texture,
 //     uv: [UV; 3],
-//     (v0, z0, inv_w0): (Vector2, f64, f64),
-//     (v1, z1, inv_w1): (Vector2, f64, f64),
-//     (v2, z2, inv_w2): (Vector2, f64, f64),
+//     (v0, z0, inv_w0): (Vector2, f32, f32),
+//     (v1, z1, inv_w1): (Vector2, f32, f32),
+//     (v2, z2, inv_w2): (Vector2, f32, f32),
 // ) {
 //     let frame = frame_buffer.as_mut();
 
@@ -305,14 +305,14 @@ pub const FACE_NORMALS: [Vector3; 6] = [
 
 //     let min_x = min.x.max(0.0) as i32;
 //     let min_y = min.y.max(0.0) as i32;
-//     let max_x = max.x.min((w - 1) as f64) as
-// i32;     let max_y = max.y.min((h - 1) as f64)
+//     let max_x = max.x.min((w - 1) as f32) as
+// i32;     let max_y = max.y.min((h - 1) as f32)
 // as i32;
 
 //     for y in min_y..=max_y {
 //         for x in min_x..=max_x {
-//             let p = Vector2::new(x as f64 +
-// 0.5, y as f64 + 0.5);
+//             let p = Vector2::new(x as f32 +
+// 0.5, y as f32 + 0.5);
 
 //             {
 //                 let area = edge_function(v0,

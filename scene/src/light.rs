@@ -3,7 +3,7 @@ use {crate::color::Color, pcore::math::Vector3};
 pub struct Light {
 	pub position: Vector3,
 	pub color: Color,
-	pub ambient: f64,
+	pub ambient: f32,
 }
 
 impl Default for Light {

@@ -43,8 +43,8 @@ pub struct InputState {
     pub keys_pressed: HashSet<Keys>,
     pub mouse_right: bool,
     pub mouse_left: bool,
-    pub mouse_delta: (f64, f64),
-    pub mouse_position: (f64, f64),
+    pub mouse_delta: (f32, f32),
+    pub mouse_position: (f32, f32),
 }
 
 impl Default for InputState {
@@ -121,9 +121,9 @@ pub fn read_inputs(ism: &mut InputState, event: &WindowEvent) {
             ism.process_keyboard_input(event);
         }
         WindowEvent::CursorMoved { position, .. } => {
-            ism.mouse_delta.0 += position.x - ism.mouse_position.0;
-            ism.mouse_delta.1 += position.y - ism.mouse_position.1;
-            ism.mouse_position = (position.x, position.y);
+            ism.mouse_delta.0 += position.x as f32 - ism.mouse_position.0;
+            ism.mouse_delta.1 += position.y  as f32 - ism.mouse_position.1;
+            ism.mouse_position = (position.x as f32, position.y as f32);
         }
         WindowEvent::MouseInput { state, button, .. } => ism.process_mouse_input(state, button),
         _ => {}

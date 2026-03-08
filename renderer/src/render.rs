@@ -11,8 +11,8 @@ pub struct WinSize {
 }
 
 impl WinSize {
-	pub fn aspect(&self) -> f64 {
-		self.width as f64 / self.height as f64
+	pub fn aspect(&self) -> f32 {
+		self.width as f32 / self.height as f32
 	}
 }
 

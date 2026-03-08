@@ -4,8 +4,8 @@ use {
 		shaders::{FS, VS, Varyings, VertexIn, VertexOut, uniform},
 	},
 	pcore::{
-		geometry::{bounding_rect, edge_function},
-		math::{self, Vector2, Vector4},
+		geometry::{IncEdge, bounding_rect, edge_function},
+		math::{Gradient, Vector2, Vector4},
 	},
 	pscene::object::ObjectRef,
 };
@@ -13,12 +13,12 @@ use {
 #[derive(Default, Clone, Copy)]
 pub struct RasterIn {
 	pub s: Vector2,
-	pub z: f64,
-	pub inv_w: f64,
+	pub z: f32,
+	pub inv_w: f32,
 }
 
-impl From<(Vector2, f64, f64)> for RasterIn {
-	fn from(value: (Vector2, f64, f64)) -> Self {
+impl From<(Vector2, f32, f32)> for RasterIn {
+	fn from(value: (Vector2, f32, f32)) -> Self {
 		let (screen, z, inv_w) = value;
 		Self {
 			s: screen,
@@ -77,7 +77,7 @@ pub fn consume_draw_call<'d, S>(
 			let mut v_ndc = v_clip * inv_w;
 			v_ndc.w = inv_w;
 
-			r_vertices[i] = clip_to_screen(&v_ndc, w as f64, h as f64);
+			r_vertices[i] = clip_to_screen(&v_ndc, w as f32, h as f32);
 			varyings[i] = v_out[i].vary;
 		}
 
@@ -89,7 +89,6 @@ pub fn consume_draw_call<'d, S>(
 		// Perspective division:
 		// uv, normal, tangents and varyings
 		for i in 0..3 {
-			// varyings[i] = varyings[i] * r_vertices[i].inv_w;
 			varyings[i] = shader.perspective_divide(varyings[i], &r_vertices[i]);
 		}
 
@@ -107,8 +106,6 @@ pub fn rasterize<'d, S>(
 ) where
 	S: FS,
 {
-	let (f_buffer, z_buffer) = buffers.mut_buffers();
-
 	let w = uniforms.screen.width as i32;
 	let h = uniforms.screen.height as i32;
 
@@ -137,45 +134,84 @@ pub fn rasterize<'d, S>(
 
 	let min_x = min.x.max(0.0) as i32;
 	let min_y = min.y.max(0.0) as i32;
-	let max_x = max.x.min((w - 1) as f64) as i32;
-	let max_y = max.y.min((h - 1) as f64) as i32;
+	let max_x = max.x.min((w - 1) as f32) as i32;
+	let max_y = max.y.min((h - 1) as f32) as i32;
+
+	if min_x > max_x || min_y > max_y {
+		return;
+	}
+
+	let screen = [s0, s1, s2];
+
+	let dx = (min_x as f32 + 0.5) - s0.x;
+	let dy = (min_y as f32 + 0.5) - s0.y;
+
+	let g_varyings = shader.compute_gradients(varyings, screen, inv_area);
+	let mut init_varying = shader.sample_gradients(&g_varyings, dx, dy);
+
+	let g_inv_w = Gradient::new([inv_w0, inv_w1, inv_w2], screen, inv_area);
+	let mut init_inv_w = g_inv_w.sample_at(dx, dy);
+
+	let g_z = Gradient::new([z0, z1, z2], screen, inv_area);
+	let mut init_z = g_z.sample_at(dx, dy);
+
+	// Incremental edge function already normalized to screen
+	// space triangle.
+	let inc_edge = IncEdge::new(s0, s1, s2, Some(inv_area));
+	let mut init_w = inc_edge.weights(min_x as f32 + 0.5, min_y as f32 + 0.5);
 
 	for y in min_y..=max_y {
-		for x in min_x..=max_x {
-			let p = Vector2::new(x as f64 + 0.5, y as f64 + 0.5);
+		let (mut w0, mut w1, mut w2) = init_w;
 
-			let w0 = edge_function(s1, s2, p) * inv_area;
-			let w1 = edge_function(s2, s0, p) * inv_area;
-			let w2 = edge_function(s0, s1, p) * inv_area;
+		let mut c_varyings = init_varying;
+		let mut c_inv_w = init_inv_w;
+		let mut c_z = init_z;
 
+		let offset = (y * w + min_x) as usize;
+		let mut buf_cursor = buffers.get_cursor(offset);
+
+		for _ in min_x..=max_x {
 			let is_outside = w0 < 0.0 || w1 < 0.0 || w2 < 0.0;
 
 			if is_outside {
+				(w0, w1, w2) = inc_edge.step_x(w0, w1, w2);
+
+				shader.step_horizontal(&g_varyings, &mut c_varyings);
+				g_inv_w.step_x(&mut c_inv_w);
+				g_z.step_x(&mut c_z);
+
+				buf_cursor.step();
 				continue;
 			}
 
-			let bary = (w0, w1, w2);
+			if c_z < buf_cursor.get_depth() {
+				let inv_w_lerped = 1.0 / c_inv_w;
 
-			let inv_depth =
-				math::barycentric_interpolate(w0, w1, w2, inv_w0, inv_w1, inv_w2);
-			let z = math::perspective_interpolate(bary, inv_depth, (z0, z1, z2));
+				let varyings = shader.recover_value(&c_varyings, inv_w_lerped);
+				let color = shader.shade_pixel(varyings, object, uniforms);
 
-			let depth_index = (y * w + x) as usize;
-			let pixel_index = depth_index * 4;
-
-			if z < z_buffer[depth_index] {
-				let varying = shader.perspective_interpolate(varyings, bary, inv_depth);
-				let color = shader.shade_pixel(varying, object, uniforms);
-
-				z_buffer[depth_index] = z;
-				f_buffer[pixel_index..pixel_index + 4]
-					.copy_from_slice(&color.to_rgba8());
+				buf_cursor.put_depth(c_z);
+				buf_cursor.put_pixel(color);
 			}
+
+			(w0, w1, w2) = inc_edge.step_x(w0, w1, w2);
+
+			shader.step_horizontal(&g_varyings, &mut c_varyings);
+			g_inv_w.step_x(&mut c_inv_w);
+			g_z.step_x(&mut c_z);
+
+			buf_cursor.step();
 		}
+
+		init_w = inc_edge.step_y(init_w.0, init_w.1, init_w.2);
+
+		shader.step_vertical(&g_varyings, &mut init_varying);
+		g_inv_w.step_y(&mut init_inv_w);
+		g_z.step_y(&mut init_z);
 	}
 }
 
-pub fn clip_to_screen(v_ndc: &Vector4, width: f64, height: f64) -> RasterIn {
+pub fn clip_to_screen(v_ndc: &Vector4, width: f32, height: f32) -> RasterIn {
 	let screen_x = (v_ndc.x + 1.0) * 0.5 * width;
 	let screen_y = (1.0 - (v_ndc.y + 1.0) * 0.5) * height;
 
