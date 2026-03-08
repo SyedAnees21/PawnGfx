@@ -3,9 +3,10 @@ use std::ops::{Add, Mul, Sub};
 mod gradient;
 mod interpolate;
 mod matrices;
+mod power;
 mod vector;
 
-pub use {gradient::*, interpolate::*, matrices::*, vector::*};
+pub use {gradient::*, interpolate::*, matrices::*, power::*, vector::*};
 
 pub trait Arithmetic:
 	Add<Output = Self>
