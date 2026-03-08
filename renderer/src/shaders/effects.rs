@@ -269,9 +269,13 @@ impl FS for BlinnPhong {
 		let ambient = color * material.ambient * uniforms.light.ambient;
 
 		// Specular factor, pow(max(dot(N, H), 0), shininess)
+		// The specular factor here is calculated uisng modified
+		// Schlick approximation to avoid the powf in this hot
+		// pixel loop.
+		let s = material.shininess;
 		let ndoth = np_world.dot(&half_vec).max(0.0);
-		let spec_factor = ndoth.powf(material.shininess);
-
+		let spec_factor = ndoth / (s - s * ndoth + ndoth);
+		
 		// Specular
 		let specular = material.specular * uniforms.light.color * spec_factor;
 
