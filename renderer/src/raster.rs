@@ -137,6 +137,10 @@ pub fn rasterize<'d, S>(
 	let max_x = max.x.min((w - 1) as f32) as i32;
 	let max_y = max.y.min((h - 1) as f32) as i32;
 
+	if min_x > max_x || min_y > max_y {
+		return;
+	}
+
 	let screen = [s0, s1, s2];
 
 	let dx = (min_x as f32 + 0.5) - s0.x;
