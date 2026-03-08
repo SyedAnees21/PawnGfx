@@ -17,6 +17,7 @@ pub enum Keys {
     Down,
     Left,
     Right,
+    Tab,
 }
 
 impl TryFrom<winit::keyboard::KeyCode> for Keys {
@@ -34,6 +35,7 @@ impl TryFrom<winit::keyboard::KeyCode> for Keys {
             winit::keyboard::KeyCode::ArrowDown => Ok(Keys::Down),
             winit::keyboard::KeyCode::ArrowLeft => Ok(Keys::Left),
             winit::keyboard::KeyCode::ArrowRight => Ok(Keys::Right),
+            winit::keyboard::KeyCode::Tab => Ok(Keys::Tab),
             _ => Err(()),
         }
     }

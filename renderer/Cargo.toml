@@ -31,3 +31,8 @@ path = "examples/standalone.rs"
 name = "standalone_two_models"
 path = "examples/standalone_two_models.rs"
 required-features = ["standalone"]
+
+[[example]]
+name = "showcase"
+path = "examples/showcase.rs"
+required-features = ["standalone"]
