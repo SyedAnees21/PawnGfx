@@ -275,7 +275,7 @@ impl FS for BlinnPhong {
 		let s = material.shininess;
 		let ndoth = np_world.dot(&half_vec).max(0.0);
 		let spec_factor = ndoth / (s - s * ndoth + ndoth);
-		
+
 		// Specular
 		let specular = material.specular * uniforms.light.color * spec_factor;
 

@@ -183,7 +183,7 @@ pub fn rasterize<'d, S>(
 			if c_z < buf_cursor.get_depth() {
 				let inv_w_lerped = 1.0 / c_inv_w;
 
-				let varyings = shader.recover_value(&mut c_varyings, inv_w_lerped);
+				let varyings = shader.recover_value(&c_varyings, inv_w_lerped);
 				let color = shader.shade_pixel(varyings, object, uniforms);
 
 				buf_cursor.put_depth(c_z);

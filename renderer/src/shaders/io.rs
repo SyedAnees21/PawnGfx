@@ -149,7 +149,6 @@ impl GVaryings {
 		self.world_pos.step_y(&mut varyings.world_pos);
 	}
 
-	
 	pub fn sample_all(&self, dx: f32, dy: f32) -> Varyings {
 		Varyings {
 			uv: self.uv.sample_at(dx, dy),
