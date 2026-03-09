@@ -31,11 +31,11 @@ impl Default for Scene {
 			crate::assets::load_mesh_file("./assets/meshes/cube-local.obj").unwrap();
 
 		let albedo =
-			Albedo::from_file("./assets/texture/Checker-Texture.png", Wrap::Mirror)
+			Albedo::load("./assets/texture/Checker-Texture.png", Wrap::Mirror)
 				.unwrap();
 
 		let normal =
-			NormalMap::from_file("./assets/texture/stones-normal.png", Wrap::Repeat)
+			NormalMap::load("./assets/texture/stones-normal.png", Wrap::Repeat)
 				.unwrap();
 
 		let mut object = Object::new(cube_mesh);

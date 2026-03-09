@@ -34,11 +34,11 @@ pub struct Material {
 impl Default for Material {
 	fn default() -> Self {
 		Self {
-			shininess: 64.0,
+			shininess: 8.0,
 			specular_strength: 0.5,
 			diffuse: Color::from_hex_unchecked("#716f6f"),
-			ambient: Color::new_rgb_splat(0.3),
-			specular: Color::new_rgb_splat(0.5),
+			ambient: Color::new_rgb_splat(0.5),
+			specular: Color::BLACK,
 			albedo: None,
 			normal: None,
 		}

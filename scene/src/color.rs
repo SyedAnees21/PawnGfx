@@ -1,4 +1,4 @@
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, BitAnd, Deref, Mul, Shr, Sub};
 
 #[derive(Clone, Copy)]
 pub struct Color(f32, f32, f32, f32);
@@ -81,13 +81,13 @@ impl Color {
 
 	#[inline(always)]
 	pub fn add_raw(self, other: Color) -> Color {
-        Color(
-            self.0 + other.0,
-            self.1 + other.1,
-            self.2 + other.2,
-            self.3 + other.3,
-        )
-    }
+		Color(
+			self.0 + other.0,
+			self.1 + other.1,
+			self.2 + other.2,
+			self.3 + other.3,
+		)
+	}
 }
 
 impl Add for Color {
@@ -138,5 +138,159 @@ impl Mul for Color {
 			self.2 * rhs.2,
 			self.3 * rhs.3,
 		)
+	}
+}
+
+
+
+#[derive(Clone, Copy)]
+pub struct Color32(pub u32);
+
+impl BitAnd<u32> for Color32 {
+	type Output = u32;
+
+	#[inline(always)]
+	fn bitand(self, rhs: u32) -> Self::Output {
+		self.0 & rhs
+	}
+}
+
+impl Shr<u32> for Color32 {
+	type Output = u32;
+	#[inline(always)]
+	fn shr(self, rhs: u32) -> Self::Output {
+		self.0 >> rhs
+	}
+}
+
+impl Color32 {
+	pub const C_MASK: u32 = 0x00FF00FF;
+	const ROUND_MASK: u64 = 0x0080_0080;
+
+	#[inline(always)]
+	pub fn unpack(&self) -> Color {
+		const INV_255: f32 = 1.0 / 255.0;
+		Color(
+			(*self & 0xFF) as f32 * INV_255,         // R
+			((*self >> 8) & 0xFF) as f32 * INV_255,  // G
+			((*self >> 16) & 0xFF) as f32 * INV_255, // B
+			((*self >> 24) & 0xFF) as f32 * INV_255, // A
+		)
+	}
+
+	/// SWAR based linear iterpolation for a 32 bit fixed point
+	/// color.
+	pub fn lerp(c0: Color32, c1: Color32, t: u32) -> Color32 {
+		let rb_0 = c0 & 0x00FF00FF;
+		let ag_0 = (c0 >> 8) & 0x00FF00FF;
+
+		let rb_1 = c1 & 0x00FF00FF;
+		let ag_1 = (c1 >> 8) & 0x00FF00FF;
+
+		let rb = rb_0 + ((t * rb_1.wrapping_sub(rb_0)) >> 8);
+		let ag = ag_0 + ((t * ag_1.wrapping_sub(ag_0)) >> 8);
+
+		// (((c0 & 0x00FF00FF) * inv + (c1 & 0x00FF00FF) * t) >> 8) & 0x00FF00FF;
+		// let ag = (((c0 >> 8) & 0x00FF00FF) * inv + ((c1 >> 8) & 0x00FF00FF) * t)
+		// & 0xFF00FF00;
+
+		Color32(rb | ag)
+	}
+
+	pub fn bi_lerp(
+		c00: Color32,
+		c01: Color32,
+		c10: Color32,
+		c11: Color32,
+		tx: u32,
+		ty: u32,
+	) -> Color32 {
+		let top = Color32::lerp(c00, c10, tx);
+		let bottom = Color32::lerp(c01, c11, tx);
+
+		Color32::lerp(top, bottom, ty)
+	}
+
+	#[inline(always)]
+	fn pack(r: u32, g: u32, b: u32, a: u32) -> Color32 {
+		Color32(r | (g << 8) | (b << 16) | (a << 24))
+	}
+}
+
+impl Add for Color32 {
+	type Output = Color32;
+
+	#[inline(always)]
+	fn add(self, rhs: Color32) -> Color32 {
+		let a = self.0;
+		let b = rhs.0;
+
+		let r = ((a & 0xFF) + (b & 0xFF)).min(255);
+		let g = (((a >> 8) & 0xFF) + ((b >> 8) & 0xFF)).min(255);
+		let bch = (((a >> 16) & 0xFF) + ((b >> 16) & 0xFF)).min(255);
+		let a_ch = (((a >> 24) & 0xFF) + ((b >> 24) & 0xFF)).min(255);
+
+		Color32::pack(r, g, bch, a_ch)
+	}
+}
+
+impl Sub for Color32 {
+	type Output = Color32;
+
+	#[inline(always)]
+	fn sub(self, rhs: Color32) -> Color32 {
+		let a = self.0;
+		let b = rhs.0;
+
+		let r = (a & 0xFF).saturating_sub(b & 0xFF);
+		let g = ((a >> 8) & 0xFF).saturating_sub((b >> 8) & 0xFF);
+		let bch = ((a >> 16) & 0xFF).saturating_sub((b >> 16) & 0xFF);
+		let a_ch = ((a >> 24) & 0xFF).saturating_sub((b >> 24) & 0xFF);
+
+		Color32::pack(r, g, bch, a_ch)
+	}
+}
+
+impl Mul<f32> for Color32 {
+	type Output = Color32;
+
+	#[inline(always)]
+	fn mul(self, scalar: f32) -> Color32 {
+		let t = (scalar.clamp(0.0, 1.0) * 256.0 + 0.5) as u64;
+		let a = self.0 as u64;
+
+		let rb = (a & 0x00FF00FF) * t;
+		let ag = ((a >> 8) & 0x00FF00FF) * t;
+
+		let rb = (rb + Color32::ROUND_MASK) >> 8;
+		let ag = (ag + Color32::ROUND_MASK) >> 8;
+
+		Color32(((rb & 0x00FF00FF) | ((ag & 0x00FF00FF) << 8)) as u32)
+	}
+}
+
+impl Mul for Color32 {
+	type Output = Color32;
+
+	#[inline(always)]
+	fn mul(self, rhs: Color32) -> Color32 {
+		let a = self.0 as u64;
+		let b = rhs.0 as u64;
+
+		let a_rb = a & 0x00FF00FF;
+		let a_ag = (a >> 8) & 0x00FF00FF;
+		let b_rb = b & 0x00FF00FF;
+		let b_ag = (b >> 8) & 0x00FF00FF;
+
+		let rb = a_rb * b_rb;
+		let ag = a_ag * b_ag;
+
+		let rb = rb + Color32::ROUND_MASK;
+		let ag = ag + Color32::ROUND_MASK;
+
+		let rb = (rb + (rb >> 8)) >> 8;
+		let ag = (ag + (ag >> 8)) >> 8;
+
+		Color32(((rb & 0x00FF00FF) | ((ag & 0x00FF00FF) << 8)) as u32)
 	}
 }
