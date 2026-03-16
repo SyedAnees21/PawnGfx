@@ -1,15 +1,15 @@
 use {
-	pcore::{error::PResult, math::Vector3},
+	pcore::{error::PResult, math::Vector3, color::Color},
 	pixels::{Pixels, SurfaceTexture},
 	prenderer::render,
 	pscene::{
 		assets::{load_mesh_file, registry::{AssetRegistry, MaterialHandle}},
-		color::Color,
+		// color::Color,
 		global::Scene,
 		light::Light,
 		material::Material,
 		model::Model,
-		texture::{Albedo, NormalMap, Wrap},
+		texture::{AlbedoMap as Albedo, NormalMap, Wrap},
 	},
 	std::sync::Arc,
 	winit::{
@@ -178,11 +178,11 @@ fn main() -> PResult<()> {
 	let sphere_mesh = load_mesh_file("./assets/meshes/sphere-local.obj").unwrap();
 
 	let albedo =
-		Albedo::from_file("./assets/texture/Checker-Texture.png", Wrap::Mirror)
+		Albedo::load("./assets/texture/Checker-Texture.png", Wrap::Mirror)
 			.unwrap();
 
 	let normal =
-		NormalMap::from_file("./assets/texture/stones-normal.png", Wrap::Repeat)
+		NormalMap::load("./assets/texture/stones-normal.png", Wrap::Repeat)
 			.unwrap();
 
 	let mut scene = Scene {

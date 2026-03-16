@@ -1,7 +1,8 @@
+use pcore::color::Color;
 use crate::{
 	assets::registry::{AlbedoHandle, AssetRegistry, NormalHandle},
-	color::Color,
-	texture::{Albedo, NormalMap},
+	// color::Color,
+	texture::{AlbedoMap as Albedo, NormalMap},
 };
 
 pub struct Material {

@@ -1,7 +1,14 @@
 use {
 	crate::render::WinSize,
-	pcore::math::{Matrix4, Vector3},
-	pscene::{camera::Camera, color::Color, light::Light},
+	pcore::{
+		color::Color,
+		math::{Matrix4, Vector3},
+	},
+	pscene::{
+		camera::Camera,
+		// color::Color,
+		light::Light,
+	},
 };
 
 #[derive(Clone, Copy)]
@@ -25,7 +32,7 @@ impl Default for LOD {
 	fn default() -> Self {
 		Self {
 			albedo: None,
-			normal: None
+			normal: None,
 		}
 	}
 }

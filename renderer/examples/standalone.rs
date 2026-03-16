@@ -1,13 +1,14 @@
 use {
-	pcore::{error::PResult, math::Vector3},
+	pcore::{error::PResult, math::Vector3, color::Color},
 	pixels::{Pixels, SurfaceTexture},
 	prenderer::render,
 	pscene::{
 		assets::{load_mesh_file, registry::AssetRegistry},
+		// color::Color,
 		light::Light,
 		material::Material,
 		model::Model,
-		texture::{Albedo, NormalMap, Wrap},
+		texture::{AlbedoMap as Albedo, NormalMap, Wrap},
 	},
 	std::sync::Arc,
 	winit::{
@@ -44,11 +45,10 @@ fn main() -> PResult<()> {
 	let cube_mesh = load_mesh_file("./assets/meshes/cube-local.obj").unwrap();
 
 	let albedo =
-		Albedo::from_file("./assets/texture/Checker-Texture.png", Wrap::Mirror)
-			.unwrap();
+		Albedo::load("./assets/texture/Checker-Texture.png", Wrap::Mirror).unwrap();
 
 	let normal =
-		NormalMap::from_file("./assets/texture/stones-normal.png", Wrap::Repeat)
+		NormalMap::load("./assets/texture/stones-normal.png", Wrap::Repeat)
 			.unwrap();
 
 	let mut scene = Scene {
@@ -63,6 +63,9 @@ fn main() -> PResult<()> {
 	let h_normal = scene.assets.insert_normal(normal);
 
 	let mut material = Material::default();
+	material.set_shininess(200.0);
+	material.specular = Color::new_rgb_splat(1.0);
+	material.diffuse = Color::new_rgb_splat(0.2);
 	material.set_albedo(h_albedo);
 	material.set_normal_map(h_normal);
 

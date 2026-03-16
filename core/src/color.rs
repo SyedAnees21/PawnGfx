@@ -141,7 +141,7 @@ impl Mul for Color {
 	}
 }
 
-#[derive(Clone, Copy)]
+#[derive(Default, Clone, Copy)]
 pub struct Color32(pub u32);
 
 impl BitAnd<u32> for Color32 {
@@ -165,7 +165,7 @@ impl Color32 {
 	pub const C_MASK: u32 = 0x00FF00FF;
 	const ROUND_MASK: u64 = 0x0080_0080;
 
-	pub fn new(r: u32, g: u32, b: u32, a: u32) -> Self {
+	pub fn new(r: u32, g: u32, b: u32, a: u32) -> Color32 {
 		Color32(r | (g << 8) | (b << 16) | (a << 24))
 	}
 
@@ -197,7 +197,8 @@ impl Color32 {
 		// let ag = (((c0 >> 8) & 0x00FF00FF) * inv + ((c1 >> 8) & 0x00FF00FF) * t)
 		// & 0xFF00FF00;
 
-		Color32(rb | ag)
+		Color32((rb & 0x00FF00FF) | ((ag & 0x00FF00FF) << 8))
+		// Color32(rb | ag)
 	}
 
 	#[inline(always)]
@@ -216,7 +217,7 @@ impl Color32 {
 	}
 
 	#[inline(always)]
-	fn pack(r: u32, g: u32, b: u32, a: u32) -> Color32 {
+	pub fn pack(r: u32, g: u32, b: u32, a: u32) -> Color32 {
 		Color32(r | (g << 8) | (b << 16) | (a << 24))
 	}
 }
@@ -226,15 +227,26 @@ impl Add for Color32 {
 
 	#[inline(always)]
 	fn add(self, rhs: Color32) -> Color32 {
-		let a = self.0;
-		let b = rhs.0;
+		let a_1 = self.0 as u64;
+		let a_2 = rhs.0 as u64;
 
-		let r = ((a & 0xFF) + (b & 0xFF)).min(255);
-		let g = (((a >> 8) & 0xFF) + ((b >> 8) & 0xFF)).min(255);
-		let bch = (((a >> 16) & 0xFF) + ((b >> 16) & 0xFF)).min(255);
-		let a_ch = (((a >> 24) & 0xFF) + ((b >> 24) & 0xFF)).min(255);
+		const R_MSK: u64 = 0xFF;
+		const G_MSK: u64 = 0xFF00;
+		const B_MSK: u64 = 0xFF0000;
+		const A_MSK: u64 = 0xFF000000;
 
-		Color32::pack(r, g, bch, a_ch)
+		let r = (((a_1 & R_MSK) + (a_2 & R_MSK)).min(255)) as u32;
+		let g = (((a_1 & G_MSK) + (a_2 & G_MSK)).min(255)) as u32;
+		let b = (((a_1 & B_MSK) + (a_2 & B_MSK)).min(255)) as u32;
+		let a = (((a_1 & A_MSK) + (a_2 & A_MSK)).min(255)) as u32;
+
+		// let r = ((a_1 & 0xFF) + (a_2 & 0xFF)).min(255);
+		// let g = (((a_1 >> 8) & 0xFF) + ((a_2 >> 8) & 0xFF)).min(255);
+		// let bch = (((a_1 >> 16) & 0xFF) + ((a_2 >> 16) & 0xFF)).min(255);
+		// let a_ch = (((a_1 >> 24) & 0xFF) + ((a_2 >> 24) & 0xFF)).min(255);
+
+		Color32(r | g | b | a)
+		// Color32::pack(r, g, bch, a_ch)
 	}
 }
 
@@ -243,15 +255,26 @@ impl Sub for Color32 {
 
 	#[inline(always)]
 	fn sub(self, rhs: Color32) -> Color32 {
-		let a = self.0;
-		let b = rhs.0;
+		let a_1 = self.0 as u64;
+		let a_2 = rhs.0 as u64;
 
-		let r = (a & 0xFF).saturating_sub(b & 0xFF);
-		let g = ((a >> 8) & 0xFF).saturating_sub((b >> 8) & 0xFF);
-		let bch = ((a >> 16) & 0xFF).saturating_sub((b >> 16) & 0xFF);
-		let a_ch = ((a >> 24) & 0xFF).saturating_sub((b >> 24) & 0xFF);
+		const R_MSK: u64 = 0xFF;
+		const G_MSK: u64 = 0xFF00;
+		const B_MSK: u64 = 0xFF0000;
+		const A_MSK: u64 = 0xFF000000;
 
-		Color32::pack(r, g, bch, a_ch)
+		let r = (((a_1 & R_MSK) - (a_2 & R_MSK)).min(255)) as u32;
+		let g = (((a_1 & G_MSK) - (a_2 & G_MSK)).min(255)) as u32;
+		let b = (((a_1 & B_MSK) - (a_2 & B_MSK)).min(255)) as u32;
+		let a = (((a_1 & A_MSK) - (a_2 & A_MSK)).min(255)) as u32;
+
+		// let r = (a & 0xFF).saturating_sub(b & 0xFF);
+		// let g = ((a >> 8) & 0xFF).saturating_sub((b >> 8) & 0xFF);
+		// let bch = ((a >> 16) & 0xFF).saturating_sub((b >> 16) & 0xFF);
+		// let a_ch = ((a >> 24) & 0xFF).saturating_sub((b >> 24) & 0xFF);
+
+		Color32(r | g | b | a)
+		// Color32::pack(r, g, bch, a_ch)
 	}
 }
 

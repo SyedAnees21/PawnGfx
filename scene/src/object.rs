@@ -3,7 +3,7 @@ use {
 		assets::registry::AssetRegistry,
 		material::Material,
 		model::{Model, ModelRef},
-		texture::{Albedo, NormalMap},
+		texture::{AlbedoMap as Albedo, NormalMap},
 	},
 	pcore::{
 		geometry::Mesh,

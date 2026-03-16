@@ -2,15 +2,14 @@ use {
 	crate::{
 		buffer::Buffers,
 		shaders::{
-			self, FS, GVaryings, VS, Varyings, VertexIn, VertexOut, compute_lod,
-			uniform::{self, GlobalUniforms},
+			FS, GVaryings, VS, Varyings, VertexIn, VertexOut, uniform::GlobalUniforms,
 		},
 	},
 	pcore::{
 		geometry::{IncEdge, bounding_rect, edge_function},
 		math::{Gradient, Vector2, Vector4},
 	},
-	pscene::object::ObjectRef,
+	pscene::{object::ObjectRef, texture},
 };
 
 #[derive(Default, Clone, Copy)]
@@ -188,18 +187,12 @@ pub fn rasterize<'d, S>(
 			}
 
 			if c_z < buf_cursor.get_depth() {
-				let inv_w_lerped = 1.0 / c_inv_w;
+				let w_lerped = 1.0 / c_inv_w;
 
-				compute_lods(
-					object,
-					&g_varyings,
-					&c_varyings,
-					&g_inv_w,
-					c_inv_w,
-					uniforms,
-				);
+				let varyings = shader.recover_value(&c_varyings, w_lerped);
 
-				let varyings = shader.recover_value(&c_varyings, inv_w_lerped);
+				lods(object, &g_varyings, &varyings, &g_inv_w, w_lerped, uniforms);
+
 				let color = shader.shade_pixel(varyings, object, uniforms);
 
 				buf_cursor.put_depth(c_z);
@@ -223,23 +216,49 @@ pub fn rasterize<'d, S>(
 	}
 }
 
-fn compute_lods<'d>(
+fn lods<'d>(
 	object: ObjectRef<'d>,
 	g_varyings: &GVaryings,
-	c_varyings: &Varyings,
+	varyings: &Varyings,
 	g_inv_w: &Gradient<f32>,
-	c_inv_w: f32,
+	w: f32,
 	uniforms: &mut GlobalUniforms,
 ) {
 	let material = object.model.material;
 
-	if let Some(albedo) = material.albedo {
-		let lod = compute_lod(c_inv_w, g_inv_w, c_varyings, g_varyings, albedo);
+	// // Inv depth
+	// let inv_w = inv_w;
+	// // Recovered depth
+	// let w = 1.0 / inv_w;
+
+	let inv_w_dx = g_inv_w.da_dx;
+	let inv_w_dy = g_inv_w.da_dy;
+
+	// Perspective correct UV coordinates
+	let uv = varyings.uv;
+
+	// Gradients of UV / w
+	let uv_over_w_dx = g_varyings.uv.da_dx;
+	let uv_over_w_dy = g_varyings.uv.da_dy;
+
+	// Gradients of actual UV calculated by applying
+	// Quotient Rule to get dU/dx, dV/dx, etc.
+	// Formula: (dA - (A/B) * dB) / B
+	let duv_dx = (uv_over_w_dx - uv * inv_w_dx) * w;
+	let duv_dy = (uv_over_w_dy - uv * inv_w_dy) * w;
+
+	// Note for now we are using the same lod due to same texture sizes
+	// later on we need to optimize to sort at handle cases for similar
+	// sizes.
+	let lod = texture::sized_lod(1024.0, 1024.0, duv_dx, duv_dy);
+
+	if let Some(_) = material.albedo {
+		// let lod = albedo.compute_lod(duv_dx, duv_dy);
 		uniforms.lods.albedo = Some(lod)
 	}
 
-	if let Some(n_map) = material.normal {
-		let lod = compute_lod(c_inv_w, g_inv_w, c_varyings, g_varyings, n_map);
+	if let Some(_) = material.normal {
+		// let lod = n_map.compute_lod(duv_dx, duv_dy);
 		uniforms.lods.normal = Some(lod)
 	}
 }

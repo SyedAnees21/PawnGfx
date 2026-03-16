@@ -1,7 +1,7 @@
 use {
 	crate::{
 		material::{Material, MaterialRef},
-		texture::{Albedo, NormalMap},
+		texture::{AlbedoMap as Albedo, NormalMap},
 	},
 	pcore::geometry::Mesh,
 	std::marker::PhantomData,

@@ -4,7 +4,7 @@ use {
 		camera::Camera,
 		light::Light,
 		object::Object,
-		texture::{Albedo, NormalMap, Wrap},
+		texture::{AlbedoMap as Albedo, NormalMap, Wrap},
 	},
 	pcore::math::Vector3,
 };
