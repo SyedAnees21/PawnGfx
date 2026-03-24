@@ -1,4 +1,5 @@
-use pscene::color::Color;
+// use pscene::color::Color;
+use pcore::color::Color;
 
 const DEFAULT_BG_COLOR: u8 = 77;
 const DEFAULT_DEPTH: f32 = f32::INFINITY;

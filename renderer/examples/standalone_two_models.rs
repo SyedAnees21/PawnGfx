@@ -1,10 +1,9 @@
 use {
-	pcore::{color::Color, error::PResult, math::Vector3},
+	pcore::{error::PResult, math::Vector3},
 	pixels::{Pixels, SurfaceTexture},
 	prenderer::render,
 	pscene::{
 		assets::{load_mesh_file, registry::AssetRegistry},
-		// color::Color,
 		light::Light,
 		material::Material,
 		model::Model,
@@ -43,6 +42,7 @@ fn main() -> PResult<()> {
 	let input = InputState::default();
 
 	let cube_mesh = load_mesh_file("./assets/meshes/cube-local.obj").unwrap();
+	let sphere_mesh = load_mesh_file("./assets/meshes/sphere-local.obj").unwrap();
 
 	let albedo =
 		Albedo::load("./assets/texture/Checker-Texture.png", Wrap::Mirror).unwrap();
@@ -59,24 +59,35 @@ fn main() -> PResult<()> {
 	};
 
 	let h_albedo = scene.assets.insert_albedo(albedo);
-	let h_mesh = scene.assets.insert_mesh(cube_mesh);
 	let h_normal = scene.assets.insert_normal(normal);
 
 	let mut material = Material::default();
-	material.set_shininess(200.0);
-	material.specular = Color::new_rgb_splat(1.0);
-	material.diffuse = Color::new_rgb_splat(0.2);
 	material.set_albedo(h_albedo);
 	material.set_normal_map(h_normal);
 
 	let h_material = scene.assets.insert_material(material);
 
-	let model = Model {
+	let h_cube_mesh = scene.assets.insert_mesh(cube_mesh);
+	let h_sphere_mesh = scene.assets.insert_mesh(sphere_mesh);
+
+	let cube_model = Model {
 		material: h_material,
-		mesh: h_mesh,
+		mesh: h_cube_mesh,
 	};
 
-	scene.objects.push(Object::from_model(model));
+	let sphere_model = Model {
+		material: h_material,
+		mesh: h_sphere_mesh,
+	};
+
+	let cube = Object::from_model(cube_model);
+	let mut sphere = Object::from_model(sphere_model);
+
+	// Place sphere behind the cube and offset to the right.
+	sphere.transform.position = Vector3::new(-3.0, 0.0, -3.0);
+
+	scene.objects.push(cube);
+	scene.objects.push(sphere);
 
 	let mut engine = Engine {
 		scene,

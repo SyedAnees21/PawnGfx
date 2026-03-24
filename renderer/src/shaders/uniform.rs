@@ -1,7 +1,14 @@
 use {
 	crate::render::WinSize,
-	pcore::math::{Matrix4, Vector3},
-	pscene::{camera::Camera, color::Color, light::Light},
+	pcore::{
+		color::Color,
+		math::{Matrix4, Vector3},
+	},
+	pscene::{
+		camera::Camera,
+		// color::Color,
+		light::Light,
+	},
 };
 
 #[derive(Clone, Copy)]
@@ -12,6 +19,13 @@ pub struct GlobalUniforms {
 	pub screen: ScreenUniforms,
 	pub light: LightUniforms,
 	pub camera: CameraUniforms,
+	pub lods: LOD,
+}
+
+#[derive(Default, Debug, Clone, Copy)]
+pub struct LOD {
+	pub albedo: Option<f32>,
+	pub normal: Option<f32>,
 }
 
 #[derive(Clone, Copy)]

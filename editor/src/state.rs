@@ -2,7 +2,7 @@ use {
 	pcore::geometry::Mesh,
 	pscene::{
 		assets,
-		texture::{Albedo, NormalMap, Wrap},
+		texture::{AlbedoMap as Albedo, NormalMap, Wrap},
 	},
 	std::{
 		collections::HashMap,
@@ -110,7 +110,7 @@ impl AssetRegistry {
 	}
 
 	pub fn load_albedo(&mut self, path: PathBuf) -> Option<AssetId> {
-		match Albedo::from_file(&path, Wrap::Repeat) {
+		match Albedo::load(&path, Wrap::Repeat) {
 			Ok(tex) => Some(self.insert_albedo(path, tex)),
 			Err(err) => {
 				self.last_error = Some(err.to_string());
@@ -120,7 +120,7 @@ impl AssetRegistry {
 	}
 
 	pub fn load_normal(&mut self, path: PathBuf) -> Option<AssetId> {
-		match NormalMap::from_file(&path, Wrap::Repeat) {
+		match NormalMap::load(&path, Wrap::Repeat) {
 			Ok(tex) => Some(self.insert_normal(path, tex)),
 			Err(err) => {
 				self.last_error = Some(err.to_string());

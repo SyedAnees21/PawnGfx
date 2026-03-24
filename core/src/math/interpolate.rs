@@ -52,3 +52,28 @@ where
 
 	v_prime * (1.0 / inv_d_lerped)
 }
+
+/// SWAR (SIMD Within A Register) lerp for packed 8-bit channels in a u32.
+/// Expects `t` in the range 0..=255 (where 0 = a, 255 = b).
+#[inline(always)]
+pub fn lerp_swar_u32(a: u32, b: u32, t: u8) -> u32 {
+	let t = t as u64;
+	let inv = 256u64 - t;
+
+	let a_lo = (a & 0x00FF00FF) as u64;
+	let a_hi = ((a >> 8) & 0x00FF00FF) as u64;
+	let b_lo = (b & 0x00FF00FF) as u64;
+	let b_hi = ((b >> 8) & 0x00FF00FF) as u64;
+
+	let lo = (a_lo * inv + b_lo * t + 0x0080_0080) >> 8;
+	let hi = (a_hi * inv + b_hi * t + 0x0080_0080) >> 8;
+
+	((lo as u32) & 0x00FF00FF) | (((hi as u32) & 0x00FF00FF) << 8)
+}
+
+/// Convenience wrapper for SWAR lerp using `t` in [0.0, 1.0].
+#[inline(always)]
+pub fn lerp_swar_u32_f32(a: u32, b: u32, t: f32) -> u32 {
+	let t = (t.clamp(0.0, 1.0) * 255.0 + 0.5) as u8;
+	lerp_swar_u32(a, b, t)
+}

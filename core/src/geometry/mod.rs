@@ -1,4 +1,5 @@
 mod mesh;
+mod shapes;
 mod triangle;
 mod vertex;
 
@@ -7,7 +8,7 @@ use {
 	image::Rgb,
 	std::ops::{Add, Mul, Sub},
 };
-pub use {mesh::*, triangle::*, vertex::*};
+pub use {mesh::*, shapes::*, triangle::*, vertex::*};
 
 pub type Idx = usize;
 

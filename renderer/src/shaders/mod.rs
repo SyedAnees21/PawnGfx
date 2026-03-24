@@ -1,7 +1,7 @@
 use {
 	crate::raster::RasterIn,
-	pcore::math::Vector2,
-	pscene::{color::Color, object::ObjectRef},
+	pcore::{color::Color, math::Vector2},
+	pscene::object::ObjectRef,
 };
 pub use {effects::*, io::*};
 
@@ -54,7 +54,10 @@ pub trait FS {
 		dx: f32,
 		dy: f32,
 	) -> Varyings;
+
 	fn recover_value(&self, varyings: &Varyings, inv_w: f32) -> Varyings;
+
 	fn step_horizontal(&self, g_varyings: &GVaryings, varyings: &mut Varyings);
+
 	fn step_vertical(&self, g_varyings: &GVaryings, varyings: &mut Varyings);
 }
