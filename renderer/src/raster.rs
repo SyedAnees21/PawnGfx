@@ -175,18 +175,7 @@ pub fn rasterize<'d, S>(
 		for _ in min_x..=max_x {
 			let is_outside = w0 < 0.0 || w1 < 0.0 || w2 < 0.0;
 
-			if is_outside {
-				(w0, w1, w2) = inc_edge.step_x(w0, w1, w2);
-
-				shader.step_horizontal(&g_varyings, &mut c_varyings);
-				g_inv_w.step_x(&mut c_inv_w);
-				g_z.step_x(&mut c_z);
-
-				buf_cursor.step();
-				continue;
-			}
-
-			if c_z < buf_cursor.get_depth() {
+			if !is_outside && c_z < buf_cursor.get_depth() {
 				let w_lerped = 1.0 / c_inv_w;
 
 				let varyings = shader.recover_value(&c_varyings, w_lerped);
@@ -209,7 +198,6 @@ pub fn rasterize<'d, S>(
 		}
 
 		init_w = inc_edge.step_y(init_w.0, init_w.1, init_w.2);
-
 		shader.step_vertical(&g_varyings, &mut init_varying);
 		g_inv_w.step_y(&mut init_inv_w);
 		g_z.step_y(&mut init_z);

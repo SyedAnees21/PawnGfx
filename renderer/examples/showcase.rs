@@ -1,10 +1,11 @@
 use {
-	pcore::{error::PResult, math::Vector3, color::Color},
+	pcore::{color::Color, error::PResult, math::Vector3},
 	pixels::{Pixels, SurfaceTexture},
 	prenderer::render,
 	pscene::{
-		assets::{load_mesh_file, registry::{AssetRegistry, MaterialHandle}},
-		// color::Color,
+		assets::{
+			registry::{AssetRegistry, MaterialHandle},
+		},
 		global::Scene,
 		light::Light,
 		material::Material,
@@ -146,7 +147,11 @@ fn handle_internal_events(
 	Ok(())
 }
 
-fn update_scene(scene: &mut Scene, input: &InputState, showcase: &mut ShowcaseState) {
+fn update_scene(
+	scene: &mut Scene,
+	input: &InputState,
+	showcase: &mut ShowcaseState,
+) {
 	showcase.update(input, scene);
 	scene.camera.apply_inputs(input);
 	for object in scene.objects.iter_mut() {
@@ -174,12 +179,10 @@ fn main() -> PResult<()> {
 
 	let renderer = render::Renderer::new(size.width, size.height);
 	let input = InputState::default();
-
-	let sphere_mesh = load_mesh_file("./assets/meshes/sphere-local.obj").unwrap();
+	let sphere_mesh = pcore::geometry::generate_sphere(2.0, 64, 48);
 
 	let albedo =
-		Albedo::load("./assets/texture/Checker-Texture.png", Wrap::Mirror)
-			.unwrap();
+		Albedo::load("./assets/texture/Checker-Texture.png", Wrap::Mirror).unwrap();
 
 	let normal =
 		NormalMap::load("./assets/texture/stones-normal.png", Wrap::Repeat)
@@ -233,7 +236,8 @@ fn main() -> PResult<()> {
 
 	scene.objects.push(Object::from_model(model));
 
-	let showcase = ShowcaseState::new([h_matte, h_metallic, h_albedo_only, h_normal_mapped]);
+	let showcase =
+		ShowcaseState::new([h_matte, h_metallic, h_albedo_only, h_normal_mapped]);
 
 	let mut engine = Engine {
 		scene,

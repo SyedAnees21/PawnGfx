@@ -1,11 +1,20 @@
-use pcore::color::Color;
 use crate::{
 	assets::registry::{AlbedoHandle, AssetRegistry, NormalHandle},
 	// color::Color,
 	texture::{AlbedoMap as Albedo, NormalMap},
 };
+use pcore::color::Color;
+
+#[derive(Clone, Copy)]
+pub enum ShaderModel {
+	Flat,
+	BlinnPhong,
+}
 
 pub struct Material {
+	/// Shader selector per object.
+	pub shader: ShaderModel,
+
 	/// This controls the size of the specular highlight.
 	/// Its the exponent on specular factor.
 	pub shininess: f32,
@@ -35,6 +44,7 @@ pub struct Material {
 impl Default for Material {
 	fn default() -> Self {
 		Self {
+			shader: ShaderModel::Flat,
 			shininess: 8.0,
 			specular_strength: 0.5,
 			diffuse: Color::from_hex_unchecked("#716f6f"),
@@ -51,6 +61,10 @@ impl Material {
 	pub const MAX_SPECULAR: f32 = 1.0;
 	pub const MIN_SHINE: f32 = 0.0;
 	pub const MIN_SPECULAR: f32 = 0.0;
+
+	pub fn set_shader_model(&mut self, shader: ShaderModel) {
+		self.shader = shader;
+	}
 
 	#[inline]
 	pub fn set_shininess(&mut self, shininess: f32) {
