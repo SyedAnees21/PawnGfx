@@ -3,9 +3,7 @@ use {
 	pixels::{Pixels, SurfaceTexture},
 	prenderer::render,
 	pscene::{
-		assets::{
-			registry::{AssetRegistry, MaterialHandle},
-		},
+		assets::registry::{AssetRegistry, MaterialHandle},
 		global::Scene,
 		light::Light,
 		material::Material,

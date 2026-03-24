@@ -1,5 +1,5 @@
 use {
-	pcore::{error::PResult, math::Vector3, color::Color},
+	pcore::{color::Color, error::PResult, math::Vector3},
 	pixels::{Pixels, SurfaceTexture},
 	prenderer::render,
 	pscene::{

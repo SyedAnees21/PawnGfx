@@ -155,6 +155,7 @@ impl BitAnd<u32> for Color32 {
 
 impl Shr<u32> for Color32 {
 	type Output = u32;
+
 	#[inline(always)]
 	fn shr(self, rhs: u32) -> Self::Output {
 		self.0 >> rhs

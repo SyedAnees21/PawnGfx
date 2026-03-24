@@ -1,8 +1,5 @@
-pub use base::*;
 use pcore::{geometry::UV, math::Arithmetic};
-
-pub use albedo::*;
-pub use bump::*;
+pub use {albedo::*, base::*, bump::*};
 
 mod albedo;
 pub mod base;
@@ -34,13 +31,11 @@ pub fn unit_lod(duv_dx: UV, duv_dy: UV) -> f32 {
 	// 5. LOD = log2(max(len_x, len_y))
 	// Which is the same as: 0.5 * log2(max(len_x_sq, len_y_sq))
 	let rho_sq = len_x_sq.max(len_y_sq).max(1e-8);
-	let u_lod = 0.5 * rho_sq.log2();
-
-	u_lod
+	0.5 * rho_sq.log2()
 }
 
 #[inline(always)]
-pub fn sized_lod(width:f32, height: f32, duv_dx: UV, duv_dy: UV) -> f32 {
+pub fn sized_lod(width: f32, height: f32, duv_dx: UV, duv_dy: UV) -> f32 {
 	let du_dx_s = duv_dx.x * width;
 	let dv_dx_s = duv_dx.y * height;
 	let du_dy_s = duv_dy.x * width;
@@ -53,9 +48,7 @@ pub fn sized_lod(width:f32, height: f32, duv_dx: UV, duv_dy: UV) -> f32 {
 	// 5. LOD = log2(max(len_x, len_y))
 	// Which is the same as: 0.5 * log2(max(len_x_sq, len_y_sq))
 	let rho_sq = len_x_sq.max(len_y_sq).max(1e-8);
-	let u_lod = 0.5 * rho_sq.log2();
-
-	u_lod
+	0.5 * rho_sq.log2()
 }
 
 // pub fn from_file<P, C, A>(

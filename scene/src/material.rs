@@ -1,9 +1,10 @@
+use pcore::color::Color;
+
 use crate::{
 	assets::registry::{AlbedoHandle, AssetRegistry, NormalHandle},
 	// color::Color,
 	texture::{AlbedoMap as Albedo, NormalMap},
 };
-use pcore::color::Color;
 
 #[derive(Clone, Copy)]
 pub enum ShaderModel {

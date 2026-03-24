@@ -117,9 +117,7 @@ impl<T> TextureMap<T> {
 		// 5. LOD = log2(max(len_x, len_y))
 		// Which is the same as: 0.5 * log2(max(len_x_sq, len_y_sq))
 		let rho_sq = len_x_sq.max(len_y_sq).max(1e-8);
-		let lod = 0.5 * rho_sq.log2();
-
-		lod
+		0.5 * rho_sq.log2()
 	}
 
 	#[inline(always)]
@@ -292,8 +290,7 @@ impl<T> Mip<T> {
 		let tile_index = tile_y * x_tiles + tile_x;
 
 		// tile_index * TILE_SIZE^2 + in_tile
-		let index = (tile_index << (TILE_SHIFT * 2)) + in_tile;
-		index
+		(tile_index << (TILE_SHIFT * 2)) + in_tile
 	}
 
 	#[inline]

@@ -1,5 +1,7 @@
-use crate::geometry::Normal;
-use std::ops::{Add, Mul, Sub};
+use {
+	crate::geometry::Normal,
+	std::ops::{Add, Mul, Sub},
+};
 
 #[derive(Clone, Copy, Default)]
 pub struct Normal32(pub u32);
@@ -120,7 +122,8 @@ impl Sub for Normal32 {
 
 	#[inline(always)]
 	fn sub(self, rhs: Self) -> Self {
-		// Extract components as signed integers to allow negative intermediate results
+		// Extract components as signed integers to allow negative intermediate
+		// results
 		let x0 = (self.0 & 0xFFFF) as i32;
 		let y0 = (self.0 >> 16) as i32;
 		let x1 = (rhs.0 & 0xFFFF) as i32;

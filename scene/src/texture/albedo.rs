@@ -1,9 +1,9 @@
-use std::path::Path;
-
-use image::Rgb;
-use pcore::{color::Color, error::PResult, math};
-
-use crate::texture::{Texture, TextureMap, TextureSampler, Wrap};
+use {
+	crate::texture::{Texture, TextureMap, TextureSampler, Wrap},
+	image::Rgb,
+	pcore::{color::Color, error::PResult, math},
+	std::path::Path,
+};
 
 pub type AlbedoMap = TextureMap<Color>;
 pub type TAlbedo = Texture<Color, AlbedoMap>;
@@ -40,8 +40,7 @@ impl TextureSampler for AlbedoMap {
 		let u = (u * mip.width as f32 - 0.5) as usize;
 		let v = (v * mip.height as f32 - 0.5) as usize;
 
-		let color = mip.unsafe_texel(u, v);
-		color
+		mip.unsafe_texel(u, v)
 	}
 
 	#[inline(always)]
@@ -161,9 +160,11 @@ impl TextureSampler for AlbedoMap {
 // 			let b = ((a0 & B_MSK) + (a1 & B_MSK) + (a2 & B_MSK) + (a3 & B_MSK)) >> 2;
 // 			let a = ((a0 & A_MSK) + (a1 & A_MSK) + (a2 & A_MSK) + (a3 & A_MSK)) >> 2;
 // 			// let r = ((a0 & 0xFF) + (a1 & 0xFF) + (a2 & 0xFF) + (a3 & 0xFF)) >> 2;
-// 			// let g = (((a0 >> 8) & 0xFF) + ((a1 >> 8) & 0xFF) + ((a2 >> 8) & 0xFF) + ((a3 >> 8) & 0xFF)) >> 2;
-// 			// let b = (((a0 >> 16) & 0xFF) + ((a1 >> 16) & 0xFF) + ((a2 >> 16) & 0xFF) + ((a3 >> 16) & 0xFF)) >> 2;
-// 			// let a = (((a0 >> 24) & 0xFF) + ((a1 >> 24) & 0xFF) + ((a2 >> 24) & 0xFF) + ((a3 >> 24) & 0xFF)) >> 2;
+// 			// let g = (((a0 >> 8) & 0xFF) + ((a1 >> 8) & 0xFF) + ((a2 >> 8) & 0xFF) +
+// ((a3 >> 8) & 0xFF)) >> 2; 			// let b = (((a0 >> 16) & 0xFF) + ((a1 >> 16) &
+// 0xFF) + ((a2 >> 16) & 0xFF) + ((a3 >> 16) & 0xFF)) >> 2; 			// let a = (((a0
+// >> 24) & 0xFF) + ((a1 >> 24) & 0xFF) + ((a2 >> 24) & 0xFF) + ((a3 >> 24) &
+// 0xFF)) >> 2;
 
 // 			Color32(((r & R_MSK) | (g & G_MSK) | (b & B_MSK) | (a & A_MSK)) as u32)
 // 			// Color32((r | (g << 8) | (b << 16) | (a << 24)) as u32)

@@ -1,9 +1,9 @@
-use std::path::Path;
-
-use image::Rgb;
-use pcore::{error::PResult, geometry::Normal, math};
-
-use crate::texture::{Texture, TextureMap, TextureSampler, Wrap};
+use {
+	crate::texture::{Texture, TextureMap, TextureSampler, Wrap},
+	image::Rgb,
+	pcore::{error::PResult, geometry::Normal, math},
+	std::path::Path,
+};
 
 pub type NormalMap = TextureMap<Normal>;
 pub type TNormal = Texture<Normal, NormalMap>;
@@ -40,8 +40,7 @@ impl TextureSampler for NormalMap {
 		let u = (u * mip.width as f32 - 0.5) as usize;
 		let v = (v * mip.height as f32 - 0.5) as usize;
 
-		let normal = mip.unsafe_texel(u, v);
-		normal
+		mip.unsafe_texel(u, v)
 	}
 
 	#[inline(always)]

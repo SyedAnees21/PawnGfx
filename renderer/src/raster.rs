@@ -212,7 +212,7 @@ fn lods<'d>(
 	w: f32,
 	uniforms: &mut GlobalUniforms,
 ) {
-	let material = object.model.material;
+	let _material = object.model.material;
 
 	// // Inv depth
 	// let inv_w = inv_w;
@@ -240,15 +240,18 @@ fn lods<'d>(
 	// sizes.
 	let lod = texture::sized_lod(1024.0, 1024.0, duv_dx, duv_dy);
 
-	if let Some(_) = material.albedo {
-		// let lod = albedo.compute_lod(duv_dx, duv_dy);
-		uniforms.lods.albedo = Some(lod)
-	}
+	// if let Some(_) = material.albedo {
+	// 	let lod = albedo.compute_lod(duv_dx, duv_dy);
+	// 	uniforms.lods.albedo = Some(lod)
+	// }
 
-	if let Some(_) = material.normal {
-		// let lod = n_map.compute_lod(duv_dx, duv_dy);
-		uniforms.lods.normal = Some(lod)
-	}
+	// if let Some(_) = material.normal {
+	// 	let lod = n_map.compute_lod(duv_dx, duv_dy);
+	// 	uniforms.lods.normal = Some(lod)
+	// }
+
+	uniforms.lods.albedo = Some(lod);
+	uniforms.lods.normal = Some(lod);
 }
 
 pub fn clip_to_screen(v_ndc: &Vector4, width: f32, height: f32) -> RasterIn {

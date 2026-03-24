@@ -1,8 +1,9 @@
-use core::f32;
-
-use crate::{
-	geometry::{Indices, Mesh, UV},
-	math::Vector3,
+use {
+	crate::{
+		geometry::{Indices, Mesh, UV},
+		math::Vector3,
+	},
+	core::f32,
 };
 
 pub enum Shapes {
@@ -355,7 +356,11 @@ pub fn generate_cone(radius: f32, height: f32, sectors: usize) -> Mesh {
 	let center = Vector3::new(0.0, y_b, 0.0);
 
 	let two_pi = f32::consts::PI * 2.0;
-	let inv_h = if height.abs() < 1e-6 { 0.0 } else { radius / height };
+	let inv_h = if height.abs() < 1e-6 {
+		0.0
+	} else {
+		radius / height
+	};
 
 	let mut push_tri = |i0: usize, i1: usize, i2: usize| {
 		for idx in [i0, i1, i2] {
@@ -384,7 +389,6 @@ pub fn generate_cone(radius: f32, height: f32, sectors: usize) -> Mesh {
 	normals.push(Vector3::new(0.0, 1.0, 0.0));
 	uvs.push(UV::new(0.5, 1.0));
 
-	let ring_count = sectors + 1;
 	for s in 0..sectors {
 		let i0 = s;
 		let i1 = s + 1;

@@ -8,7 +8,6 @@ use {
 	image::Rgb,
 	std::ops::{Add, Mul, Sub},
 };
-
 pub use {mesh::*, shapes::*, triangle::*, vertex::*};
 
 pub type Idx = usize;
