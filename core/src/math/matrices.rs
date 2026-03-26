@@ -179,6 +179,22 @@ impl Matrix4 {
 	}
 
 	#[inline(always)]
+	pub fn look_at(eye: Vector3, target: Vector3, up: Vector3) -> Matrix4 {
+		let f = (target - eye).normalize();
+		let r = f.cross(&up).normalize();
+		let u = r.cross(&f);
+
+		Matrix4 {
+			data: [
+				[r.x, r.y, r.z, -r.dot(&eye)],
+				[u.x, u.y, u.z, -u.dot(&eye)],
+				[-f.x, -f.y, -f.z, f.dot(&eye)],
+				[0.0, 0.0, 0.0, 1.0],
+			],
+		}
+	}
+
+	#[inline(always)]
 	pub fn rotation_matrix(euler: Vector3) -> Matrix4 {
 		let rx = Matrix4::rotation_x(euler.x.to_radians());
 		let ry = Matrix4::rotation_y(euler.y.to_radians());
@@ -203,6 +219,22 @@ impl Matrix4 {
 				[0.0, f, 0.0, 0.0],
 				[0.0, 0.0, (far + near) * nf, (2.0 * far * near) * nf],
 				[0.0, 0.0, -1.0, 0.0],
+			],
+		}
+	}
+
+	#[inline(always)]
+	pub fn orthographic(l: f32, r: f32, b: f32, t: f32, n: f32, f: f32) -> Self {
+		let r_l = r - l;
+		let t_b = t - b;
+		let f_n = f - n;
+
+		Matrix4 {
+			data: [
+				[2.0 / r_l, 0.0, 0.0, -(r + l) / r_l],
+				[0.0, 2.0 / t_b, 0.0, -(t + b) / t_b],
+				[0.0, 0.0, -2.0 / f_n, -(f + n) / f_n],
+				[0.0, 0.0, 0.0, 1.0],
 			],
 		}
 	}

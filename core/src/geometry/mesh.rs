@@ -42,6 +42,12 @@ impl Indices {
 	}
 }
 
+#[derive(Debug, Default, Clone, Copy)]
+pub struct AABB {
+	pub min: Vector3,
+	pub max: Vector3,
+}
+
 #[derive(Debug, Default)]
 pub struct Mesh {
 	pub vertices: Vertices,
@@ -50,6 +56,7 @@ pub struct Mesh {
 	pub tangents: Vec<Tangent>,
 	pub bi_tangents: Vec<BiTangent>,
 	pub indices: Indices,
+	pub aabb: AABB,
 }
 
 impl Mesh {
@@ -62,12 +69,15 @@ impl Mesh {
 		let (tangents, bi_tangents) =
 			Self::bake_mesh(&vertices, &mut indices, &mut uv, &mut vnormals);
 
+		let aabb = Self::calculate_aabb(&vertices);
+
 		Self {
 			vertices,
 			indices,
 			uv,
 			tangents,
 			bi_tangents,
+			aabb,
 			normals: vnormals,
 		}
 	}
@@ -105,6 +115,39 @@ impl Mesh {
 
 	pub fn has_uv(&self) -> bool {
 		!self.uv.is_empty()
+	}
+
+	pub fn local_aabb(&self) -> AABB {
+		self.aabb
+	}
+
+	pub fn calculate_aabb(vertices: &Vertices) -> AABB {
+		let mut min = vertices[0];
+		let mut max = vertices[0];
+
+		for v in &vertices[1..] {
+			if v.x < min.x {
+				min.x = v.x;
+			}
+			if v.y < min.y {
+				min.y = v.y;
+			}
+			if v.z < min.z {
+				min.z = v.z;
+			}
+
+			if v.x > max.x {
+				max.x = v.x;
+			}
+			if v.y > max.y {
+				max.y = v.y;
+			}
+			if v.z > max.z {
+				max.z = v.z;
+			}
+		}
+
+		AABB { min, max }
 	}
 
 	fn bake_mesh(

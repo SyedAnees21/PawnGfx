@@ -1,6 +1,14 @@
 // use {crate::color::Color, pcore::math::Vector3};
 use pcore::{color::Color, math::Vector3};
 
+// pub enum Light {
+// 	Directional {
+// 		position: Vector3,
+// 		ambient: f32,
+// 		color: Color
+// 	}
+// }
+
 pub struct Light {
 	pub position: Vector3,
 	pub color: Color,
