@@ -6,7 +6,10 @@ use {
 		object::Object,
 		texture::{AlbedoMap as Albedo, NormalMap, Wrap},
 	},
-	pcore::math::Vector3,
+	pcore::{
+		geometry::AABB,
+		math::{Matrix4, Vector3, Vector4},
+	},
 };
 
 pub struct Scene {
@@ -14,6 +17,73 @@ pub struct Scene {
 	pub objects: Vec<Object>,
 	pub camera: Camera,
 	pub light: Light,
+}
+
+impl Scene {
+	pub fn center_aabb(&self) -> Vector3 {
+		let mut min = Vector3::new(f32::INFINITY, f32::INFINITY, f32::INFINITY);
+		let mut max =
+			Vector3::new(f32::NEG_INFINITY, f32::NEG_INFINITY, f32::NEG_INFINITY);
+		let mut any = false;
+
+		for object in &self.objects {
+			let mesh_ref = self.assets.get_mesh(&object.model.mesh);
+
+			let Some(mesh) = mesh_ref else { continue };
+			let AABB {
+				min: lmin,
+				max: lmax,
+			} = mesh.local_aabb();
+
+			let model = Matrix4::from_transforms(
+				object.transform.position,
+				object.transform.scale,
+				object.transform.rotation,
+			);
+
+			let corners = [
+				Vector3::new(lmin.x, lmin.y, lmin.z),
+				Vector3::new(lmin.x, lmin.y, lmax.z),
+				Vector3::new(lmin.x, lmax.y, lmin.z),
+				Vector3::new(lmin.x, lmax.y, lmax.z),
+				Vector3::new(lmax.x, lmin.y, lmin.z),
+				Vector3::new(lmax.x, lmin.y, lmax.z),
+				Vector3::new(lmax.x, lmax.y, lmin.z),
+				Vector3::new(lmax.x, lmax.y, lmax.z),
+			];
+
+			for c in corners {
+				let w = (model * Vector4::from((c, 1.0))).xyz();
+				if w.x < min.x {
+					min.x = w.x;
+				}
+				if w.y < min.y {
+					min.y = w.y;
+				}
+				if w.z < min.z {
+					min.z = w.z;
+				}
+
+				if w.x > max.x {
+					max.x = w.x;
+				}
+				if w.y > max.y {
+					max.y = w.y;
+				}
+				if w.z > max.z {
+					max.z = w.z;
+				}
+			}
+
+			any = true;
+		}
+
+		if !any {
+			return Vector3::ZERO;
+		}
+
+		(min + max) * 0.5
+	}
 }
 
 impl Default for Scene {

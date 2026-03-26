@@ -1,3 +1,4 @@
+use core::f32;
 use std::ops::{Add, AddAssign, Div, Mul, Sub};
 
 #[derive(Default, Debug, Clone, Copy)]
@@ -132,6 +133,18 @@ impl Vector3 {
 		x: 0.0,
 		y: 0.0,
 		z: 0.0,
+	};
+
+	pub const MIN: Vector3 = Vector3 {
+		x: f32::MIN,
+		y: f32::MIN,
+		z: f32::MIN,
+	};
+
+	pub const MAX: Vector3 = Vector3 {
+		x: f32::MAX,
+		y: f32::MAX,
+		z: f32::MAX,
 	};
 
 	#[inline(always)]
