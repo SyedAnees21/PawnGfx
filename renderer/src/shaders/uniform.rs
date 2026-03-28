@@ -20,6 +20,7 @@ pub struct GlobalUniforms {
 	pub light: LightUniforms,
 	pub camera: CameraUniforms,
 	pub lods: LOD,
+	pub shadow: ShadowUniforms,
 }
 
 #[derive(Default, Debug, Clone, Copy)]
@@ -34,6 +35,29 @@ pub struct LightUniforms {
 	pub direction: Vector3,
 	pub color: Color,
 	pub ambient: f32,
+}
+
+#[derive(Clone, Copy)]
+pub struct ShadowUniforms {
+	pub enabled: bool,
+	pub light_vp: Matrix4,
+	pub map_size: u32,
+	pub bias: f32,
+	pub strength: f32,
+	pub depth_ptr: *const f32,
+}
+
+impl ShadowUniforms {
+	pub fn disabled() -> Self {
+		Self {
+			enabled: false,
+			light_vp: Matrix4::IDENTITY,
+			map_size: 0,
+			bias: 0.0,
+			strength: 1.0,
+			depth_ptr: core::ptr::null(),
+		}
+	}
 }
 
 impl From<&Light> for LightUniforms {

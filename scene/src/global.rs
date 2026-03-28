@@ -20,14 +20,23 @@ pub struct Scene {
 }
 
 impl Scene {
-	pub fn center_aabb(&self) -> Vector3 {
+	pub fn aabb_world(&self) -> Option<AABB> {
 		let mut min = Vector3::new(f32::INFINITY, f32::INFINITY, f32::INFINITY);
 		let mut max =
 			Vector3::new(f32::NEG_INFINITY, f32::NEG_INFINITY, f32::NEG_INFINITY);
 		let mut any = false;
 
 		for object in &self.objects {
-			let mesh_ref = self.assets.get_mesh(&object.model.mesh);
+			let mesh_ref = self
+				.assets
+				.get_mesh(&object.model.mesh)
+				.or_else(|| {
+					if object.mesh.vertices.is_empty() {
+						None
+					} else {
+						Some(&object.mesh)
+					}
+				});
 
 			let Some(mesh) = mesh_ref else { continue };
 			let AABB {
@@ -79,10 +88,18 @@ impl Scene {
 		}
 
 		if !any {
-			return Vector3::ZERO;
+			return None;
 		}
 
-		(min + max) * 0.5
+		Some(AABB { min, max })
+	}
+
+	pub fn center_aabb(&self) -> Vector3 {
+		if let Some(aabb) = self.aabb_world() {
+			(aabb.min + aabb.max) * 0.5
+		} else {
+			Vector3::ZERO
+		}
 	}
 }
 

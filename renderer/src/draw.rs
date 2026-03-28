@@ -9,6 +9,7 @@ use {
 			FS, VS,
 			uniform::{
 				CameraUniforms, GlobalUniforms, LOD, LightUniforms, ScreenUniforms,
+				ShadowUniforms,
 			},
 		},
 	},
@@ -100,6 +101,7 @@ impl<'d> DrawCall<'d> {
 			light: LightUniforms::from(&scene.light),
 			camera: CameraUniforms::from(&scene.camera),
 			lods: LOD::default(),
+			shadow: ShadowUniforms::disabled(),
 		};
 
 		DrawCall { objects, uniforms }
@@ -117,6 +119,10 @@ impl<'d> DrawCall<'d> {
 		for object in self.objects.into_iter() {
 			consumer(buffers, object, &mut self.uniforms, shader)
 		}
+	}
+
+	pub fn uniforms_mut(&mut self) -> &mut GlobalUniforms {
+		&mut self.uniforms
 	}
 }
 

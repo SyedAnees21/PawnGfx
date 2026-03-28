@@ -10,6 +10,80 @@ use {
 	},
 };
 
+fn shadow_factor(
+	input: &Varyings,
+	uniforms: &super::uniform::GlobalUniforms,
+	normal: pcore::math::Vector3,
+) -> f32 {
+	let shadow = uniforms.shadow;
+	if !shadow.enabled || shadow.map_size == 0 || shadow.depth_ptr.is_null() {
+		return 1.0;
+	}
+
+	let lp = shadow.light_vp * Vector4::from((input.world_pos, 1.0));
+	if lp.w.abs() < 1e-6 {
+		return 1.0;
+	}
+
+	let ndc = lp * (1.0 / lp.w);
+
+	if ndc.x < -1.0
+		|| ndc.x > 1.0
+		|| ndc.y < -1.0
+		|| ndc.y > 1.0
+		|| ndc.z < -1.0
+		|| ndc.z > 1.0
+	{
+		return 1.0;
+	}
+
+	let light_dir = uniforms.light.direction;
+	let n = normal.normalize();
+	let ndotl = n.dot(&light_dir).max(0.0);
+	if ndotl <= 0.0 {
+		return 1.0;
+	}
+	let slope = 1.0 - ndotl;
+	let bias = shadow.bias * (1.0 + 6.0 * slope);
+	let current = ndc.z - bias;
+
+	let size = shadow.map_size as i32;
+	let u = (ndc.x * 0.5 + 0.5) * (size as f32 - 1.0);
+	let v = (1.0 - (ndc.y * 0.5 + 0.5)) * (size as f32 - 1.0);
+
+	let x0 = u.floor() as i32;
+	let y0 = v.floor() as i32;
+	let x1 = (x0 + 1).min(size - 1);
+	let y1 = (y0 + 1).min(size - 1);
+
+	let fx = u - x0 as f32;
+	let fy = v - y0 as f32;
+
+	let x0 = x0.clamp(0, size - 1) as usize;
+	let y0 = y0.clamp(0, size - 1) as usize;
+	let x1 = x1.clamp(0, size - 1) as usize;
+	let y1 = y1.clamp(0, size - 1) as usize;
+
+	let idx00 = y0 * shadow.map_size as usize + x0;
+	let idx10 = y0 * shadow.map_size as usize + x1;
+	let idx01 = y1 * shadow.map_size as usize + x0;
+	let idx11 = y1 * shadow.map_size as usize + x1;
+
+	let d00 = unsafe { *shadow.depth_ptr.add(idx00) };
+	let d10 = unsafe { *shadow.depth_ptr.add(idx10) };
+	let d01 = unsafe { *shadow.depth_ptr.add(idx01) };
+	let d11 = unsafe { *shadow.depth_ptr.add(idx11) };
+
+	let s00 = if current > d00 { shadow.strength } else { 1.0 };
+	let s10 = if current > d10 { shadow.strength } else { 1.0 };
+	let s01 = if current > d01 { shadow.strength } else { 1.0 };
+	let s11 = if current > d11 { shadow.strength } else { 1.0 };
+
+	let sx0 = s00 + (s10 - s00) * fx;
+	let sx1 = s01 + (s11 - s01) * fx;
+	sx0 + (sx1 - sx0) * fy
+}
+
 pub struct Flat;
 
 impl VS for Flat {
@@ -104,7 +178,7 @@ impl FS for Flat {
 			material.diffuse
 		};
 
-		let light_dir = uniforms.light.direction.normalize();
+		let light_dir = uniforms.light.direction;
 
 		let ambient = color * material.ambient * uniforms.light.ambient;
 
@@ -112,7 +186,8 @@ impl FS for Flat {
 		let i_np = np_world.dot(&light_dir).max(0.0);
 		let diffuse_factor = i_ng * i_np;
 
-		let diff = color * uniforms.light.color * diffuse_factor;
+		let shadow = shadow_factor(&input, uniforms, np_world);
+		let diff = color * uniforms.light.color * diffuse_factor * shadow;
 
 		ambient + diff
 	}
@@ -195,27 +270,22 @@ impl VS for BlinnPhong {
 		let m_model = object.m_model;
 		let m_normal = object.m_normal;
 
-		let world_pos =
-			(m_model * Vector4::from((input.attributes.position, 1.0))).xyz();
-
-		let normal =
-			(m_normal * Vector4::from((input.attributes.normal, 0.0))).xyz();
-
-		let tangent =
-			(m_normal * Vector4::from((input.attributes.tangent, 0.0))).xyz();
+		let world_pos = m_model * Vector4::from((input.attributes.position, 1.0));
+		let normal = m_normal * Vector4::from((input.attributes.normal, 0.0));
+		let tangent = m_normal * Vector4::from((input.attributes.tangent, 0.0));
 		let bi_tangent =
-			(m_normal * Vector4::from((input.attributes.bi_tangent, 0.0))).xyz();
+			m_normal * Vector4::from((input.attributes.bi_tangent, 0.0));
 
-		let m_mvp = uniforms.m_projection * uniforms.m_view * m_model;
+		let m_vp = uniforms.m_projection * uniforms.m_view;
 
 		VertexOut {
-			clip: m_mvp * Vector4::from((input.attributes.position, 1.0)),
+			clip: m_vp * world_pos,
 			vary: Varyings {
 				uv: input.attributes.uv,
-				normal,
-				tangent,
-				bi_tangent,
-				world_pos,
+				normal: normal.xyz(),
+				tangent: tangent.xyz(),
+				bi_tangent: bi_tangent.xyz(),
+				world_pos: world_pos.xyz(),
 				intensity: 0.0,
 			},
 		}
@@ -275,7 +345,8 @@ impl FS for BlinnPhong {
 		let half_vec = (light_dir + view_dir).normalize();
 
 		// Diffuse
-		let diff = color * uniforms.light.color * np_world.dot(&light_dir).max(0.0);
+		let shadow = shadow_factor(&input, uniforms, np_world);
+		let diff = color * uniforms.light.color * np_world.dot(&light_dir).max(0.0) * shadow;
 
 		let ambient = color * material.ambient * uniforms.light.ambient;
 
@@ -288,7 +359,7 @@ impl FS for BlinnPhong {
 		let spec_factor = ndoth / (s - s * ndoth + ndoth);
 
 		// Specular
-		let specular = material.specular * uniforms.light.color * spec_factor;
+		let specular = material.specular * uniforms.light.color * spec_factor * shadow;
 
 		ambient + diff + specular
 	}
@@ -325,6 +396,119 @@ impl FS for BlinnPhong {
 
 	fn step_vertical(&self, g_varyings: &GVaryings, varyings: &mut Varyings) {
 		g_varyings.step_vertical_all(varyings);
+	}
+}
+
+pub struct Shadows;
+
+impl VS for Shadows {
+	fn shade_vertex<'d>(
+		&self,
+		input: VertexIn,
+		object: pscene::object::ObjectRef<'d>,
+		uniforms: &super::uniform::GlobalUniforms,
+	) -> VertexOut {
+		let m_model = object.m_model;
+
+		let world_pos = m_model * Vector4::from((input.attributes.position, 1.0));
+		let m_vp = uniforms.m_projection * uniforms.m_view;
+
+		VertexOut {
+			clip: m_vp * world_pos,
+			vary: Varyings {
+				world_pos: world_pos.xyz(),
+				..Default::default()
+			},
+		}
+	}
+
+	fn perspective_divide(
+		&self,
+		input: Varyings,
+		_raster_in: &crate::raster::RasterIn,
+	) -> Varyings {
+		input
+	}
+}
+
+pub struct DepthOnly;
+
+impl VS for DepthOnly {
+	fn shade_vertex<'d>(
+		&self,
+		input: VertexIn,
+		object: pscene::object::ObjectRef<'d>,
+		uniforms: &super::uniform::GlobalUniforms,
+	) -> VertexOut {
+		let m_model = object.m_model;
+		let m_mvp = uniforms.m_projection * uniforms.m_view * m_model;
+
+		VertexOut {
+			clip: m_mvp * Vector4::from((input.attributes.position, 1.0)),
+			vary: Varyings {
+				world_pos: (m_model * Vector4::from((input.attributes.position, 1.0)))
+					.xyz(),
+				..Default::default()
+			},
+		}
+	}
+
+	fn perspective_divide(
+		&self,
+		input: Varyings,
+		raster_in: &crate::raster::RasterIn,
+	) -> Varyings {
+		input * raster_in.inv_w
+	}
+}
+
+impl FS for DepthOnly {
+	fn shade_pixel<'d>(
+		&self,
+		_input: Varyings,
+		_object: pscene::object::ObjectRef<'d>,
+		_uniforms: &super::uniform::GlobalUniforms,
+	) -> Color {
+		Color::BLACK
+	}
+
+	fn perspective_interpolate(
+		&self,
+		input: [Varyings; 3],
+		bary: (f32, f32, f32),
+		inv_depth: f32,
+	) -> Varyings {
+		math::perspective_interpolate(
+			bary,
+			inv_depth,
+			(input[0], input[1], input[2]),
+		)
+	}
+
+	fn sample_gradients(
+		&self,
+		g_varyings: &GVaryings,
+		dx: f32,
+		dy: f32,
+	) -> Varyings {
+		g_varyings.sample_all(dx, dy)
+	}
+
+	fn recover_value(&self, varyings: &Varyings, inv_w: f32) -> Varyings {
+		let mut v = *varyings;
+		v.world_pos = v.world_pos * inv_w;
+
+		v
+	}
+
+	fn step_horizontal(&self, g_varyings: &GVaryings, varyings: &mut Varyings) {
+		// g_varyings.step_horizontal_all(varyings);
+		g_varyings.world_pos.step_x(&mut varyings.world_pos);
+	}
+
+	fn step_vertical(&self, g_varyings: &GVaryings, varyings: &mut Varyings) {
+		g_varyings.world_pos.step_y(&mut varyings.world_pos);
+		// g_varyings.step_vertical_all(varyings);
 	}
 }
 // pub struct Gouraud;

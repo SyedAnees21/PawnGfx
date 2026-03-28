@@ -248,6 +248,29 @@ impl Matrix4 {
 	) -> Matrix4 {
 		Self::projection_matrix(fov_rad, aspect, near, far)
 	}
+
+	#[inline(always)]
+	pub fn orthographic_matrix(
+		left: f32,
+		right: f32,
+		bottom: f32,
+		top: f32,
+		near: f32,
+		far: f32,
+	) -> Matrix4 {
+		let rl = right - left;
+		let tb = top - bottom;
+		let fn_ = far - near;
+
+		Matrix4 {
+			data: [
+				[2.0 / rl, 0.0, 0.0, -(right + left) / rl],
+				[0.0, 2.0 / tb, 0.0, -(top + bottom) / tb],
+				[0.0, 0.0, -2.0 / fn_, -(far + near) / fn_],
+				[0.0, 0.0, 0.0, 1.0],
+			],
+		}
+	}
 }
 
 impl Mul for Matrix4 {

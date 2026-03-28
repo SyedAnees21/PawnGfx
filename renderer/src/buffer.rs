@@ -7,6 +7,79 @@ const DEFAULT_DEPTH: f32 = f32::INFINITY;
 pub type FrameBuffer = Vec<u8>;
 pub type DepthBuffer = Vec<f32>;
 
+pub struct Buffer<T>(Vec<T>);
+
+impl<T> Buffer<T> {
+	pub fn new_with_default(width: usize, height: usize, default: T) -> Self
+	where
+		T: Copy,
+	{
+		let size = width * height;
+		Buffer(vec![default; size])
+	}
+
+	pub fn reset(&mut self, default: T)
+	where
+		T: Copy,
+	{
+		self.0.fill(default);
+	}
+
+	pub fn resize(&mut self, size: usize, default: T)
+	where
+		T: Copy,
+	{
+		self.0.resize(size, default);
+	}
+
+	pub fn cursor_at(&mut self, offset: usize) -> Cursors<T> {
+		assert!(
+			offset < self.0.len(),
+			"Memory out of bounds in buffers, offset={}, buf={}",
+			offset,
+			self.0.len()
+		);
+		unsafe { Cursors(self.0.as_mut_ptr().add(offset)) }
+	}
+}
+
+pub struct Cursors<T>(*mut T);
+
+impl<T> Cursors<T> {
+	pub fn step(&mut self, offset: usize) {
+		unsafe {
+			let ptr = self.0.add(offset);
+			self.0 = ptr;
+		}
+	}
+
+	pub fn get(&self) -> T
+	where
+		T: Copy,
+	{
+		unsafe { *self.0 }
+	}
+
+	pub fn put(&self, val: T) {
+		unsafe {
+			*self.0 = val;
+		}
+	}
+
+	pub fn put_by<B, F>(&self, val: B, by: F)
+	where
+		F: Fn(*mut T, B),
+	{
+		by(self.0, val);
+	}
+}
+
+pub struct ShadowBuffer {
+	buf: DepthBuffer,
+	width: usize,
+	height: usize,
+}
+
 #[derive(Default)]
 pub struct Buffers {
 	pub f_buffer: FrameBuffer,
@@ -35,6 +108,10 @@ impl Buffers {
 
 	pub fn mut_buffers(&mut self) -> (&mut FrameBuffer, &mut DepthBuffer) {
 		(&mut self.f_buffer, &mut self.z_buffer)
+	}
+
+	pub fn depth_ptr(&self) -> *const f32 {
+		self.z_buffer.as_ptr()
 	}
 
 	pub fn get_cursor(&mut self, offset: usize) -> Cursor {

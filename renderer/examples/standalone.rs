@@ -43,6 +43,7 @@ fn main() -> PResult<()> {
 	let input = InputState::default();
 
 	let cube_mesh = load_mesh_file("./assets/meshes/cube-local.obj").unwrap();
+	let plane_mesh = pcore::geometry::generate_plane(12.0, 12.0);
 
 	let albedo =
 		Albedo::load("./assets/texture/Checker-Texture.png", Wrap::Mirror).unwrap();
@@ -60,6 +61,7 @@ fn main() -> PResult<()> {
 
 	let h_albedo = scene.assets.insert_albedo(albedo);
 	let h_mesh = scene.assets.insert_mesh(cube_mesh);
+	let h_plane_mesh = scene.assets.insert_mesh(plane_mesh);
 	let h_normal = scene.assets.insert_normal(normal);
 
 	let mut material = Material::default();
@@ -71,12 +73,25 @@ fn main() -> PResult<()> {
 
 	let h_material = scene.assets.insert_material(material);
 
+	let mut floor_mat = Material::default();
+	floor_mat.set_shininess(8.0);
+	floor_mat.specular = Color::BLACK;
+	floor_mat.diffuse = Color::new_rgb_splat(0.75);
+	let h_floor_mat = scene.assets.insert_material(floor_mat);
+
 	let model = Model {
 		material: h_material,
 		mesh: h_mesh,
 	};
 
 	scene.objects.push(Object::from_model(model));
+
+	let mut floor = Object::from_model(Model {
+		material: h_floor_mat,
+		mesh: h_plane_mesh,
+	});
+	floor.transform.position = Vector3::new(0.0, -1.25, 0.0);
+	scene.objects.push(floor);
 
 	let mut engine = Engine {
 		scene,
